@@ -7,6 +7,7 @@
     "start": "./node_modules/.bin/webpack-dev-server --hot",
     "build": "./node_modules/.bin/webpack",
     "test": "jest src/tests",
+    "e2e-test": "jest ./tests",
     "flow": "flow",
     "flow-stop": "flow stop",
     "eslint": "eslint .",
@@ -22,6 +23,7 @@
   "author": "",
   "license": "UNLICENSED",
   "jest": {
+    "preset": "jest-puppeteer",
     "collectCoverage": true,
     "coverageThreshold": {
       "global": {
@@ -128,8 +130,11 @@
   },
   "devDependencies": {
     "assert-diff": "^1.2.5",
+    "http-server": "^0.11.1",
     "jest": "^22.4.2",
+    "jest-puppeteer": "^3.0.1",
     "pre-commit": "1.2.2",
+    "puppeteer": "^1.4.0",
     "sinon": "^4.4.6",
     "web3-fake-provider": "^0.1.0",
     "webpack-dev-server": "^2.11.1"
