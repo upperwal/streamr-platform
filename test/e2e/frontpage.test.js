@@ -1,4 +1,4 @@
-describe('Streamr Marketplace', () => {
+describe('Frontpage', () => {
     beforeAll(async () => {
         await page.goto('http://localhost:3333')
     })

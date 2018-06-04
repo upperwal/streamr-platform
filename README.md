@@ -83,3 +83,18 @@ Then write your code, and get the pull request approved by two developers, ideal
 ### Sentry
 JavaScript error tracking from Sentry helps developers easily fix and prevent JavaScript errors in production as part of your commit-deploy-iterate workflow. 
 Ask a powerful developer for access to the Sentry alerts.
+
+## End To End -testing
+Basic changes: On root level, we have test -folder
+- unit
+- e2e
+
+New commands:
+- `test-unit` and `test-e2e` to separe them ( different environment / configs)
+
+
+Tests are currenlty only available against webpack-dev-server, have that running, then type `npm run test-e2e`
+### Working with Puppeteer
+- [Usage](https://github.com/smooth-code/jest-puppeteer)
+- [API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions)
+- [expext](https://github.com/smooth-code/jest-puppeteer/blob/master/packages/expect-puppeteer/README.md#api)
