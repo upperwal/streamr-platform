@@ -1,6 +1,6 @@
 {
   "name": "marketplace",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "description": "The UI of Streamr Marketplace",
   "main": "src/index.js",
   "scripts": {
@@ -109,7 +109,7 @@
     "reselect": "^3.0.1",
     "rimraf": "^2.6.2",
     "sass-loader": "^7.0.1",
-    "streamr-client": "^0.10.3",
+    "streamr-client": "^0.11.0-beta.1",
     "stringify-object": "^3.2.2",
     "style-loader": "^0.20.1",
     "uglifyjs-webpack-plugin": "^1.2.5",

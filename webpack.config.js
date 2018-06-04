@@ -1,5 +1,7 @@
 /* eslint-disable global-require */
 
+process.env.NODE_ENV = process.env.NODE_ENV || 'development' // set a default NODE_ENV
+
 const path = require('path')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -32,7 +34,7 @@ module.exports = {
     output: {
         path: path.resolve(root, 'dist'),
         filename: 'bundle_[hash:6].js',
-        sourceMapFilename: '../build/[file].map',
+        sourceMapFilename: '[file].map',
         // This is for html-webpack-plugin
         publicPath: process.env.MARKETPLACE_BASE_URL || '/',
     },
