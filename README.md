@@ -97,4 +97,3 @@ Tests are currenlty only available against webpack-dev-server, have that running
 ### Working with Puppeteer
 - [Usage](https://github.com/smooth-code/jest-puppeteer)
 - [API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions)
-- [expext](https://github.com/smooth-code/jest-puppeteer/blob/master/packages/expect-puppeteer/README.md#api)

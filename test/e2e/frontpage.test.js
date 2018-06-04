@@ -11,6 +11,14 @@ describe('Frontpage', () => {
 
     it('title matches', async () => {
         const title = await page.title()
-        console.log(title)
+        expect(title).toEqual('Streamr Marketplace')
+    })
+
+    it('click a product to redirect to product -page', async () => {
+        await Promise.all([
+            page.click('.productTile_productTile > a'),
+            page.waitForNavigation(),
+        ])
+        expect(page.url()).toContain('/products/')
     })
 })

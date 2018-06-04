@@ -11,6 +11,6 @@ describe('Frontpage', () => {
 
     it('title matches', async () => {
         const title = await page.title()
-        console.log(title)
+        expect(title).toEqual('Streamr Marketplace')
     })
 })
