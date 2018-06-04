@@ -122,7 +122,6 @@
   },
   "devDependencies": {
     "assert-diff": "^1.2.5",
-    "http-server": "^0.11.1",
     "jest": "^22.4.2",
     "pre-commit": "1.2.2",
     "sinon": "^4.4.6",
