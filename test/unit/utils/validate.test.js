@@ -1,7 +1,7 @@
 import assert from 'assert-diff'
 
-import * as all from '../../../utils/validate'
-import * as constants from '../../../utils/constants'
+import * as all from '../../../src/utils/validate'
+import * as constants from '../../../src/utils/constants'
 
 describe('validate utils', () => {
     describe('isValidSearchQuery', () => {

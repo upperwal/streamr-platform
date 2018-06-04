@@ -3,8 +3,8 @@ import Web3 from 'web3'
 import FakeProvider from 'web3-fake-provider'
 import sinon from 'sinon'
 
-import getWeb3, { getWeb3ByProvider, getPublicWeb3, StreamrWeb3 } from '../../../web3/web3Provider'
-import * as getConfig from '../../../web3/config'
+import getWeb3, { getWeb3ByProvider, getPublicWeb3, StreamrWeb3 } from '../../../src/web3/web3Provider'
+import * as getConfig from '../../../src/web3/config'
 
 describe('web3Provider', () => {
     let sandbox

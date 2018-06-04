@@ -6,8 +6,8 @@
   "scripts": {
     "start": "./node_modules/.bin/webpack-dev-server --hot",
     "build": "./node_modules/.bin/webpack",
-    "test": "jest src/tests",
-    "e2e-test": "jest ./tests",
+    "test-unit": "jest ./test/unit --config jest.config.unit.js",
+    "test-e2e": "jest ./test/e2e --config jest.config.e2e.js",
     "flow": "flow",
     "flow-stop": "flow stop",
     "eslint": "eslint .",
@@ -22,18 +22,6 @@
   },
   "author": "",
   "license": "UNLICENSED",
-  "jest": {
-    "preset": "jest-puppeteer",
-    "collectCoverage": true,
-    "coverageThreshold": {
-      "global": {
-        "lines": 6
-      }
-    },
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx}"
-    ]
-  },
   "dependencies": {
     "@streamr/po-loader": "^0.1.1",
     "@streamr/streamr-layout": "^1.1.0",

@@ -1,6 +1,6 @@
 import assert from 'assert-diff'
 
-import TransactionError from '../../../errors/TransactionError'
+import TransactionError from '../../../src/errors/TransactionError'
 
 describe('TransactionFailedError', () => {
     it('must extend Error', () => {

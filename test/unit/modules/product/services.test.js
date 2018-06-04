@@ -1,9 +1,9 @@
 import assert from 'assert-diff'
 import sinon from 'sinon'
 
-import * as all from '../../../../modules/product/services'
-import * as utils from '../../../../utils/smartContract'
-import * as getWeb3 from '../../../../web3/web3Provider'
+import * as all from '../../../../src/modules/product/services'
+import * as utils from '../../../../src/utils/smartContract'
+import * as getWeb3 from '../../../../src/web3/web3Provider'
 
 describe('Product services', () => {
     let sandbox
