@@ -16,6 +16,16 @@ class PuppeteerEnvironment extends NodeEnvironment {
         this.global.BROWSER = await puppeteer.connect({
             browserWSEndpoint: wsEndpoint,
         })
+
+        this.global.LOGIN = async (page, redirect) => {
+            await page.goto(`http://localhost:8081/streamr-core/login/auth?redirect=${encodeURI(redirect)}`)
+            await page.type('#username', 'tester1@streamr.com')
+            await page.type('#password', 'tester1TESTER1')
+            await Promise.all([
+                page.click('#loginButton'),
+                page.waitForNavigation(),
+            ])
+        }
     }
 
     async teardown() {
