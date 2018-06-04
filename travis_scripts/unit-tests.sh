@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-npm test-unit
+npm run test-unit
 
