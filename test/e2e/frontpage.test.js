@@ -15,8 +15,9 @@ describe('Frontpage', () => {
     })
 
     it('click a product to redirect to product -page', async () => {
+        const productElement = await page.$('.productTile_productTile > a')
         await Promise.all([
-            page.click('.productTile_productTile > a'),
+            productElement.click(),
             page.waitForNavigation(),
         ])
         expect(page.url()).toContain('/products/')

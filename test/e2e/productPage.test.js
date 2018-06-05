@@ -10,7 +10,7 @@ describe('Frontpage', () => {
     })
 
     it('Edit is not available', async () => {
-        const editButton = await page.$('.toolbar_buttons > a[href$="edit"]')
-        expect(editButton).toBeNull()
+        const editButton = await page.$eval('.toolbar_buttons > a[href$="edit"]', (button) => button)
+        expect(editButton).toBeFalsy()
     })
 })
