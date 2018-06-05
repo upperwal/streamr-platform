@@ -3,6 +3,7 @@ describe('Frontpage', () => {
     beforeAll(async () => {
         page = await global.BROWSER.newPage()
         await page.goto('http://localhost:3333')
+        await page.waitForSelector('#app')
     })
 
     afterAll(async () => {
@@ -16,6 +17,11 @@ describe('Frontpage', () => {
 
     it('click a product to redirect to product -page', async () => {
         const productElement = await page.$('.productTile_productTile > a')
+        if (!productElement) {
+            await page.screenshot({
+                path: './productPageError.png',
+            })
+        }
         await Promise.all([
             productElement.click(),
             page.waitForNavigation(),
