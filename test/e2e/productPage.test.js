@@ -1,4 +1,4 @@
-describe('Frontpage', () => {
+describe('ProductPage', () => {
     let page
     beforeAll(async () => {
         page = await global.BROWSER.newPage()
@@ -11,5 +11,6 @@ describe('Frontpage', () => {
     })
 
     it('Edit is not available', async () => {
+        expect(true).toBeTruthy()
     })
 })

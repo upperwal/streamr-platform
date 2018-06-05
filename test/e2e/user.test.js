@@ -1,4 +1,4 @@
-describe('Frontpage', () => {
+describe('User', () => {
     let page
     beforeAll(async () => {
         page = await global.BROWSER.newPage()
