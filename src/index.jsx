@@ -11,8 +11,6 @@ import './setup'
 
 const root = document.getElementById('root')
 
-console.log('hi')
-
 if (root) {
     render(
         <Provider store={store}>

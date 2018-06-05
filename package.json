@@ -4,8 +4,8 @@
   "description": "The UI of Streamr Marketplace",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server --hot",
-    "build": "webpack",
+    "start": "./node_modules/.bin/webpack-dev-server --hot",
+    "build": "./node_modules/.bin/webpack",
     "serve": "webpack-serve --config ./webpack.config.js --port 3333",
     "test": "jest ./test/unit",
     "test-e2e": "jest ./test/e2e --config jest.config.e2e.js",
