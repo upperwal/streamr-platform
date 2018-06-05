@@ -2,7 +2,7 @@ describe('Frontpage', () => {
     let page
     beforeAll(async () => {
         page = await global.BROWSER.newPage()
-        await page.goto('http://localhost:3333')
+        await page.goto(global.BASE_URL)
     })
 
     afterAll(async () => {
