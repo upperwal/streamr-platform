@@ -123,6 +123,7 @@
     "puppeteer": "^1.4.0",
     "assert-diff": "^1.2.5",
     "jest": "^22.4.2",
+    "moxios": "^0.4.0",
     "pre-commit": "1.2.2",
     "sinon": "^4.4.6",
     "web3-fake-provider": "^0.1.0",
