@@ -3,6 +3,9 @@ const os = require('os')
 const path = require('path')
 const NodeEnvironment = require('jest-environment-node')
 const puppeteer = require('puppeteer')
+require('dotenv').config({
+    path: './.env.e2e',
+})
 
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 
@@ -16,6 +19,7 @@ class PuppeteerEnvironment extends NodeEnvironment {
         this.global.BROWSER = await puppeteer.connect({
             browserWSEndpoint: wsEndpoint,
         })
+        this.global.BASE_URL = process.env.BASE_URL
     }
 
     async teardown() {

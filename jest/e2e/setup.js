@@ -6,9 +6,11 @@ const mkdirp = require('mkdirp')
 
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 
-module.exports = async function () {
+const setup = async () => {
     const browser = await puppeteer.launch({})
     global.BROWSER = browser
     mkdirp.sync(DIR)
     fs.writeFileSync(path.join(DIR, 'wsEndpoint'), browser.wsEndpoint())
 }
+
+module.exports = setup
