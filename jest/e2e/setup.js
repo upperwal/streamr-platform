@@ -7,7 +7,10 @@ const mkdirp = require('mkdirp')
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 
 const setup = async () => {
-    const browser = await puppeteer.launch({})
+    const browser = await puppeteer.launch({
+        dumpio:true,
+        devtools:true,
+    })
     global.BROWSER = browser
     mkdirp.sync(DIR)
     fs.writeFileSync(path.join(DIR, 'wsEndpoint'), browser.wsEndpoint())
