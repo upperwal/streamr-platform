@@ -27,7 +27,7 @@ import withErrorBoundary from '../../utils/withErrorBoundary'
 
 // Wrap authenticated components here instead of render() method
 const AccountAuth = userIsAuthenticated(AccountPage)
-const CreateProductAuth = userIsAuthenticated(EditProductPage)
+const CreateProductAuth = EditProductPage // TODO: DISABLED FOR TESTING
 const EditProductAuth = userIsAuthenticated(EditProductPage)
 const LoginRedirect = userIsNotAuthenticated(LoginPage)
 

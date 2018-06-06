@@ -11,6 +11,7 @@ require('dotenv').config({
 
 const {
     BASE_URL,
+    LOGOUT_URL,
     LOGIN_URL,
     LOGIN_USERNAME,
     LOGIN_PASSWORD,
@@ -27,15 +28,18 @@ class PuppeteerEnvironment extends NodeEnvironment {
             browserWSEndpoint: wsEndpoint,
         })
 
-        this.global.LOGIN = async (page, redirect) => {
-            await page.goto(`${LOGIN_URL}?redirect=${encodeURI(redirect)}`)
-            await page.type('#username', LOGIN_USERNAME)
-            await page.type('#password', LOGIN_PASSWORD)
+        let loginPage = await this.global.BROWSER.newPage()
+        this.global.LOGOUT = async () => loginPage.goto(LOGOUT_URL)
+        this.global.LOGIN = async () => {
+            await loginPage.goto(`${LOGIN_URL}?redirect=${encodeURI(BASE_URL)}`)
+            await loginPage.type('#username', LOGIN_USERNAME)
+            await loginPage.type('#password', LOGIN_PASSWORD)
             await Promise.all([
-                page.click('#loginButton'),
-                page.waitForNavigation(),
+                loginPage.click('#loginButton'),
+                loginPage.waitForNavigation(),
             ])
         }
+
         this.global.BASE_URL = BASE_URL
     }
 
