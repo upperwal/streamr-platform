@@ -28,9 +28,14 @@ if (!isProduction()) {
         path: path.resolve(root, '.env'),
     })
 }
+const isE2e = () => process.env.MOCK_WEB3
+const entry = [path.resolve(root, 'src', 'index.jsx')]
+if (isE2e()) {
+    entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
+}
 
 module.exports = {
-    entry: path.resolve(root, 'src', 'index.jsx'),
+    entry,
     output: {
         path: path.resolve(root, 'dist'),
         filename: 'bundle_[hash:6].js',
@@ -183,5 +188,8 @@ module.exports = {
     },
     resolve: {
         extensions: ['.js', '.jsx', '.json'],
+    },
+    node: {
+        fs: 'empty',
     },
 }

@@ -1,9 +1,11 @@
 // @flow
 
 import abi from './abis/marketplace'
+import bytecode from './bytecode/marketplace'
 
 module.exports = {
     abi,
+    bytecode,
     environments: {
         development: {
             address: '0x0af64558670a3b761B57e465Cb80B62254b39619',
