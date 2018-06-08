@@ -1,7 +1,6 @@
 // @flow
 
 import omit from 'lodash/omit'
-
 import commonConfig from './common.config'
 import tokenConfig from './token.config'
 import marketplaceConfig from './marketplace.config'
@@ -18,6 +17,11 @@ const parseConfig = (config: {
     ...(config.environments[env] || {}),
 })
 
+declare var testContracts: ?{
+    marketplace: string,
+    token: string,
+}
+
 const env = process.env.NODE_ENV || 'default' // TODO: enforce the existence of NODE_ENV in webpack.config.js
 const config = {
     ...parseConfig(commonConfig, env),
@@ -25,4 +29,12 @@ const config = {
     token: parseConfig(tokenConfig, env),
 }
 
-export default () => config
+export default () => {
+    if (window.testContracts) {
+        config.marketplace.address = window.testContracts.marketplace
+        config.token.address = window.testContracts.token
+    }
+
+    console.debug(config)
+    return config
+}
