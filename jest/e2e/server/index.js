@@ -1,3 +1,8 @@
+require('events').EventEmitter.defaultMaxListeners = 150;
+require('dotenv').config({
+    path:'./.env.e2e'
+})
+
 const Web3 = require('web3')
 const Ganache = require("ganache-core")
 const express = require('express')
@@ -10,12 +15,8 @@ const Informer = require('streamr-ethereum-watcher/src/informer')
 const server = Ganache.server({
     network_id: 4,
     mnemonic: "we make your streams come true",
-    gasLimit: 5000000
-})
-
-
-require('dotenv').config({
-    path:'./.env.e2e'
+    gasLimit: 5000000,
+    debug: true,
 })
 
 
@@ -37,16 +38,18 @@ const startWatcherAndInformer = (web3) => (contracts) => {
 
 const { BLOCK_CHAIN_PORT } = process.env
 let contracts = {}
+const setContracts = c => {
+    console.log("Contracts available")
+    contracts = c
+    return c
+}
 server.listen(BLOCK_CHAIN_PORT, function(err, blockchain) {
+    console.log(blockchain)
     console.log(`Running on ${BLOCK_CHAIN_PORT}`)
     const web3 = new Web3(server.provider)
     getInitialProducts()
         .then(deploy(web3)) 
-        .then(c => {
-            console.log("API AVAIVALBE")
-            contracts = c
-            return c
-        })
+        .then(setContracts)
         .then(startWatcherAndInformer(web3))
         .catch(console.debug)
 });
