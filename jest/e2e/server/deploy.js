@@ -1,7 +1,6 @@
 const Marketplace = require("../../../src/web3/marketplace.config.js")
 const Token = require("../../../src/web3/token.config.js")
-
-const { sendFrom } = require("./utils")
+const { sendFrom } = require('streamr-ethereum-watcher/src/utils')
 
 module.exports = (web3) => async (initialProducts) => {
     const accounts = await web3.eth.getAccounts()

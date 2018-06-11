@@ -12,6 +12,8 @@ const deploy = require('./deploy')
 const Watcher = require('streamr-ethereum-watcher/src/watcher')
 const Informer = require('streamr-ethereum-watcher/src/informer')
 
+const { BLOCK_CHAIN_PORT } = process.env
+
 const server = Ganache.server({
     network_id: 4,
     mnemonic: "we make your streams come true",
@@ -19,8 +21,7 @@ const server = Ganache.server({
     debug: true,
 })
 
-
-const getInitialProducts = async (market, ownerAddress) => axios
+const getInitialProducts = async () => axios
     .get(`${process.env.API_URL}/products?publicAccess=true`).then(r => r.data)
 
 const startWatcherAndInformer = (web3) => (contracts) => {
@@ -34,26 +35,18 @@ const startWatcherAndInformer = (web3) => (contracts) => {
 
     watcher.start()
     console.log("Watcher running")
+    return contracts
 }
 
-const { BLOCK_CHAIN_PORT } = process.env
+
 let contracts = {}
 const setContracts = c => {
     console.log("Contracts available")
     contracts = c
     return c
 }
-server.listen(BLOCK_CHAIN_PORT, function(err, blockchain) {
-    console.log(blockchain)
-    console.log(`Running on ${BLOCK_CHAIN_PORT}`)
-    const web3 = new Web3(server.provider)
-    getInitialProducts()
-        .then(deploy(web3)) 
-        .then(setContracts)
-        .then(startWatcherAndInformer(web3))
-        .catch(console.debug)
-});
 
+const web3 = new Web3(Ganache.provider())
 
 const app = express()
 app.use(cors())
@@ -63,4 +56,22 @@ app.get('/contracts', (req, res) => {
         token: contracts.token.options.address
     })
 })
-app.listen(4567, () => console.log('App listening on port 4567!'))
+
+module.exports = {
+    start: async () => {
+        await server.listen(BLOCK_CHAIN_PORT, function(err, blockchain) {
+            console.log(`Running on ${BLOCK_CHAIN_PORT}`)
+            web3.setProvider(server.provider);
+            getInitialProducts()
+                .then(deploy(web3))
+                .then(setContracts)
+                .then(startWatcherAndInformer(web3))
+                .catch(console.debug)
+        })
+        await app.listen(4567, () => console.log('App listening on port 4567!'))
+    },
+    stop: async () => {
+        await app.close()
+        await server.close()
+    }
+}
