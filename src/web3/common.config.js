@@ -10,7 +10,7 @@ module.exports = {
         },
         development: {
             networkId: 4,
-            publicNodeAddress: 'https://rinkeby.infura.io',
+            publicNodeAddress: 'http://127.0.0.1:7545',
         },
         get default() {
             return this.development

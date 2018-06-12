@@ -11,5 +11,24 @@ module.exports = (web3) => async (initialProducts) => {
         ownerAddress,
     ]}))
 
+    for (let p of initialProducts.filter(p => !p.isFree)) {
+        console.log(`Creating product ${p.name} (${p.id})`)
+        await sendFrom(ownerAddress, marketplace.methods.createProduct(
+            "0x" + p.id,
+            p.name,
+            ownerAddress,
+            p.pricePerSecond,
+            p.priceCurrency == "DATA" ? 0 : 1,
+            p.minimumSubscriptionInSeconds
+        ))   
+        if (p.state == "NOT_DEPLOYED") {
+            await sendFrom(ownerAddress, marketplace.methods.deleteProduct("0x" + p.id))
+        }
+    }
+    for (let a of accounts) {
+        console.log(`Minting tokens for ${a}`)
+        await sendFrom(ownerAddress, token.methods.mint(a, 100e18))
+    }
+
     return {token, marketplace}
 }
