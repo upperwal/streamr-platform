@@ -5,8 +5,6 @@ require('dotenv').config({
 
 const Web3 = require('web3')
 const Ganache = require("ganache-core")
-const express = require('express')
-const cors = require('cors')
 const axios = require('axios')
 const deploy = require('./deploy')
 const Watcher = require('streamr-ethereum-watcher/src/watcher')
@@ -21,6 +19,7 @@ const server = Ganache.server({
     debug: true,
     ws:true,
 })
+
 const getInitialProducts = async () => axios
     .get(`${process.env.API_URL}/products?publicAccess=true`).then(r => r.data)
 
@@ -33,50 +32,27 @@ const startWatcherAndInformer = (web3) => (contracts) => {
     watcher.on("productUpdated", informer.productUpdated.bind(informer))
     watcher.on("subscribed", informer.subscribe.bind(informer))
 
-    watcher.on("event", e => { console.debug(e.event) })
-    informer.logger = console.debug
-
     watcher.start()
     console.log("Watcher running")
     return contracts
 }
 
-
-let contracts = {}
-const setContracts = c => {
-    console.log("Contracts available")
-    contracts = c
-    return c
-}
-
-//const web3 = new Web3(Ganache.provider())
-const web3 = new Web3()//"ws://127.0.0.1:7545") 
-
-const app = express()
-app.use(cors())
-app.get('/contracts', (req, res) => {
-    res.json({
-        marketplace: contracts.marketplace.options.address,
-        token: contracts.token.options.address
-    })
-})
+const web3 = new Web3()
 
 module.exports = {
     start: async () => {
-        debugger
-        await server.listen(BLOCK_CHAIN_PORT, async (err, blockchain) => {
-             console.log(`Running on ${BLOCK_CHAIN_PORT}`)
-             web3.setProvider("ws://127.0.0.1:7545")
-            await getInitialProducts()
-                .then(deploy(web3))
-                .then(setContracts)
-                .then(startWatcherAndInformer(web3))
-                .catch(console.debug)
-        })
-        await app.listen(4567, () => console.log('App listening on port 4567!'))
+        await new Promise((resolve) =>
+            server.listen(BLOCK_CHAIN_PORT, async (err, blockchain) => {
+                console.log(`Running on ${BLOCK_CHAIN_PORT}`)
+                web3.setProvider(`ws://localhost:${BLOCK_CHAIN_PORT}`)
+                await getInitialProducts()
+                    .then(deploy(web3))
+                    .then(startWatcherAndInformer(web3))
+                    .then(resolve)
+                    .catch(console.debug)
+        }))
     },
     stop: async () => {
-        await app.close()
         await server.close()
     }
 }

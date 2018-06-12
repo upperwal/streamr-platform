@@ -28,9 +28,9 @@ if (!isProduction()) {
         path: path.resolve(root, '.env'),
     })
 }
-const isE2e = () => process.env.MOCK_WEB3
+
 const entry = [path.resolve(root, 'src', 'index.jsx')]
-if (isE2e()) {
+if (process.env.NODE_ENV === 'e2e') {
     entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
 }
 
