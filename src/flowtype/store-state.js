@@ -5,7 +5,6 @@ import { purchaseFlowSteps, publishFlowSteps } from '../utils/constants'
 import TransactionError from '../errors/TransactionError'
 import type { CategoryIdList, CategoryEntities } from './category-types'
 import type {
-    Product,
     EditProduct,
     ProductId,
     ProductIdList,
@@ -126,16 +125,6 @@ export type PublishStep = $Values<typeof publishFlowSteps>
 export type PublishDialogState = {
     productId: ?ProductId,
     step: PublishStep,
-}
-
-// create product
-export type CreateProductState = {
-    product: ?Product,
-    sending: boolean,
-    error: ?ErrorInUi,
-    uploadingImage: boolean,
-    imageError: ?ErrorInUi,
-    imageToUpload: ?File,
 }
 
 // editProduct

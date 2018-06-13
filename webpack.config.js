@@ -10,6 +10,7 @@ const FlowtypePlugin = require('flowtype-loader/plugin')
 const DotenvPlugin = require('dotenv-webpack')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const StyleLintPlugin = require('stylelint-webpack-plugin')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ReactRootPlugin = require('html-webpack-react-root-plugin')
@@ -85,6 +86,19 @@ module.exports = {
                     ],
                 }),
             },
+            {
+                test: /\.(scss)$/,
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: [{
+                        loader: 'css-loader', // translates CSS into CommonJS modules
+                    }, {
+                        loader: 'postcss-loader', // Run post css actions
+                    }, {
+                        loader: 'sass-loader', // compiles Sass to CSS
+                    }],
+                }),
+            },
             // .css files imported as plain css files
             {
                 test: /\.css$/,
@@ -97,34 +111,12 @@ module.exports = {
                 test: /\.po$/,
                 use: '@streamr/po-loader',
             },
-            {
-                test: /\.(scss)$/,
-                use: [{
-                    loader: 'style-loader', // inject CSS to page
-                    options: {
-                        insertAt: 'top',
-                    },
-                }, {
-                    loader: 'css-loader', // translates CSS into CommonJS modules
-                }, {
-                    loader: 'postcss-loader', // Run post css actions
-                    options: {
-                        plugins: () => [
-                            require('precss'),
-                            require('autoprefixer'),
-                        ],
-                    },
-                }, {
-                    loader: 'sass-loader', // compiles Sass to CSS
-                }],
-            },
         ],
     },
     plugins: [
         new HtmlWebpackPlugin({
             title: 'Streamr Marketplace',
             filename: path.resolve('dist', 'index.html'),
-            inject: true,
         }),
         new ReactRootPlugin(),
         new ExtractTextPlugin({
@@ -137,6 +129,12 @@ module.exports = {
             path: isProduction() ? null : path.resolve(root, '.env.common'),
             safe: path.resolve(root, '.env.common'),
             systemvars: true,
+        }),
+        new StyleLintPlugin({
+            files: [
+                'src/**/*.css',
+                'src/**/*.(p|s)css',
+            ],
         }),
     ].concat(isProduction() ? [
         // Production plugins

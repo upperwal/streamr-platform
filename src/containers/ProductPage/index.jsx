@@ -31,6 +31,7 @@ import {
     selectUserData,
     selectProductEditPermission,
     selectProductPublishPermission,
+    selectFetchingProductSharePermission,
 } from '../../modules/user/selectors'
 import links from '../../links'
 import { selectRelatedProductList } from '../../modules/relatedProducts/selectors'
@@ -52,6 +53,7 @@ export type StateProps = {
     isProductSubscriptionValid?: boolean,
     editPermission: boolean,
     publishPermission: boolean,
+    fetchingSharePermission: boolean,
     relatedProducts: Array<Product>,
 }
 
@@ -86,11 +88,17 @@ class ProductPage extends Component<Props> {
             overlayStreamLiveDataDialog,
             isProductSubscriptionValid,
             publishPermission,
+            fetchingSharePermission,
             deniedRedirect,
         } = nextProps
 
         if (this.props.match.params.id !== nextProps.match.params.id) {
             this.getProduct(nextProps.match.params.id)
+        }
+
+        // Fetch subscription on hard load if logged in (initial state is false)
+        if (!this.props.isLoggedIn && nextProps.isLoggedIn) {
+            this.props.getProductSubscription(this.props.match.params.id)
         }
 
         if (!product) {
@@ -106,7 +114,7 @@ class ProductPage extends Component<Props> {
             }
         } else if (overlayPublishDialog) {
             // Prevent access to publish dialog on direct route
-            if (!publishPermission) {
+            if (!fetchingSharePermission && !publishPermission) {
                 deniedRedirect(product.id || '0')
             } else {
                 showPublishDialog(product)
@@ -118,9 +126,11 @@ class ProductPage extends Component<Props> {
 
     getProduct = (id) => {
         this.props.getProductById(id)
-        this.props.getProductSubscription(id)
         this.props.getUserProductPermissions(id)
         this.props.getRelatedProducts(id)
+        if (this.props.isLoggedIn) {
+            this.props.getProductSubscription(id)
+        }
     }
 
     getPurchaseAllowed = (product: Product, isProductSubscriptionValid) =>
@@ -209,6 +219,7 @@ const mapStateToProps = (state: StoreState): StateProps => ({
     editPermission: selectProductEditPermission(state),
     publishPermission: selectProductPublishPermission(state),
     isProductSubscriptionValid: selectSubscriptionIsValid(state),
+    fetchingSharePermission: selectFetchingProductSharePermission(state),
 })
 
 const mapDispatchToProps = (dispatch: Function, ownProps: OwnProps): DispatchProps => ({
