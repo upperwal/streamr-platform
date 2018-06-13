@@ -1,19 +1,19 @@
-require('events').EventEmitter.defaultMaxListeners = 150;
-require('dotenv').config({
-    path:'./.env.e2e'
-})
-
-const { BLOCK_CHAIN_PORT } = process.env
 const Web3 = require('web3')
 const Ganache = require("ganache-core")
-const config = require('./config.json')
-const { deploy, getInitialProducts, startWatcherAndInformer } = require('./utils')
+const { deploy, getInitialProducts, startWatcherAndInformer, setupEnvironment, challenge } = require('./utils')
 
-const server = Ganache.server(config)
-const web3 = new Web3()
+const server = Ganache.server(
+    require('./config.json')
+)
 
 module.exports = {
+    setup: () => {
+        setupEnvironment()
+        challenge()
+    },
     start: async (debug = false) => {
+        const { BLOCK_CHAIN_PORT } = process.env
+        const web3 = new Web3()
         await new Promise((resolve) =>
             server.listen(BLOCK_CHAIN_PORT, (err, blockchain) => {
                 console.info(`Ganache server running on ${BLOCK_CHAIN_PORT}`)
