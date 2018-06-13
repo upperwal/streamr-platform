@@ -3,51 +3,24 @@ require('dotenv').config({
     path:'./.env.e2e'
 })
 
+const { BLOCK_CHAIN_PORT } = process.env
 const Web3 = require('web3')
 const Ganache = require("ganache-core")
-const axios = require('axios')
-const deploy = require('./deploy')
-const Watcher = require('streamr-ethereum-watcher/src/watcher')
-const Informer = require('streamr-ethereum-watcher/src/informer')
+const config = require('./config.json')
+const { deploy, getInitialProducts, startWatcherAndInformer } = require('./utils')
 
-const { BLOCK_CHAIN_PORT } = process.env
-
-const server = Ganache.server({
-    network_id: 4,
-    mnemonic: "we make your streams come true",
-    gasLimit: 5000000,
-    debug: true,
-    ws:true,
-})
-
-const getInitialProducts = async () => axios
-    .get(`${process.env.API_URL}/products?publicAccess=true`).then(r => r.data)
-
-const startWatcherAndInformer = (web3) => (contracts) => {
-    const watcher = new Watcher(web3, contracts.marketplace.options.address)
-    const informer = new Informer(process.env.API_URL, process.env.DEVOPS_KEY)
-
-    watcher.on("productDeployed", informer.setDeployed.bind(informer))
-    watcher.on("productUndeployed", informer.setUndeployed.bind(informer))
-    watcher.on("productUpdated", informer.productUpdated.bind(informer))
-    watcher.on("subscribed", informer.subscribe.bind(informer))
-
-    watcher.start()
-    console.log("Watcher running")
-    return contracts
-}
-
+const server = Ganache.server(config)
 const web3 = new Web3()
 
 module.exports = {
-    start: async () => {
+    start: async (debug = false) => {
         await new Promise((resolve) =>
-            server.listen(BLOCK_CHAIN_PORT, async (err, blockchain) => {
-                console.log(`Running on ${BLOCK_CHAIN_PORT}`)
+            server.listen(BLOCK_CHAIN_PORT, (err, blockchain) => {
+                console.info(`Ganache server running on ${BLOCK_CHAIN_PORT}`)
                 web3.setProvider(`ws://localhost:${BLOCK_CHAIN_PORT}`)
-                await getInitialProducts()
-                    .then(deploy(web3))
-                    .then(startWatcherAndInformer(web3))
+                getInitialProducts()
+                    .then(deploy(web3, debug))
+                    .then(startWatcherAndInformer(web3, debug))
                     .then(resolve)
                     .catch(console.debug)
         }))
