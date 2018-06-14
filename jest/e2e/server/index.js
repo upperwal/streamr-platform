@@ -7,7 +7,7 @@ const server = Ganache.server(
 )
 
 module.exports = {
-    setup: () => {
+    setup: async () => {
         setupEnvironment()
         challenge()
     },

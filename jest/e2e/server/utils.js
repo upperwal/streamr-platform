@@ -14,21 +14,21 @@ const debugTool = (debug, ...args) => {
 const postRequest = (url, data = {}, options) => axios.post(url, data, options).then(r => r.data).catch((e) => debugTool(true, e.message))
 const getRequest = (url, options = {}) => axios.get(url, options).then(r => r.data).catch((e) => debugTool(true, e.message))
 
-const challenge = async (web3) => {
+const challenge = async () => {
     const { TESTER1_KEY, WALLET_PRIVATE_KEY, WALLET_ADDRESS, API_URL } = process.env
     const options = { headers: { Authorization: `Token ${process.env.TESTER1_KEY}` } }
 
     const challenge = await postRequest(`${API_URL}/login/challenge`, {}, options)
+    const web3 = new Web3();
     const signedChallenge = web3.eth.accounts.sign(challenge.challenge, WALLET_PRIVATE_KEY)
     const response = {
-        name: 'end 2 end -testing',
+        address: WALLET_ADDRESS,
+        name: 'e2e',
         service: 'ETHEREUM_ID',
         challenge: challenge,
         signature: signedChallenge.signature
     }
-    const result = await postRequest(`${API_URL}/integration_keys`, response, options)
-    debugger
-    return result;
+    return postRequest(`${API_URL}/integration_keys`, response, options).then(() => console.info(`Ethereum identity '${WALLET_ADDRESS}' by '${WALLET_PRIVATE_KEY}' added.`))
 }
 
 module.exports = {
@@ -38,7 +38,7 @@ module.exports = {
             path:'./.env.e2e'
         })
     },
-    challenge: async () => challenge(new Web3()),
+    challenge: challenge,
     getInitialProducts: () => getRequest(`${process.env.API_URL}/products?publicAccess=true`),
     startWatcherAndInformer: (web3, debug) => (contracts) => {
         const watcher = new Watcher(web3, contracts.marketplace.options.address)
