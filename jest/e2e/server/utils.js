@@ -7,8 +7,10 @@ const Token = require("../../../src/web3/token.config.js")
 const { sendFrom } = require('streamr-ethereum-watcher/src/utils')
 
 const debugTool = (debug, ...args) => {
-    debugger
-    if (debug) console.debug(...args)
+    if (debug) {
+        debugger
+        console.debug(...args)
+    }
 }
 
 const postRequest = (url, data = {}, options) => axios.post(url, data, options).then(r => r.data).catch((e) => debugTool(true, e.message))
@@ -44,20 +46,40 @@ module.exports = {
         const watcher = new Watcher(web3, contracts.marketplace.options.address)
         const informer = new Informer(process.env.API_URL, process.env.DEVOPS_KEY)
 
-        watcher.on("productDeployed", (...args) => {
-            setTimeout(() => {
-                informer.setDeployed.bind(informer)(...args)
-            }, 3000)
+        informer.logger = (method, apiUrl, body) => debugTool(debug, method, apiUrl, body)
+        watcher.logger = message => debugTool(debug, message)
+
+        watcher.on("productDeployed", async (...args) => {
+            return await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(informer.setDeployed.bind(informer)(...args))
+                }, 2000)
+            })
         })
 
-        watcher.on("productUndeployed", informer.setUndeployed.bind(informer))
-        watcher.on("productUpdated", informer.productUpdated.bind(informer))
-        watcher.on("subscribed", informer.subscribe.bind(informer))
+        watcher.on("productUndeployed", async (...args) => {
+            return await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(informer.setUndeployed.bind(informer)(...args))
+                }, 2000)
+            })
+        })
+        watcher.on("productUpdated", async (...args) => {
+            return await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(informer.productUpdated.bind(informer)(...args))
+                }, 2000)
+            })
+        })
+        watcher.on("subscribed", async (...args) => {
+            return await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(informer.subscribe.bind(informer)(...args))
+                }, 2000)
+            })
+        })
     
         watcher.start()
-
-        watcher.logger = message => debugTool(debug, message)
-        informer.logger = (method, apiUrl, body) => debugTool(debug, method, apiUrl, body)
 
         console.info("Watcher running")
         return contracts

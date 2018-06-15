@@ -12,7 +12,6 @@ const setup = async () => {
     const browser = await puppeteer.launch({
         headless:false,
         dumpio:true,
-        slowMo:500,
     })
     global.BROWSER = browser
     mkdirp.sync(DIR)

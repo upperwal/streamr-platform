@@ -3,7 +3,6 @@ const os = require('os')
 const path = require('path')
 const NodeEnvironment = require('jest-environment-node')
 const puppeteer = require('puppeteer')
-const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 
 require('dotenv').config({
     path: './.env.e2e',
@@ -20,12 +19,15 @@ const {
 class PuppeteerEnvironment extends NodeEnvironment {
     async setup() {
         await super.setup()
+
+        const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
         const wsEndpoint = fs.readFileSync(path.join(DIR, 'wsEndpoint'), 'utf8')
         if (!wsEndpoint) {
             throw new Error('wsEndpoint not found')
         }
         this.global.BROWSER = await puppeteer.connect({
             browserWSEndpoint: wsEndpoint,
+            slowMo:10,
         })
 
         let loginPage = await this.global.BROWSER.newPage()
