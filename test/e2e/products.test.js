@@ -28,12 +28,18 @@ describe('Logged in user', () => {
         await page.click('.streamSelector_streams button')
         await page.click('.streamSelector_footer button:last-child')
     }
+    /*
     const addPicture = async () => {
         const fileInput = await page.$('.imageUpload_dropzone input[type="file"]')
         await fileInput.uploadFile('./assets/app_crashed.png')
     }
+    */
     const saveProduct = async (waitForImage = false) => {
         await page.click('.toolbar_buttons button:first-child')
+        if (!waitForImage) {
+            await page.waitForSelector('.confirmnocoverimage_content')
+            await page.click('.dialog_buttons button:last-child')
+        }
         await page.waitForSelector('.productPage_productPage')
         if (waitForImage) {
             await page.waitForSelector('.productPage_productImage')
@@ -73,7 +79,7 @@ describe('Logged in user', () => {
     it('Create a new free product', async () => {
         await goToCreateProductPage()
         await addNameAndDescription()
-        await addPicture()
+        // await addPicture()
         await selectCategory()
         await selectStream()
         await saveProduct()
@@ -82,11 +88,11 @@ describe('Logged in user', () => {
     it('Create, publish and purchase a paid product', async () => {
         await goToCreateProductPage()
         await addNameAndDescription()
-        await addPicture()
+        // await addPicture()
         await addPrice()
         await selectCategory()
         await selectStream()
-        await saveProduct(true)
+        await saveProduct(false)
         await publishProduct()
         await purchaseProduct()
     })
