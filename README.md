@@ -115,7 +115,7 @@ This needs to be take in consideration when testing, as some features might be h
 
 ### Delay issues
 #### Browser delay
-For consistency, slowed down browser so react can keep up with it. Without it, tests were failing more ofter with no apparent reason
+For consistency, slowed down browser so react can keep up with it. Without it, tests were failing more often with no apparent reason
 #### Ganache watcher/informer
 In original design etherium network is much slower than freshly build local and it is not taken consideration to actually Engine And Editor instance.
 When client were sending deploying into web3 -server and EAE simultaneously mysql transactions failed. *For a fix* we added delay in informer to simulate real live avoiding the issue.
@@ -124,7 +124,7 @@ When client were sending deploying into web3 -server and EAE simultaneously mysq
 Since we want a controlled environment for our test's we have `mnemonic: "we make your streams come true"` which seeds same addresses, we were able to use e2e-configs for marketplace and token addesses and accounts as well. *For simplicity, added configs in client build*
 
 ### Allowance
-For some reason, when making tests, I found out etherium allowance behaved inconsistently: used `10 DATA / hr` as price and when purchasing, allowance weren't fetched for dialog always. Ended up changing the price to 20 which resolved the issue. Still unknown why variance in behaviour. 
+For some reason, when making tests, I found out etherium allowance behaved inconsistently: used `10 DATA / hr` as price and when purchasing, allowance weren't fetched for purchaseDialog in time. Ended up changing the price to 20 which resolved the issue. Still unknown why variance in behaviour. 
 
 
 ### Working with Puppeteer

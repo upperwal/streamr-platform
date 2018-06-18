@@ -31,7 +31,7 @@ import {
 
 export const initialState: UserState = {
     user: null,
-    fetchingUserData: false,
+    fetchingUserData: true,
     userDataError: null,
     apiKey: null,
     fetchingApiKey: false,
