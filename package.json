@@ -25,17 +25,6 @@
   },
   "author": "",
   "license": "UNLICENSED",
-  "jest": {
-    "collectCoverage": true,
-    "coverageThreshold": {
-      "global": {
-        "lines": 24
-      }
-    },
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx}"
-    ]
-  },
   "dependencies": {
     "@streamr/po-loader": "^0.1.1",
     "@streamr/streamr-layout": "^1.1.0",

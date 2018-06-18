@@ -173,6 +173,7 @@ module.exports = {
             GIT_VERSION: gitRevisionPlugin.version(),
             GIT_COMMIT: gitRevisionPlugin.commithash(),
             GIT_BRANCH: gitRevisionPlugin.branch(),
+            NODE_ENV: process.env.NODE_ENV,
         }),
     ]),
     devtool: isProduction() ? 'source-map' : 'eval-source-map',
