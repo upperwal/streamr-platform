@@ -69,8 +69,8 @@ describe('Logged in user', () => {
         await page.click('.dialog_buttons button:last-child')
         await page.waitForSelector('.productDetails_activeTag')
     }
-    /*
-    it('Create a new product', async () => {
+
+    it('Create a new free product', async () => {
         await goToCreateProductPage()
         await addNameAndDescription()
         await addPicture()
@@ -78,8 +78,8 @@ describe('Logged in user', () => {
         await selectStream()
         await saveProduct()
     })
-    */
-    it('A paid product workflow', async () => {
+
+    it('Create, publish and purchase a paid product', async () => {
         await goToCreateProductPage()
         await addNameAndDescription()
         await addPicture()
@@ -90,11 +90,4 @@ describe('Logged in user', () => {
         await publishProduct()
         await purchaseProduct()
     })
-    /*
-    it('Go to edit product', async () => {
-        await page.goto(`${global.BASE_URL}/products/7a1d4e8cee6e41b0c304fd13d52f6434e39c7be5fd7ae158fc503b6ef71e4741`)
-        await page.click('.toolbar_buttons > a[href$="edit"]')
-        expect(page.url()).toContain('/edit')
-    })
-    */
 })

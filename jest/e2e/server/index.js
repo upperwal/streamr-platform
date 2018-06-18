@@ -1,31 +1,36 @@
+require('events').EventEmitter.defaultMaxListeners = 150;
+require('dotenv').config({
+    path:'./.env.e2e'
+})
+
 const Web3 = require('web3')
 const Ganache = require("ganache-core")
-const { deploy, getInitialProducts, startWatcherAndInformer, setupEnvironment, challenge } = require('./utils')
+const { deploy, getInitialProducts, startWatcherAndInformer, setEthIdentity } = require('./utils')
 
-const server = Ganache.server(
-    require('./config.json')
-)
+let server = {
+    close: () => console.log('Server isn\'t running')
+}
 
 module.exports = {
-    setup: async () => {
-        setupEnvironment()
-        challenge()
-    },
-    start: async (debug = false) => {
+    setup: setEthIdentity,
+    stop: async () => server.close(),
+    start: async () => {
         const { BLOCK_CHAIN_PORT } = process.env
         const web3 = new Web3()
+        server = Ganache.server({
+            network_id: 4,
+            mnemonic: "we make your streams come true",
+            gasLimit: 5000000
+        })
         await new Promise((resolve) =>
             server.listen(BLOCK_CHAIN_PORT, (err, blockchain) => {
                 console.info(`Ganache server running on ${BLOCK_CHAIN_PORT}`)
                 web3.setProvider(`ws://localhost:${BLOCK_CHAIN_PORT}`)
                 getInitialProducts()
-                    .then(deploy(web3, debug))
-                    .then(startWatcherAndInformer(web3, debug))
+                    .then(deploy(web3))
+                    .then(startWatcherAndInformer(web3))
                     .then(resolve)
                     .catch(console.debug)
         }))
-    },
-    stop: async () => {
-        await server.close()
     }
 }

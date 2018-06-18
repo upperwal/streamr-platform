@@ -96,15 +96,40 @@ JavaScript error tracking from Sentry helps developers easily fix and prevent Ja
 Ask a powerful developer for access to the Sentry alerts.
 
 ## End To End -testing
-Basic changes: On root level, we have test -folder
-- unit
-- e2e
 
-New commands:
-- `test-unit` and `test-e2e` to separe them ( different environment / configs)
+### Running tests
+Added a new commands: `test-e2e`
+For mocking web3 on client, webpack-dev-server has to be ran on e2e -environment: `NODE_ENV=e2e npm run start`.
+Then we can run test's against it: `npm run test-e2e`. if Ganache server isn't running in background, test setup will start it, but you can run it also separately `npm run ganache-server`.
+This reduces some time and allows you actually browse the e2e-environment with your browser as well.
+
+## File structure
+Tests are located in `test/e2e` and all configurations and test environment is under `jest/e2e`
+
+## Known issues and "fixes":
+### isAuthenticated
+When going directly to url, isAuthenticated isn't working as expected: ends up redirecting users out
+
+### The page viewpoint is currently in tabled mode (default)
+This needs to be take in consideration when testing, as some features might be hidden and are not clickable by design
+
+### Delay issues
+#### Browser delay
+For consistency, slowed down browser so react can keep up with it. Without it, tests were failing more ofter with no apparent reason
+#### Ganache watcher/informer
+In original design etherium network is much slower than freshly build local and it is not taken consideration to actually Engine And Editor instance.
+When client were sending deploying into web3 -server and EAE simultaneously mysql transactions failed. *For a fix* we added delay in informer to simulate real live avoiding the issue.
+
+### Static Addresses, mnemonic
+Since we want a controlled environment for our test's we have `mnemonic: "we make your streams come true"` which seeds same addresses, we were able to use e2e-configs for marketplace and token addesses and accounts as well. *For simplicity, added configs in client build*
+
+### Allowance
+For some reason, when making tests, I found out etherium allowance behaved inconsistently: used `10 DATA / hr` as price and when purchasing, allowance weren't fetched for dialog always. Ended up changing the price to 20 which resolved the issue. Still unknown why variance in behaviour. 
 
 
-Tests are currenlty only available against webpack-dev-server, have that running, then type `npm run test-e2e`
 ### Working with Puppeteer
 - [Usage](https://github.com/smooth-code/jest-puppeteer)
 - [API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions)
+
+#### Running Browser headlessless
+If you want to test and debug in browser, you can add `{ headless:false }`-option in `/jest/e2e/setup.js` for lauching puppeteer

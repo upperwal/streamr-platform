@@ -1,7 +1,0 @@
-{
-    "network_id": 4,
-    "mnemonic": "we make your streams come true",
-    "gasLimit": 5000000,
-    "debug": true,
-    "ws":true
-}
