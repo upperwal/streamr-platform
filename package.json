@@ -4,8 +4,8 @@
   "description": "The UI of Streamr Marketplace",
   "main": "src/index.js",
   "scripts": {
-    "start": "./node_modules/.bin/webpack-dev-server --hot",
-    "build": "./node_modules/.bin/webpack",
+    "start": "webpack-dev-server --hot",
+    "build": "webpack",
     "test": "jest ./test/unit",
     "test-e2e": "jest ./test/e2e/ --config jest.config.e2e.js",
     "ganache-server": "babel-node jest/e2e/server/start.js",
@@ -29,7 +29,7 @@
     "collectCoverage": true,
     "coverageThreshold": {
       "global": {
-        "lines": 14
+        "lines": 24
       }
     },
     "collectCoverageFrom": [
@@ -44,6 +44,8 @@
     "case": "^1.5.4",
     "classnames": "^2.2.5",
     "cssnano": "^3.10.0",
+    "dotenv": "^5.0.0",
+    "dotenv-safe": "^6.0.0",
     "empty": "^0.10.1",
     "events": "^2.0.0",
     "history": "^4.7.2",
@@ -164,7 +166,7 @@
     "url-loader": "^0.6.2",
     "web3-fake-provider": "^0.1.0",
     "web3-provider-engine": "^14.0.5",
-    "webpack-dev-server": "^2.11.1",
-    "webpack-notifier": "^1.5.1"
+    "webpack-notifier": "^1.5.1",
+    "webpack-dev-server": "^2.11.2"
   }
 }
