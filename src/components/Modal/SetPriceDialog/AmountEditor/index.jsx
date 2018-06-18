@@ -60,6 +60,7 @@ class AmountEditor extends React.Component<Props, State> {
             // is probably just loading
             return null
         }
+
         return (
             <Row>
                 <Col xs={5}>

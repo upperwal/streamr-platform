@@ -1,6 +1,7 @@
 // @flow
 
 import omit from 'lodash/omit'
+
 import commonConfig from './common.config'
 import tokenConfig from './token.config'
 import marketplaceConfig from './marketplace.config'
