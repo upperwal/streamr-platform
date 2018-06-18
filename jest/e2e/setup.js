@@ -1,14 +1,14 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const puppeteer = require('puppeteer')
+const puppeteer = require('puppeteer') // eslint-disable-line 
 const mkdirp = require('mkdirp')
 const server = require('./server/index')
 
 require('dotenv').config({
-    path:'./.env.e2e'
+    path: './.env.e2e',
 })
- 
+
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 const setup = async () => {
     await server.isNotRunning()
@@ -17,7 +17,7 @@ const setup = async () => {
             await server.start()
         })
         .catch(() => {
-            console.info("\nGanache server seems already be running, skipping initialization.\n")
+            console.info('\nGanache server seems already be running, skipping initialization.\n')
         })
 
     const browser = await puppeteer.launch()
