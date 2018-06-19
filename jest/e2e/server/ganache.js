@@ -11,7 +11,7 @@ const {
 } = require('./utils')
 
 let server = {
-    close: () => console.log('\nServer running independently or already shutdown\n'),
+    close: () => console.info('\nServer running independently or already shutdown\n'),
 }
 const { GANACHE_PORT, NETWORK_ID, WEB3_PROVIDER } = process.env
 

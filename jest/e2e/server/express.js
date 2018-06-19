@@ -13,7 +13,7 @@ let server
 module.exports = {
     isNotRunning: async () => isPortAvailable(PORT),
     start: () => {
-        server = app.listen(PORT, () => console.log(`\n e2e -file host server running on ${server.address().port}!`))
+        server = app.listen(PORT, () => console.info(`\n e2e -file host server running on ${server.address().port}!`))
     },
     stop: () => {
         server.close()
