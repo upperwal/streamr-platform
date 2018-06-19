@@ -3,7 +3,8 @@ const os = require('os')
 const path = require('path')
 const puppeteer = require('puppeteer') // eslint-disable-line 
 const mkdirp = require('mkdirp')
-const server = require('./server/index')
+const ganache = require('./server/ganache')
+const express = require('./server/express')
 
 require('dotenv').config({
     path: './.env.e2e',
@@ -11,10 +12,17 @@ require('dotenv').config({
 
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 const setup = async () => {
-    await server.isNotRunning()
+    await express.isNotRunning()
         .then(async () => {
-            await server.setup()
-            await server.start()
+            express.start()
+        })
+        .catch(() => {
+            console.info('\nDev server seems already be running, skipping initialization.\n')
+        })
+    await ganache.isNotRunning()
+        .then(async () => {
+            await ganache.setup()
+            await ganache.start()
         })
         .catch(() => {
             console.info('\nGanache server seems already be running, skipping initialization.\n')

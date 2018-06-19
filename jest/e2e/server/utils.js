@@ -1,4 +1,5 @@
 const Web3 = require('web3')
+const nodePortCheck = require('node-port-check') // eslint-disable-line 
 const Watcher = require('streamr-ethereum-watcher/src/watcher') // eslint-disable-line 
 const Informer = require('streamr-ethereum-watcher/src/informer') // eslint-disable-line 
 const { sendFrom } = require('streamr-ethereum-watcher/src/utils') // eslint-disable-line 
@@ -62,7 +63,7 @@ module.exports = {
                 ownerAddress,
             ],
         }))
-        /* eslint-disable */
+        /* eslint-disable no-await-in-loop, no-restricted-syntax, prefer-const */
         for (let product of initialProducts.filter(isPaidProduct)) {
             console.info(`Creating product ${product.name} (${product.id})`)
             await sendFrom(ownerAddress, marketplace.methods.createProduct(
@@ -70,11 +71,11 @@ module.exports = {
                 product.name,
                 ownerAddress,
                 product.pricePerSecond,
-                product.priceCurrency == "DATA" ? 0 : 1,
-                product.minimumSubscriptionInSeconds
+                product.priceCurrency === 'DATA' ? 0 : 1,
+                product.minimumSubscriptionInSeconds,
             ))
 
-            if (product.state == "NOT_DEPLOYED") {
+            if (product.state === 'NOT_DEPLOYED') {
                 console.info(`Deleting product ${product.name} (${product.id})`)
                 await sendFrom(ownerAddress, marketplace.methods.deleteProduct(getProductAddress(product)))
             }
@@ -91,4 +92,13 @@ module.exports = {
             marketplace,
         }
     },
+    isPortAvailable: async (port) => new Promise((resolve, reject) => {
+        nodePortCheck(
+            {
+                port,
+                maxRetries: 0,
+            },
+            (isPortAvailable) => (isPortAvailable ? resolve() : reject()),
+        )
+    }),
 }

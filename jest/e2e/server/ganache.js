@@ -5,8 +5,13 @@ require('dotenv').config({
 
 const Web3 = require('web3')
 const Ganache = require("ganache-core") // eslint-disable-line 
-const nodePortCheck = require('node-port-check') // eslint-disable-line 
-const { deploy, getInitialProducts, startWatcherAndInformer, setEthIdentity } = require('./utils')
+const {
+    deploy,
+    getInitialProducts,
+    startWatcherAndInformer,
+    setEthIdentity,
+    isPortAvailable,
+} = require('./utils')
 
 let server = {
     close: () => console.log('\nServer running independently or already shutdown\n'),
@@ -15,15 +20,7 @@ let server = {
 module.exports = {
     setup: setEthIdentity,
     stop: async () => server.close(),
-    isNotRunning: async () => new Promise((resolve, reject) => {
-        nodePortCheck(
-            {
-                port: process.env.BLOCK_CHAIN_PORT,
-                maxRetries: 0,
-            },
-            (isPortAvailable) => (isPortAvailable ? resolve() : reject()),
-        )
-    }),
+    isNotRunning: () => isPortAvailable(process.env.BLOCK_CHAIN_PORT),
     start: async () => {
         const { BLOCK_CHAIN_PORT } = process.env
         const web3 = new Web3()

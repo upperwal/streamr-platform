@@ -45,7 +45,6 @@ const getAllowanceError: GetAllowanceErrorActionCreator = createAction(
 
 export const getAllowance = () => (dispatch: Function) => {
     dispatch(getAllowanceRequest())
-
     return services
         .getMyAllowance()
         .then((allowance) => {

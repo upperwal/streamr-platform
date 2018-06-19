@@ -1,7 +1,6 @@
-const server = require('./index')
+const ganache = require('./ganache')
+const express = require('./express')
 
-const start = async () => {
-    await server.setup()
-    await server.start()
-}
-start()
+ganache.setup()
+ganache.start()
+express.start()
