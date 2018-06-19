@@ -20,8 +20,7 @@ jobs:
   - env:
     - DESCRIPTION=UNIT_TEST
     script: "./travis_scripts/unit-tests.sh"
-  - env:
-    - DESCRIPTION=E2E_TEST
+  - stage: End 2 End Testing
     script: "./travis_scripts/e2e-tests.sh"
   - stage: Build Staging
     env:
