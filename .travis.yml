@@ -20,6 +20,9 @@ jobs:
   - env:
     - DESCRIPTION=UNIT_TEST
     script: "./travis_scripts/unit-tests.sh"
+  - env:
+    - DESCRIPTION=E2E_TEST
+    script: "./travis_scripts/e2e-tests.sh"
   - stage: Build Staging
     env:
     - NODE_ENV=production
