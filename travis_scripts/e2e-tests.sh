@@ -1,4 +1,4 @@
-# sudo /etc/init.d/mysql stop
+sudo /etc/init.d/mysql stop
 git clone https://github.com/streamr-dev/streamr-docker-dev.git
 $TRAVIS_BUILD_DIR/streamr-docker-dev/streamr-docker-dev/bin.sh start 1
 sleep 1000
