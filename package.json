@@ -149,7 +149,7 @@
     "redux-mock-store": "^1.5.1",
     "rimraf": "^2.6.2",
     "sinon": "^4.4.6",
-    "streamr-ethereum-watcher": "git+https://github.com/streamr-dev/streamr-ethereum-watcher.git",
+    "streamr-ethereum-watcher": "git+ssh://github.com/streamr-dev/streamr-ethereum-watcher.git",
     "style-loader": "^0.20.1",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^0.6.2",
