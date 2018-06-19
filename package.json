@@ -91,9 +91,6 @@
     "web3-utils": "^1.0.0-beta.34",
     "webpack": "^2.7.0",
     "css-mqpacker": "^6.0.2",
-    "yup": "^0.24.1"
-  },
-  "devDependencies": {
     "assert-diff": "^1.2.5",
     "autoprefixer": "^8.0.0",
     "babel": "^6.23.0",
@@ -156,6 +153,9 @@
     "web3-fake-provider": "^0.1.0",
     "web3-provider-engine": "^14.0.5",
     "webpack-dev-server": "^2.11.2",
-    "webpack-notifier": "^1.5.1"
+    "webpack-notifier": "^1.5.1",
+    "yup": "^0.24.1"
+  },
+  "devDependencies": {
   }
 }
