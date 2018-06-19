@@ -2,7 +2,7 @@ describe('Example', () => {
     let page
     beforeAll(async () => {
         page = await global.BROWSER.newPage()
-        await page.goto(global.BASE_URL)
+        await page.goto(global.MARKETPLACE_URL)
     })
 
     afterAll(async () => {

@@ -8,7 +8,7 @@
     "build": "webpack",
     "test": "jest ./test/unit",
     "test-e2e": "jest ./test/e2e/ --config jest.config.e2e.js",
-    "ganache-server": "babel-node jest/e2e/server/start.js",
+    "e2e-server": "babel-node jest/e2e/server/start.js",
     "flow": "flow",
     "flow-stop": "flow stop",
     "eslint": "eslint .",

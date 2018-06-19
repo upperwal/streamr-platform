@@ -1,19 +1,17 @@
+require('./env')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const NodeEnvironment = require('jest-environment-node')
 const puppeteer = require('puppeteer')
 
-require('dotenv').config({
-    path: './.env.e2e',
-})
-
 const {
-    BASE_URL,
-    LOGOUT_URL,
-    LOGIN_URL,
+    LOGOUT_PATH,
+    LOGIN_PATH,
     LOGIN_USERNAME,
     LOGIN_PASSWORD,
+    STREAMR_URL,
+    MARKETPLACE_URL,
 } = process.env
 
 class PuppeteerEnvironment extends NodeEnvironment {
@@ -27,13 +25,13 @@ class PuppeteerEnvironment extends NodeEnvironment {
         }
         this.global.BROWSER = await puppeteer.connect({
             browserWSEndpoint: wsEndpoint,
-            slowMo:10,
+            slowMo: 10,
         })
 
-        let loginPage = await this.global.BROWSER.newPage()
-        this.global.LOGOUT = async () => loginPage.goto(LOGOUT_URL)
+        const loginPage = await this.global.BROWSER.newPage()
+        this.global.LOGOUT = async () => loginPage.goto(`${STREAMR_URL}/${LOGOUT_PATH}`)
         this.global.LOGIN = async () => {
-            await loginPage.goto(`${LOGIN_URL}?redirect=${encodeURI(BASE_URL)}`)
+            await loginPage.goto(`${STREAMR_URL}/${LOGIN_PATH}?redirect=${encodeURI(MARKETPLACE_URL)}`)
             await loginPage.type('#username', LOGIN_USERNAME)
             await loginPage.type('#password', LOGIN_PASSWORD)
             await Promise.all([
@@ -42,7 +40,7 @@ class PuppeteerEnvironment extends NodeEnvironment {
             ])
         }
 
-        this.global.BASE_URL = BASE_URL
+        this.global.MARKETPLACE_URL = MARKETPLACE_URL
     }
 
     async teardown() {

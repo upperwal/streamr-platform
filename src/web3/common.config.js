@@ -13,8 +13,8 @@ module.exports = {
             publicNodeAddress: 'https://rinkeby.infura.io',
         },
         e2e: {
-            networkId: 4,
-            publicNodeAddress: 'http://127.0.0.1:7545',
+            networkId: process.env.NETWORK_ID,
+            publicNodeAddress: process.env.PUBLIC_NODE_ADDRESS,
         },
         get default() {
             return this.development

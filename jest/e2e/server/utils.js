@@ -16,7 +16,7 @@ const setDelay = (action, delay) => async (...args) => new Promise((resolve) => 
 module.exports = {
     getInitialProducts: () => getRequest('products?publicAccess=true'),
     setEthIdentity: async () => {
-        const { WALLET_PRIVATE_KEY, WALLET_ADDRESS } = process.env
+        const { WALLET_ADDRESS, WALLET_PRIVATE_KEY } = process.env
 
         const web3 = new Web3()
         const challenge = await postRequest('login/challenge')
@@ -33,9 +33,9 @@ module.exports = {
             .catch(() => console.debug(`Ethereum identity '${WALLET_ADDRESS}' is already set.`))
     },
     startWatcherAndInformer: (web3) => (contracts) => {
-        const { API_URL, DEVOPS_KEY } = process.env
+        const { STREAMR_API_URL, DEVOPS_KEY } = process.env
         const watcher = new Watcher(web3, contracts.marketplace.options.address)
-        const informer = new Informer(API_URL, DEVOPS_KEY)
+        const informer = new Informer(STREAMR_API_URL, DEVOPS_KEY)
 
         informer.logger = console.log
         watcher.logger = console.log

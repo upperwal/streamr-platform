@@ -1,6 +1,4 @@
-const ganache = require('./ganache')
-const express = require('./express')
-
-ganache.setup()
-ganache.start()
-express.start()
+require('../env')
+require('./ganache').start()
+require('./express').start()
+require('./express').stop()

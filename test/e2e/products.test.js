@@ -10,7 +10,7 @@ describe('Logged in user', () => {
     const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
     const goToCreateProductPage = async () => {
-        await page.goto(`${global.BASE_URL}/account/products/create`)
+        await page.goto(`${global.MARKETPLACE_URL}/account/products/create`)
         await page.waitForSelector('#app')
     }
 

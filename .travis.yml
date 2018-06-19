@@ -1,8 +1,6 @@
 language: node_js
 node_js:
 - '8'
-services:
-- docker
 sudo: false
 branches:
   only:
@@ -22,8 +20,6 @@ jobs:
   - env:
     - DESCRIPTION=UNIT_TEST
     script: "./travis_scripts/unit-tests.sh"
-  - stage: End 2 End Testing
-    script: "./travis_scripts/e2e-tests.sh"
   - stage: Build Staging
     env:
     - NODE_ENV=production

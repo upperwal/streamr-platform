@@ -1,7 +1,6 @@
 /* eslint-disable global-require */
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development' // set a default NODE_ENV
-
 const path = require('path')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -27,8 +26,16 @@ const gitRevisionPlugin = new GitRevisionPlugin()
 const publicPath = process.env.MARKETPLACE_BASE_URL || '/'
 
 const entry = [path.resolve(root, 'src', 'index.jsx')]
+
+let CLIENT_ENV = {}
 if (process.env.NODE_ENV === 'e2e') {
     entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
+    require('./jest/e2e/env')
+    CLIENT_ENV = {
+        WEB3_PROVIDER: process.env.WEB3_PROVIDER,
+        PUBLIC_NODE_ADDRESS: process.env.PUBLIC_NODE_ADDRESS,
+        NETWORK_ID: process.env.NETWORK_ID,
+    }
 }
 
 module.exports = {
@@ -174,6 +181,7 @@ module.exports = {
             GIT_COMMIT: gitRevisionPlugin.commithash(),
             GIT_BRANCH: gitRevisionPlugin.branch(),
             NODE_ENV: process.env.NODE_ENV,
+            ...CLIENT_ENV,
         }),
     ]),
     devtool: isProduction() ? 'source-map' : 'eval-source-map',
