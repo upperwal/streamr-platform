@@ -25,21 +25,6 @@
   },
   "author": "",
   "license": "UNLICENSED",
-  "jest": {
-    "collectCoverage": true,
-    "coverageThreshold": {
-      "global": {
-        "lines": 33
-      }
-    },
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx}"
-    ],
-    "moduleNameMapper": {
-      "\\.(css|scss|pcss)$": "empty/object"
-    },
-    "setupTestFrameworkScriptFile": "<rootDir>/test/test-utils/setupTests.js"
-  },
   "dependencies": {
     "@streamr/po-loader": "^0.1.1",
     "@streamr/streamr-layout": "^1.2.1",
