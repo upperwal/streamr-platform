@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack-dev-server --hot",
     "build": "webpack",
-    "test": "jest ./test/unit",
+    "test": "npm run test-unit && npm run test-e2e",
+    "test-unit": "jest ./test/unit",
     "test-e2e": "jest ./test/e2e/ --config jest.config.e2e.js",
     "e2e-server": "babel-node jest/e2e/server/start.js",
     "flow": "flow",
