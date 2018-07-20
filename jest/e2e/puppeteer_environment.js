@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 require('./env')
 const fs = require('fs')
 const os = require('os')
@@ -30,15 +31,7 @@ class PuppeteerEnvironment extends NodeEnvironment {
 
         const loginPage = await this.global.BROWSER.newPage()
         this.global.LOGOUT = async () => loginPage.goto(`${STREAMR_URL}/${LOGOUT_PATH}`)
-        this.global.LOGIN = async () => {
-            await loginPage.goto(`${STREAMR_URL}/${LOGIN_PATH}?redirect=${encodeURI(MARKETPLACE_URL)}`)
-            await loginPage.type('#username', LOGIN_USERNAME)
-            await loginPage.type('#password', LOGIN_PASSWORD)
-            await Promise.all([
-                loginPage.click('#loginButton'),
-                loginPage.waitForNavigation(),
-            ])
-        }
+        this.global.LOGIN =
 
         this.global.MARKETPLACE_URL = MARKETPLACE_URL
     }

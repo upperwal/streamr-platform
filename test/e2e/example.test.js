@@ -1,8 +1,11 @@
+import { launchBrowser } from './mixins/common'
+
 describe('Example', () => {
     let page
     beforeAll(async () => {
-        page = await global.BROWSER.newPage()
-        await page.goto(global.MARKETPLACE_URL)
+        const browser = await launchBrowser()
+        page = await browser.newPage()
+        await page.goto(process.env.MARKETPLACE_URL)
     })
 
     afterAll(async () => {

@@ -1,5 +1,6 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const path = require('path')
-const express = require('express')  // eslint-disable-line 
+const express = require('express')
 const { isPortAvailable } = require('./utils')
 
 const app = express()

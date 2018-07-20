@@ -1,11 +1,13 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const Web3 = require('web3')
-const nodePortCheck = require('node-port-check') // eslint-disable-line 
-const Watcher = require('streamr-ethereum-watcher/src/watcher') // eslint-disable-line 
-const Informer = require('streamr-ethereum-watcher/src/informer') // eslint-disable-line 
-const { sendFrom } = require('streamr-ethereum-watcher/src/utils') // eslint-disable-line 
-const Marketplace = require('../../../src/web3/marketplace.config.js') // eslint-disable-line 
+const { isFreePort } = require('node-port-check')
+const Watcher = require('streamr-ethereum-watcher/src/watcher')
+const Informer = require('streamr-ethereum-watcher/src/informer')
+const { sendFrom } = require('streamr-ethereum-watcher/src/utils')
+const Marketplace = require('../../../src/web3/marketplace.config.js')
 const Token = require('../../../src/web3/token.config.js')
 const { postRequest, getRequest } = require('./requests')
+const puppeteer = require('puppeteer')
 
 const isPaidProduct = (p) => !p.isFree
 const getProductAddress = (p) => `0x${p.id}`
@@ -92,13 +94,8 @@ module.exports = {
             marketplace,
         }
     },
-    isPortAvailable: async (port) => new Promise((resolve, reject) => {
-        nodePortCheck(
-            {
-                port,
-                maxRetries: 0,
-            },
-            (isPortAvailable) => (isPortAvailable ? resolve() : reject()),
-        )
-    }),
+    isPortAvailable: async (port) => {
+        const [,, status] = await isFreePort(port)
+        return status
+    },
 }
