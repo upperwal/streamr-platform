@@ -16,8 +16,5 @@ module.exports = {
             networkId: process.env.NETWORK_ID,
             publicNodeAddress: process.env.PUBLIC_NODE_ADDRESS,
         },
-        get default() {
-            return this.development
-        },
     },
 }
