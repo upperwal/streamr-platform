@@ -7,7 +7,6 @@ const { sendFrom } = require('streamr-ethereum-watcher/src/utils')
 const Marketplace = require('../../../src/web3/marketplace.config.js')
 const Token = require('../../../src/web3/token.config.js')
 const { postRequest, getRequest } = require('./requests')
-const puppeteer = require('puppeteer')
 
 const isPaidProduct = (p) => !p.isFree
 const getProductAddress = (p) => `0x${p.id}`

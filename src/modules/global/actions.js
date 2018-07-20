@@ -37,7 +37,9 @@ export const getDataPerUsd = () => (dispatch: Function) => {
     return services
         .getDataPerUsd()
         .then(
-            (dataPerUsd: NumberString) => dispatch(getDataPerUsdSuccess(dataPerUsd)),
+            (dataPerUsd: NumberString) => {
+                dispatch(getDataPerUsdSuccess(dataPerUsd))
+            },
             (error: TransactionError) => {
                 dispatch(getDataPerUsdError({
                     message: error.message,

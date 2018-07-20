@@ -1,7 +1,8 @@
+/* eslint-disable import/no-extraneous-dependencies */
 require('events').EventEmitter.defaultMaxListeners = 150
 require('../env')
 const Web3 = require('web3')
-const Ganache = require("ganache-core") // eslint-disable-line 
+const Ganache = require('ganache-core')
 const {
     deploy,
     getInitialProducts,
@@ -11,7 +12,7 @@ const {
 } = require('./utils')
 
 let server = {
-    close: () => console.info('\nServer running independently or already shutdown\n'),
+    close: () => console.info('Server running independently or already shutdown'),
 }
 const { GANACHE_PORT, NETWORK_ID, WEB3_PROVIDER } = process.env
 
@@ -28,7 +29,7 @@ module.exports = {
         setEthIdentity()
         await new Promise((resolve) =>
             server.listen(GANACHE_PORT, () => {
-                console.info(`\nGanache server running on ${GANACHE_PORT}\n`)
+                console.info(`Ganache server running on ${GANACHE_PORT}`)
                 web3.setProvider(WEB3_PROVIDER)
                 getInitialProducts()
                     .then(deploy(web3))

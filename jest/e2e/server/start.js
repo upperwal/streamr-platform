@@ -1,4 +1,18 @@
 require('../env')
-require('./ganache').start()
-require('./express').start()
-require('./express').stop()
+
+const ganache = require('./ganache')
+// const express = require('./express')
+
+ganache.isNotRunning()
+    .then((status) => {
+        if (status) {
+            ganache.start()
+        }
+    })
+
+// express.isNotRunning()
+//     .then((status) => {
+//         if (status) {
+//             express.start()
+//         }
+//     })
