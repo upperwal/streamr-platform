@@ -100,7 +100,7 @@ Ask a powerful developer for access to the Sentry alerts.
 ### Running tests
 Added a new commands: `test-e2e`
 For mocking web3 on client, webpack-dev-server has to be ran on e2e -environment: `NODE_ENV=e2e npm run start`.
-Then we can run test's against it: `npm run test-e2e`. if Ganache server isn't running in background, test setup will start it, but you can run it also separately `npm run ganache-server`.
+Then we can run test's against it: `npm run test-e2e`. if Ganache server isn't running in background, test setup will start it, but you can run it also separately `npm run e2e-server`.
 This reduces some time and allows you actually browse the e2e-environment with your browser as well.
 
 ## File structure

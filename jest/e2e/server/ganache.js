@@ -30,6 +30,7 @@ module.exports = {
         await new Promise((resolve) =>
             server.listen(GANACHE_PORT, () => {
                 console.info(`Ganache server running on ${GANACHE_PORT}`)
+                console.info(`Network id: ${NETWORK_ID}`)
                 web3.setProvider(WEB3_PROVIDER)
                 getInitialProducts()
                     .then(deploy(web3))
