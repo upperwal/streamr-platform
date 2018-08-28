@@ -188,7 +188,11 @@ describe('product - actions', () => {
 
         it('responds to errors', async () => {
             const productId = '456666345'
-            const error = new Error('Error')
+            const error = {
+                message: 'Error',
+                code: 'test',
+                statusCode: 123,
+            }
             sandbox.stub(services, 'getProductById').callsFake(() => Promise.reject(error))
 
             const store = mockStore({
@@ -319,7 +323,7 @@ describe('product - actions', () => {
                 {
                     type: CALL_HISTORY_METHOD,
                     payload: {
-                        method: 'push',
+                        method: 'replace',
                         args: [
                             'TEST_formatPath_result',
                         ],

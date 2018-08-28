@@ -25,11 +25,12 @@ const gitRevisionPlugin = new GitRevisionPlugin()
 
 const publicPath = process.env.MARKETPLACE_BASE_URL || '/'
 
-const entry = [path.resolve(root, 'src', 'index.jsx')]
+// babel-polyfill is required to get async-await to work
+const entry = ['babel-polyfill', path.resolve(root, 'src', 'index.jsx')]
 
 let CLIENT_ENV = {}
 if (process.env.NODE_ENV === 'e2e') {
-    entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
+    entry.push(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
     require('./jest/e2e/env')
     CLIENT_ENV = {
         WEB3_PROVIDER: process.env.WEB3_PROVIDER,

@@ -75,8 +75,14 @@ msgstr "Publish"
 msgid "editProductPage##publishing"
 msgstr "Publishing"
 
+msgid "editProductPage##republish"
+msgstr "Republish"
+
 msgid "editProductPage##save"
 msgstr "Save & Exit"
+
+msgid "editProductPage##update"
+msgstr "Update"
 
 msgid "editProductPage##unpublish"
 msgstr "Unpublish"
@@ -265,7 +271,7 @@ msgid "modal##completePurchase##pending##title"
 msgstr "Writing to the blockchain"
 
 msgid "modal##completeUnpublish##confirmed##title"
-msgstr "Unublish complete"
+msgstr "Unpublish complete"
 
 msgid "modal##completeUnpublish##failed##message"
 msgstr ""
@@ -563,6 +569,12 @@ msgstr "View more"
 msgid "productPage##productDetails##add"
 msgstr "Add to my purchases"
 
+msgid "productPage##description##more"
+msgstr "Read more"
+
+msgid "productPage##description##less"
+msgstr "Read less"
+
 msgid "productPage##productDetails##free"
 msgstr "Free"
 
@@ -634,6 +646,12 @@ msgstr "Data"
 
 msgid "streamLivePreview##timestamp"
 msgstr "Timestamp"
+
+msgid "streamLivePreview##subscriptionErrorNotice"
+msgstr "Error: Unable to process the stream data."
+
+msgid "streamLivePreview##dataErrorNotice"
+msgstr "Error: Some messages in the stream have invalid content and are not shown."
 
 msgid "streamSelector##add"
 msgstr "Add"
