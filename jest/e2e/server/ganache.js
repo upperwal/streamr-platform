@@ -21,6 +21,7 @@ module.exports = {
     isNotRunning: () => isPortAvailable(GANACHE_PORT),
     start: async () => {
         const web3 = new Web3()
+        const wsWeb3 = new Web3()
         server = Ganache.server({
             network_id: NETWORK_ID,
             mnemonic: 'we make your streams come true',
@@ -32,9 +33,10 @@ module.exports = {
                 console.info(`Ganache server running on ${GANACHE_PORT}`)
                 console.info(`Network id: ${NETWORK_ID}`)
                 web3.setProvider(WEB3_PROVIDER)
+                wsWeb3.setProvider('ws://localhost:7545')
                 getInitialProducts()
                     .then(deploy(web3))
-                    .then(startWatcherAndInformer(web3))
+                    .then(startWatcherAndInformer(wsWeb3))
                     .then(resolve)
                     .catch(console.debug)
             }))

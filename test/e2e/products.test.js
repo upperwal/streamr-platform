@@ -1,4 +1,3 @@
-import { launchBrowser } from './mixins/common'
 import { login } from './mixins/session'
 
 const faker = require('faker')
@@ -7,7 +6,7 @@ describe('Logged in user', () => {
     let browser
     let page
     beforeAll(async () => {
-        browser = await launchBrowser()
+        browser = global.BROWSER
         await login(browser)
     })
     beforeEach(async () => {

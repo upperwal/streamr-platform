@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const Web3 = require('web3')
-const { isFreePort } = require('node-port-check')
+const { check: checkPort } = require('tcp-port-used')
 const Watcher = require('streamr-ethereum-watcher/src/watcher')
 const Informer = require('streamr-ethereum-watcher/src/informer')
 const { sendFrom } = require('streamr-ethereum-watcher/src/utils')
@@ -94,7 +94,7 @@ module.exports = {
         }
     },
     isPortAvailable: async (port) => {
-        const [,, status] = await isFreePort(port)
-        return status
+        const inUse = await checkPort(parseInt(port, 10))
+        return !inUse
     },
 }

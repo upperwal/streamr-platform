@@ -1,9 +1,7 @@
-import { launchBrowser } from './mixins/common'
-
 describe('Frontpage', () => {
     let page
     beforeAll(async () => {
-        const browser = await launchBrowser()
+        const browser = global.BROWSER
         page = await browser.newPage()
         await page.goto(process.env.MARKETPLACE_URL)
         await page.waitForSelector('#app')

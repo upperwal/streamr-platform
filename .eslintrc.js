@@ -1,3 +1,8 @@
 module.exports = exports = {
-    extends: 'streamr'
+    extends: 'streamr',
+    globals: {
+        page: true,
+        browser: true,
+        jestPuppeteer: true,
+    },
 }

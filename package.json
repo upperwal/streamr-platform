@@ -139,9 +139,10 @@
     "express": "^4.16.3",
     "faker": "^4.1.0",
     "ganache-core": "^2.1.5",
-    "node-port-check": "^2.0.0",
+    "jest-puppeteer": "^3.3.1",
     "puppeteer": "^1.6.0",
     "rimraf": "^2.6.2",
-    "streamr-ethereum-watcher": "git+ssh://git@github.com/streamr-dev/streamr-ethereum-watcher.git"
+    "streamr-ethereum-watcher": "git+ssh://git@github.com/streamr-dev/streamr-ethereum-watcher.git",
+    "tcp-port-used": "^1.0.0"
   }
 }
