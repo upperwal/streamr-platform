@@ -3,4 +3,5 @@ module.exports = {
     globalTeardown: './jest/e2e/teardown.js',
     testEnvironment: './jest/e2e/puppeteer_environment.js',
     setupTestFrameworkScriptFile: './jest/e2e/jest.setup.js',
+    preset: 'jest-puppeteer',
 }

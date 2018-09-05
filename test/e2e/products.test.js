@@ -2,16 +2,19 @@ import { login } from './mixins/session'
 
 const faker = require('faker')
 
-describe('Logged in user', () => {
+describe('Products flow', () => {
     let browser
     let page
+
     beforeAll(async () => {
         browser = global.BROWSER
         await login(browser)
     })
+
     beforeEach(async () => {
         page = await browser.newPage()
     })
+
     afterEach(async () => {
         page.close()
     })
@@ -32,6 +35,7 @@ describe('Logged in user', () => {
         await page.click('.dropdown .dropdowns_textToggle')
         await page.click('.dropdown .dropdown-menu button')
     }
+
     const selectStream = async () => {
         await page.click('.streamSelector_editButton')
         await page.click('.streamSelector_streams button')
@@ -57,14 +61,14 @@ describe('Logged in user', () => {
 
     const publishProduct = async () => {
         await page.waitForSelector('.toolbar_buttons')
-        await page.click('.toolbar_buttons a:last-child')
+        await page.click('.toolbar_buttons .btn:last-child')
         await page.waitForSelector('.readytopublish_confirm')
         await page.click('.readytopublish_confirm')
         await page.click('.dialog_buttons button:last-child')
         await page.waitForSelector('.checkmarkIcon_checkmark')
-        await page.waitForSelector('.toolbar_buttons a.disabled:last-child')
+        await page.waitForSelector('.toolbar_buttons .btn.disabled:last-child')
         await page.keyboard.press('Escape')
-        await page.waitForSelector('.toolbar_buttons a:last-child:not(.disabled)')
+        await page.waitForSelector('.toolbar_buttons .btn:last-child:not(.disabled)')
     }
 
     const addPrice = async () => {
@@ -78,21 +82,23 @@ describe('Logged in user', () => {
     const purchaseProduct = async () => {
         await page.waitForSelector('.productDetails_button:not(.disabled)')
         await page.click('.productDetails_button')
+        await page.waitForSelector('.dialog_buttons button:last-child')
         await page.click('.dialog_buttons button:last-child')
+        await page.waitForSelector('.dialog_buttons button:last-child')
         await page.click('.dialog_buttons button:last-child')
         await timeout(1000)
         await page.click('.dialog_buttons button:last-child')
         await page.waitForSelector('.productDetails_activeTag')
     }
 
-    // it('Create a new free product', async () => {
-    //     await goToCreateProductPage()
-    //     await addNameAndDescription()
-    //     // await addPicture()
-    //     await selectCategory()
-    //     await selectStream()
-    //     await saveProduct()
-    // })
+    it('Create a new free product', async () => {
+        await goToCreateProductPage()
+        await addNameAndDescription()
+        // await addPicture()
+        await selectCategory()
+        await selectStream()
+        await saveProduct()
+    })
 
     it('Create, publish and purchase a paid product', async () => {
         await goToCreateProductPage()

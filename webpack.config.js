@@ -30,7 +30,7 @@ const entry = ['babel-polyfill', path.resolve(root, 'src', 'index.jsx')]
 
 let CLIENT_ENV = {}
 if (process.env.NODE_ENV === 'e2e') {
-    entry.push(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
+    entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3Provider.js'))
     require('./jest/e2e/env')
     CLIENT_ENV = {
         WEB3_PROVIDER: process.env.WEB3_PROVIDER,

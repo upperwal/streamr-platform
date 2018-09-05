@@ -11,22 +11,25 @@ const { HEADLESS } = process.env
 
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 const setup = async () => {
-    express.isNotRunning()
-        .then((isNotRunning) => {
-            if (isNotRunning) {
-                express.start()
-            } else {
-                console.info('\nDev server seems to be already running, skipping initialization.\n')
-            }
-        })
-    ganache.isNotRunning()
-        .then((isNotRunning) => {
-            if (isNotRunning) {
-                ganache.start()
-            } else {
-                console.info('\nGanache server seems already be running, skipping initialization.\n')
-            }
-        })
+    const promises = [
+        express.isNotRunning()
+            .then((isNotRunning) => {
+                if (isNotRunning) {
+                    express.start()
+                } else {
+                    console.info('Dev server seems to be already running, skipping initialization.')
+                }
+            }),
+        ganache.isNotRunning()
+            .then((isNotRunning) => {
+                if (isNotRunning) {
+                    ganache.start()
+                } else {
+                    console.info('Ganache server seems to be already running, skipping initialization.')
+                }
+            }),
+    ]
+    await Promise.all(promises)
     const browser = await puppeteer.launch({
         headless: HEADLESS !== 'false',
         slowMo: 10,
