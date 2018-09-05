@@ -7,7 +7,7 @@ const express = require('./server/express')
 
 const DIR = path.join(os.tmpdir(), 'jest_puppeteer_global_setup')
 
-const tearDown = async function () {
+async function tearDown() {
     await express.stop()
     await ganache.stop()
     await this.BROWSER_GLOBAL.close()
