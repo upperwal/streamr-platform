@@ -98,10 +98,39 @@ Ask a powerful developer for access to the Sentry alerts.
 ## End To End -testing
 
 ### Running tests
-Added a new commands: `test-e2e`
-For mocking web3 on client, webpack-dev-server has to be ran on e2e -environment: `NODE_ENV=e2e npm run start`.
-Then we can run test's against it: `npm run test-e2e`. if Ganache server isn't running in background, test setup will start it, but you can run it also separately `npm run e2e-server`.
-This reduces some time and allows you actually browse the e2e-environment with your browser as well.
+To run the e2e tests these services/resources need to be found: `API`, `Ganache (Ethereum test RPC)`, `Marketplace static files` and `File server`. 
+There are 4 different ways to run them: (the order of the commands is from top to bottom)
+
+#### 1
+|                      |         |         |
+|----------------------|---------|---------|
+| streamr-docker-dev   | API     |         |
+| `npm run build`      | Files   |         |
+| `npm run e2e-server` | Express | Ganache |
+| `npm run test-e2e`   | Tests   |         |
+
+#### 2
+|                      |         |         |       |
+|----------------------|---------|---------|-------|
+| streamr-docker-dev   | API     |         |       |
+| `npm run build`      | Files   |         |       |
+| `npm run test-e2e`   | Express | Ganache | Tests |
+
+#### 3
+|                      |         |         |       |
+|----------------------|---------|---------|-------|
+| streamr-docker-dev   | API     |         |       |
+| `npm start`          | Files   | Express |       |
+| `npm run e2e-server` | Ganache |         |       |
+| `npm run test-e2e`   | Tests   |         |       |
+
+#### 4
+|                      |         |         |       |
+|----------------------|---------|---------|-------|
+| streamr-docker-dev   | API     |         |       |
+| `npm start`          | Files   | Express |       |
+| `npm run test-e2e`   | Ganache | Tests   |       |
+
 
 ## File structure
 Tests are located in `test/e2e` and all configurations and test environment is under `jest/e2e`
