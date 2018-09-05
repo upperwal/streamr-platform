@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+require('../env')
 const path = require('path')
 const express = require('express')
 const { isPortAvailable } = require('./utils')
@@ -6,8 +7,8 @@ const { isPortAvailable } = require('./utils')
 const app = express()
 const dist = path.resolve('dist')
 
-app.use(express.static(dist))
-app.get('*', (req, res) => res.sendFile(path.resolve(dist, 'index.html')))
+app.use(process.env.MARKETPLACE_BASE_URL, express.static(dist))
+app.use((req, res) => res.sendFile(path.resolve(dist, 'index.html')))
 
 const { PORT } = process.env
 
