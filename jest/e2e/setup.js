@@ -33,10 +33,6 @@ const setup = async () => {
     const browser = await puppeteer.launch({
         headless: HEADLESS !== 'false',
         slowMo: 10,
-        defaultViewport: {
-            width: 1280,
-            height: 720,
-        },
     })
     global.BROWSER_GLOBAL = browser
     mkdirp.sync(DIR)

@@ -57,6 +57,7 @@ module.exports = {
             data: Token.bytecode,
             arguments: [],
         }))
+        console.info(`Token contract deployed into address ${token.options.address}`)
         const marketplace = await sendFrom(ownerAddress, new web3.eth.Contract(Marketplace.abi).deploy({
             data: Marketplace.bytecode,
             arguments: [
@@ -64,6 +65,7 @@ module.exports = {
                 ownerAddress,
             ],
         }))
+        console.info(`Marketplace contract deployed into address ${marketplace.options.address}`)
         /* eslint-disable no-await-in-loop, no-restricted-syntax, prefer-const */
         for (let product of initialProducts.filter(isPaidProduct)) {
             console.info(`Creating product ${product.name} (${product.id})`)
