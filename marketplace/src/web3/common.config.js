@@ -14,5 +14,9 @@ module.exports = {
             publicNodeAddress: 'https://rinkeby.infura.io',
             websocketAddress: 'wss://rinkeby.infura.io/_ws',
         },
+        e2e: {
+            networkId: process.env.NETWORK_ID,
+            publicNodeAddress: process.env.PUBLIC_NODE_ADDRESS,
+        },
     },
 }

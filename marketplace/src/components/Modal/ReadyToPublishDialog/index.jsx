@@ -29,7 +29,6 @@ class ReadyToPublishDialog extends Component<Props, State> {
 
     render = () => {
         const { waiting, onPublish, onCancel, translate } = this.props
-
         return (
             <Dialog
                 onClose={onCancel}

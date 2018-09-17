@@ -94,4 +94,7 @@ Then write your code, and get the pull request approved by two developers, ideal
 ### Sentry
 JavaScript error tracking from Sentry helps developers easily fix and prevent JavaScript errors in production as part of your commit-deploy-iterate workflow. 
 Ask a powerful developer for access to the Sentry alerts.
+
+## End To End -testing
+[Documentation for e2e-testing](jest/e2e/docs/README.md)
 >>>>>>> old_marketplace/master

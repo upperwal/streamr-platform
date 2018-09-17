@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 cd marketplace
-npm test
+npm run test-unit
 

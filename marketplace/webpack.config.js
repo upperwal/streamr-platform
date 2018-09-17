@@ -28,10 +28,23 @@ const publicPath = process.env.MARKETPLACE_BASE_URL || '/'
 
 const dist = path.resolve(root, 'dist')
 
+// babel-polyfill is required to get async-await to work
+const entry = ['babel-polyfill', path.resolve(root, 'src', 'index.jsx')]
+
+let CLIENT_ENV = {}
+if (process.env.NODE_ENV === 'e2e') {
+    entry.unshift(path.resolve(root, 'jest', 'e2e', 'mocks', 'web3.js'))
+    require('./jest/e2e/env')
+    CLIENT_ENV = {
+        WEB3_PROVIDER: process.env.WEB3_PROVIDER,
+        PUBLIC_NODE_ADDRESS: process.env.PUBLIC_NODE_ADDRESS,
+        NETWORK_ID: process.env.NETWORK_ID,
+    }
+}
+
 module.exports = {
+    entry,
     mode: isProduction() ? 'production' : 'development',
-    // babel-polyfill is required to get async-await to work
-    entry: ['babel-polyfill', path.resolve(root, 'src', 'index.jsx')],
     output: {
         path: dist,
         filename: 'bundle_[hash:6].js',
@@ -158,6 +171,8 @@ module.exports = {
             GIT_VERSION: gitRevisionPlugin.version(),
             GIT_COMMIT: gitRevisionPlugin.commithash(),
             GIT_BRANCH: gitRevisionPlugin.branch(),
+            NODE_ENV: process.env.NODE_ENV,
+            ...CLIENT_ENV,
         }),
     ]),
     devtool: isProduction() ? 'source-map' : 'eval-source-map',
