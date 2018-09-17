@@ -3,7 +3,7 @@
 import { getContract, call } from '../../utils/smartContract'
 import {
     checkEthereumNetworkIsCorrect as checkEthereumNetworkIsCorrectUtil,
-    isMetaMaskInUse as isMetaMaskInUseUtil,
+    isWeb3Injected as isWeb3InjectedUtil,
 } from '../../utils/web3'
 import getConfig from '../../web3/config'
 import getWeb3 from '../../web3/web3Provider'
@@ -16,6 +16,6 @@ const marketplaceContract = (usePublicNode: boolean = false) => getContract(getC
 export const getDataPerUsd = (): SmartContractCall<NumberString> => call(marketplaceContract(true).methods.dataPerUsd())
     .then((value) => fromAtto(value).toString())
 
-export const checkEthereumNetworkIsCorrect = (): Promise<void> => checkEthereumNetworkIsCorrectUtil(getWeb3())
+export const checkEthereumNetworkIsCorrect = (): Promise<void> => (checkEthereumNetworkIsCorrectUtil(getWeb3()))
 
-export const isMetaMaskInUse = (): boolean => isMetaMaskInUseUtil(getWeb3())
+export const isWeb3Injected = (): boolean => isWeb3InjectedUtil(getWeb3())

@@ -10,6 +10,7 @@ const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const StyleLintPlugin = require('stylelint-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const GitRevisionPlugin = require('git-revision-webpack-plugin')
@@ -24,6 +25,8 @@ const dotenvPlugin = StreamrDotenvPlugin(path.resolve(root, '.env.common'), path
 const gitRevisionPlugin = new GitRevisionPlugin()
 
 const publicPath = process.env.MARKETPLACE_BASE_URL || '/'
+
+const dist = path.resolve(root, 'dist')
 
 // babel-polyfill is required to get async-await to work
 const entry = ['babel-polyfill', path.resolve(root, 'src', 'index.jsx')]
@@ -43,7 +46,7 @@ module.exports = {
     entry,
     mode: isProduction() ? 'production' : 'development',
     output: {
-        path: path.resolve(root, 'dist'),
+        path: dist,
         filename: 'bundle_[hash:6].js',
         sourceMapFilename: '[file].map',
         publicPath,
@@ -119,6 +122,7 @@ module.exports = {
     },
     plugins: [
         // Common plugins between prod and dev
+        new CleanWebpackPlugin([dist]),
         new HtmlWebpackPlugin({
             template: 'src/index.html',
         }),

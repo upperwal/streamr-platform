@@ -13,4 +13,7 @@ module.exports = {
         '\\.(png)$': 'empty/object',
     },
     setupTestFrameworkScriptFile: '<rootDir>/test/test-utils/setupTests.js',
+    setupFiles: [
+        'jest-localstorage-mock',
+    ],
 }

@@ -2,29 +2,29 @@
 
 import BN from 'bignumber.js'
 import { I18n } from '@streamr/streamr-layout'
+import Web3 from 'web3'
 
-import getWeb3, { StreamrWeb3 } from '../web3/web3Provider'
+import { StreamrWeb3, getPublicWeb3 } from '../web3/web3Provider'
 import getConfig from '../web3/config'
-import type { SmartContractCall } from '../flowtype/web3-types'
+import type { SmartContractCall, Hash } from '../flowtype/web3-types'
 import { getContract, call } from '../utils/smartContract'
+
 import { fromAtto } from './math'
 import { ethereumNetworks } from './constants'
 
+declare var ethereum: Web3
+
 const tokenContractMethods = () => getContract(getConfig().token).methods
 
-export const getEthBalance = (): Promise<BN> => {
-    const web3 = getWeb3()
-    return web3.getDefaultAccount()
-        .then((myAccount) => web3.eth.getBalance(myAccount).then((balance) => BN(balance)))
-        .then(fromAtto)
-}
+export const getEthBalance = (web3Instance: StreamrWeb3): Promise<number> => (web3Instance.getDefaultAccount()
+    .then((myAccount) => web3Instance.eth.getBalance(myAccount).then((balance) => BN(balance)))
+    .then(fromAtto).then((result) => result.toString())
+)
 
-export const getDataTokenBalance = (): SmartContractCall<BN> => {
-    const web3 = getWeb3()
-    return web3.getDefaultAccount()
-        .then((myAddress) => call(tokenContractMethods().balanceOf(myAddress)))
-        .then(fromAtto)
-}
+export const getDataTokenBalance = (web3Instance: StreamrWeb3): SmartContractCall<number> => (web3Instance.getDefaultAccount()
+    .then((myAddress) => call(tokenContractMethods().balanceOf(myAddress)))
+    .then(fromAtto).then((result) => result.toString())
+)
 
 export const checkEthereumNetworkIsCorrect = (web3Instance: StreamrWeb3): Promise<void> => web3Instance.getEthereumNetwork()
     .then((network) => {
@@ -39,5 +39,24 @@ export const checkEthereumNetworkIsCorrect = (web3Instance: StreamrWeb3): Promis
         }
     })
 
-export const isMetaMaskInUse = (web3Instance: StreamrWeb3): boolean =>
-    web3Instance && web3Instance.currentProvider && web3Instance.currentProvider.isMetaMask
+export const isWeb3Injected = (web3Instance: StreamrWeb3): boolean =>
+    web3Instance && (web3Instance.currentProvider != null)
+
+export const getNumberOfConfirmations = (txHash: Hash): Promise<number> => {
+    const web3 = getPublicWeb3()
+
+    return Promise.all([
+        web3.eth.getTransaction(txHash),
+        web3.eth.getBlockNumber(),
+    ])
+        .then(([trx, currentBlock]) => (
+            trx.blockNumber === null ? 0 : currentBlock - trx.blockNumber
+        ))
+}
+
+export const hasTransactionCompleted = (txHash: Hash): Promise<boolean> => {
+    const web3 = getPublicWeb3()
+
+    return web3.eth.getTransaction(txHash)
+        .then((trx) => trx.blockNumber !== null)
+}
