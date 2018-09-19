@@ -26,6 +26,7 @@ import history from '../../../history'
 import '../../../analytics'
 
 import './app.pcss'
+import Calendar from '../../../shared/Calendar'
 import LocaleSetter from '../../containers/LocaleSetter'
 import NotFoundPage from '../NotFoundPage'
 import GoogleAnalyticsTracker from '../GoogleAnalyticsTracker'
@@ -42,12 +43,43 @@ const LoginRedirect = userIsNotAuthenticated(LoginPage)
 // Wrap each Route to an ErrorBoundary
 const Route = withErrorBoundary(ErrorPageView)(RouterRoute)
 
+const d1 = new Date('2000-10-10')
+
+class A extends React.Component<{}, {
+    date: Date,
+}> {
+    state = {
+        date: new Date(),
+    }
+    render() {
+        return (
+            <div
+                style={{
+                    padding: 100,
+                    color: 'red',
+                }}
+            >
+                {this.state.date.toLocaleDateString()}
+                <Calendar
+                    onChange={(val) => {
+                        this.setState({
+                            date: val,
+                        })
+                    }}
+                    value={d1}
+                />
+            </div>
+        )
+    }
+}
+
 const App = () => (
     <div>
         <ConnectedRouter history={history}>
             <div id="app">
                 <LocaleSetter />
                 <Page>
+                    <Route path="/test" component={A} />
                     <Route path={formatPath(links.products, ':id', 'edit')} component={EditProductAuth} />
                     <Route
                         path={formatPath(links.products, ':id', 'purchase')}
