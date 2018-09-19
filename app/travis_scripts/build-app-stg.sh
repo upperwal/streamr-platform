@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-cd marketplace
+cd app
 npm run build
 

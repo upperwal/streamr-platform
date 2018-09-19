@@ -6,10 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server --hot",
     "build": "webpack",
-    "test": "jest ./marketplace/test",
-    "test-userpages": "jest ./userpages/tests",
-    "test-e2e": "node scripts/test.js --config=./src/tests-e2e/config.js ./tests-e2e/",
-    "screenshots": "node scripts/test.js --config=./src/tests-e2e/config.js --testMatch='**/screenshots.js' ./tests-e2e/",
+    "test": "jest ./test/*",
     "flow": "flow",
     "flow-stop": "flow stop",
     "eslint": "eslint .",
@@ -32,7 +29,7 @@
     "collectCoverage": true,
     "coverageThreshold": {
       "global": {
-        "lines": 55
+        "lines": 50
       }
     },
     "collectCoverageFrom": [
@@ -42,7 +39,7 @@
       "\\.(css|scss|pcss)$": "identity-obj-proxy",
       "\\.(png)$": "empty/object"
     },
-    "setupTestFrameworkScriptFile": "<rootDir>/marketplace/test/test-utils/setupTests.js"
+    "setupTestFrameworkScriptFile": "<rootDir>/test/test-utils/setupTests.js"
   },
   "dependencies": {
     "@babel/runtime": "7.0.0-beta.47",

@@ -22,10 +22,10 @@ jobs:
   - stage: Marketplace Unit tests
     env:
     - DESCRIPTION=LINTER
-    script: "$TRAVIS_BUILD_DIR/marketplace/travis_scripts/linter.sh"
+    script: "$TRAVIS_BUILD_DIR/app/travis_scripts/linter.sh"
   - env:
     - DESCRIPTION=UNIT_TEST
-    script: "$TRAVIS_BUILD_DIR/marketplace/travis_scripts/unit-tests.sh"
+    script: "$TRAVIS_BUILD_DIR/app/travis_scripts/unit-tests.sh"
   - stage: Marketplace Build Staging
     env:
     - NODE_ENV=development
@@ -36,14 +36,14 @@ jobs:
     - MARKETPLACE_URL_ORIGIN=https://marketplace-staging.streamr.com
     - MARKETPLACE_BASE_URL=/
     - GOOGLE_ANALYTICS_ID=55331565-5
-    script: "$TRAVIS_BUILD_DIR/marketplace/travis_scripts/build-app-stg.sh"
+    script: "$TRAVIS_BUILD_DIR/app/travis_scripts/build-app-stg.sh"
     deploy:
     - provider: s3
       access_key_id: AKIAI3FGPGMK3EREJJTQ
       secret_access_key:
         secure: ZLCC1RIDEb619rNRSeamkYoLaqJhwJYQKxKnlar2uZZjm+QQBaoqxX0VqD/vwdqN+eW7XsIZJIzQgxjjZpcD6uZnRbVFO2RzZHIAY1xHxQ+72zHUXhPi0YmCUiCoUUWcxD/S52rOHgK9k8Dse8db/CTSEkEqvjP2Z90cDbs9m0jv6BoQr6zUBiYnsd2cklW7bnpDaKpE0Lv6HotevJwQd7oCUN8fAMWdYtnTvff7id2q/YO9JnM0ZLQfAC9k+UEOBd61QzSZAIQedGktmSa1xrM/KwJ5zyoVsYwII0e23EitnV3Vcu/2LAwCjRCr42XZdU/6MXbnLAuEcWfmS1qYVWIOU16JVc6cruIz69yTnZADSl/guuozZwGbXajMhUM9LrxobnlNo/SZKhqZodmec+h5RlI0Z4DtG9E1hh8AVICOA2KH2TYJG3eKkuqIvh0KSvuiN82eZ7fke1kzIJvQDn0/XSJzKG3kc0TpwBFR5T4y/UYDTkgEErCPwjZtxRpw9yh201qudCcV/8pJWca8vIlnTF8kAf3JFr8Lpn19zXSqrxNEXkvkbVbfs+pfzYx/DB4IFzr1o7H3pzt3ajDuaZboYcyvJIqF6YR2sMnti6fmxsZVKMtTtA2f7pEAtyQcyy0zjY2wIDBwshjbCqLl2kGQTtKBROWPU57PuuOIGK4=
       bucket: eu-west-1-stg-streamr-marketplace
-      local-dir: $TRAVIS_BUILD_DIR/marketplace/dist
+      local-dir: $TRAVIS_BUILD_DIR/app/dist
       acl: private
       region: eu-west-1
       skip_cleanup: true
@@ -61,7 +61,7 @@ jobs:
     - MARKETPLACE_BASE_URL=/
     - GOOGLE_ANALYTICS_ID=UA-55331565-5
     - VERSION=$TRAVIS_TAG
-    script: "$TRAVIS_BUILD_DIR/marketplace/travis_scripts/build-app.sh"
+    script: "$TRAVIS_BUILD_DIR/app/travis_scripts/build-app.sh"
 #    deploy:
 #    - provider: script
 #      script: bash travis_scripts/sentry-release.sh
