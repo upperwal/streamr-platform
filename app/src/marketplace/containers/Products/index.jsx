@@ -6,6 +6,7 @@ import merge from 'lodash/merge'
 
 import ProductsComponent from '../../components/Products'
 import ActionBar from '../../components/ActionBar'
+import TextInput from '../../../shared/components/TextInput'
 
 import type { StoreState } from '../../flowtype/store-state'
 import type { ProductList, Filter } from '../../flowtype/product-types'
@@ -84,6 +85,7 @@ export class Products extends Component<Props, State> {
                     onSortChange={onFilterChange}
                     onSearchChange={onSearchChange}
                 />
+                <TextInput label="Name of this field" loading />
                 <ProductsComponent
                     products={products.map((p, i) => merge({}, p, {
                         key: `${i}-${p.id || ''}`,
