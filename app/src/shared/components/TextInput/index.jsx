@@ -12,6 +12,7 @@ type Props = {
     label?: string,
     text?: string,
     loading?: boolean,
+    inputRef?: (any) => void,
 }
 
 type State = {
@@ -49,7 +50,13 @@ class TextInput extends Component<Props, State> {
     }
 
     render() {
-        const { className, label, loading } = this.props
+        const {
+            className,
+            label,
+            loading,
+            inputRef,
+            ...props
+        } = this.props
         const { id, text } = this.state
 
         return (
@@ -62,6 +69,8 @@ class TextInput extends Component<Props, State> {
                         value={text}
                         placeholder="&nbsp;"
                         className={cx(loading && styles.loading)}
+                        ref={inputRef}
+                        {...props}
                     />
                     <span className={styles.label}>{label}</span>
                     <span className={cx(styles.border, loading && styles.loading)} />

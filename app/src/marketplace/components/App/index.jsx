@@ -26,13 +26,13 @@ import history from '../../../history'
 import '../../../analytics'
 
 import './app.pcss'
-import Calendar from '../../../shared/Calendar'
 import LocaleSetter from '../../containers/LocaleSetter'
 import NotFoundPage from '../NotFoundPage'
 import GoogleAnalyticsTracker from '../GoogleAnalyticsTracker'
 import isProduction from '../../utils/isProduction'
 import ErrorPageView from '../ErrorPageView'
 import withErrorBoundary from '../../utils/withErrorBoundary'
+import DatePicker from '../../../shared/components/DatePicker'
 
 // Wrap authenticated components here instead of render() method
 const AccountAuth = userIsAuthenticated(AccountPage)
@@ -43,30 +43,31 @@ const LoginRedirect = userIsNotAuthenticated(LoginPage)
 // Wrap each Route to an ErrorBoundary
 const Route = withErrorBoundary(ErrorPageView)(RouterRoute)
 
-const d1 = new Date('2000-10-10')
-
 class A extends React.Component<{}, {
     date: Date,
 }> {
     state = {
-        date: new Date(),
+        date: new Date('2000-10-10'),
     }
     render() {
         return (
             <div
                 style={{
-                    padding: 100,
+                    padding: 300,
                     color: 'red',
                 }}
             >
-                {this.state.date.toLocaleDateString()}
-                <Calendar
+                <DatePicker
                     onChange={(val) => {
                         this.setState({
                             date: val,
                         })
                     }}
-                    value={d1}
+                    value={this.state.date}
+                    placeholder="Testi"
+                    style={{
+                        width: '500px',
+                    }}
                 />
             </div>
         )
