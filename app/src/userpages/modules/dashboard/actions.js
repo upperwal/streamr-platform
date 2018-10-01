@@ -1,6 +1,7 @@
 // @flow
 
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
+import chain from 'lodash/chain'
 
 import { success as successNotification, error as errorNotification } from 'react-notification-system-redux'
 import * as api from '../../utils/api'
@@ -74,7 +75,7 @@ export const updateDashboardLayout = (dashboardId: $ElementType<Dashboard, 'id'>
         y: item.y || 0,
     })
 
-    const normalizeItemList = (itemList: ?Array<LayoutItem>) => (itemList ? _.chain(itemList)
+    const normalizeItemList = (itemList: ?Array<LayoutItem>) => (itemList ? chain(itemList)
         .sortBy('i')
         .map(normalizeLayoutItem)
         .value() : [])
@@ -85,7 +86,7 @@ export const updateDashboardLayout = (dashboardId: $ElementType<Dashboard, 'id'>
         })
     ), {})
 
-    if (dashboard && !_.isEqual(normalizeLayout(layout), normalizeLayout(dashboard.layout))) {
+    if (dashboard && !isEqual(normalizeLayout(layout), normalizeLayout(dashboard.layout))) {
         dispatch(updateDashboard({
             ...dashboard,
             layout,

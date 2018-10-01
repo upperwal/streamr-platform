@@ -163,7 +163,7 @@ module.exports = {
             GIT_BRANCH: gitRevisionPlugin.branch(),
         }),
     ]),
-    devtool: isProduction() ? 'source-map' : 'eval-source-map',
+    devtool: !isProduction() ? 'source-map' : 'inline-source-map',
     devServer: {
         historyApiFallback: {
             index: publicPath,

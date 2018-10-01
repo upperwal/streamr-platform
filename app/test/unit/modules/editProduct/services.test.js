@@ -1,6 +1,6 @@
 import assert from 'assert-diff'
 import moxios from 'moxios'
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 import * as services from '$mp/modules/editProduct/services'
 import { existingProduct } from './mockData'
 

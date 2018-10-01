@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react'
-import _ from 'lodash'
+import mapValues from 'lodash/mapValues'
 import StreamrWidget from '../StreamrWidget'
 
 import type { ModuleOptions, StreamId, SubscriptionOptions } from '../../../flowtype/streamr-client-types'
@@ -44,7 +44,7 @@ export default class ComplexStreamrWidget extends Component<Props, State> {
     }
 
     onModuleJson = ({ options: moduleOptions }: { options: ModuleOptions }) => {
-        const opt = _.mapValues(moduleOptions, 'value')
+        const opt = mapValues(moduleOptions, 'value')
         if (this.root) {
             this.setState(({ options }) => ({
                 options: {

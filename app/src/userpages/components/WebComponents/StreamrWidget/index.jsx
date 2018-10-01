@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react'
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
 
 import type { Node } from 'react'
 
@@ -40,7 +40,7 @@ export default class StreamrWidget extends Component<Props> {
     }
 
     componentWillReceiveProps(newProps: Props) {
-        if (newProps.subscriptionOptions !== undefined && !_.isEqual(this.props.subscriptionOptions, newProps.subscriptionOptions)) {
+        if (newProps.subscriptionOptions !== undefined && !isEqual(this.props.subscriptionOptions, newProps.subscriptionOptions)) {
             console.warn('Updating stream subscriptionOptions on the fly is not (yet) possible')
         }
 

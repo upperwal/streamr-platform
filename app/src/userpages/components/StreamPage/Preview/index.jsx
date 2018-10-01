@@ -6,7 +6,7 @@ import { Table, Modal, ModalHeader, ModalBody, Button } from 'reactstrap'
 import FontAwesome from 'react-fontawesome'
 import moment from 'moment-timezone'
 import stringifyObject from 'stringify-object'
-import { throttle } from 'lodash'
+import throttle from 'lodash/throttle'
 
 import type { Stream } from '../../../flowtype/stream-types'
 import type { User } from '../../../flowtype/user-types'

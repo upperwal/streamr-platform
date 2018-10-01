@@ -7,7 +7,9 @@ import { MenuItem } from 'reactstrap'
 import FontAwesome from 'react-fontawesome'
 import Fullscreen from 'react-full-screen'
 import { Responsive, WidthProvider } from 'react-grid-layout'
-import _ from 'lodash'
+import zipObject from 'lodash/zipObject'
+import map from 'lodash/map'
+import sortBy from 'lodash/sortBy'
 
 import { parseDashboard } from '../../../helpers/parseState'
 import {
@@ -174,9 +176,9 @@ export class Editor extends Component<Props, State> {
 
     generateLayout = (): ?Layout => {
         const db = this.props.dashboard
-        const layout = db && _.zipObject(
+        const layout = db && zipObject(
             dashboardConfig.layout.sizes,
-            _.map(dashboardConfig.layout.sizes, (size: 'lg' | 'md' | 'sm' | 'xs') => (
+            map(dashboardConfig.layout.sizes, (size: 'lg' | 'md' | 'sm' | 'xs') => (
                 db.items.map((item) => {
                     const id = Editor.generateItemId(item)
                     const layoutInfo = (db.layout && db.layout[size]) ? db.layout[size].find((l) => l.i === id) : undefined
@@ -195,7 +197,7 @@ export class Editor extends Component<Props, State> {
     render() {
         const { dashboard } = this.props
         const layout = dashboard && dashboard.items && this.generateLayout()
-        const items = dashboard && dashboard.items ? _.sortBy(dashboard.items, ['canvas', 'module']) : []
+        const items = dashboard && dashboard.items ? sortBy(dashboard.items, ['canvas', 'module']) : []
         const dragCancelClassName = `cancelDragging${Date.now()}`
         const locked = this.props.editorLocked || this.state.isFullscreen
         return dashboard ? (

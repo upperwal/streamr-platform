@@ -1,4 +1,5 @@
-import _ from 'lodash'
+import zipObject from 'lodash/zipObject'
+import map from 'lodash/map'
 
 import StreamrLabel from '../WebComponents/StreamrLabel'
 import StreamrButton from '../WebComponents/StreamrButton'
@@ -76,7 +77,7 @@ module.exports = {
             xs: 2,
         },
         defaultLayout,
-        layoutsBySizeAndModule: _.zipObject(sizes, _.map(sizes, (size) => _.zipObject(modules, _.map(modules, (module) => ({
+        layoutsBySizeAndModule: zipObject(sizes, map(sizes, (size) => zipObject(modules, map(modules, (module) => ({
             ...(size ? overridesBySize[size] : {}),
             ...(module ? overridesByModule[module] : {}),
             ...((size && module && overridesBySizeAndModule[size]) ? overridesBySizeAndModule[size][module] : {}),

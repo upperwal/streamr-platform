@@ -1,6 +1,7 @@
 // @flow
 
-import _ from 'lodash'
+import keyBy from 'lodash/keyBy'
+import omit from 'lodash/omit'
 
 import type { StreamState } from '../../flowtype/states/stream-state'
 import type { StreamAction } from '../../flowtype/actions/stream-actions'
@@ -110,7 +111,7 @@ export default function (state: StreamState = initialState, action: StreamAction
         case GET_STREAMS_SUCCESS:
             return {
                 ...state,
-                byId: _.keyBy(action.streams, 'id'),
+                byId: keyBy(action.streams, 'id'),
                 fetching: false,
                 error: null,
             }
@@ -132,7 +133,7 @@ export default function (state: StreamState = initialState, action: StreamAction
         case DELETE_STREAM_SUCCESS:
             return {
                 ...state,
-                byId: _.omit(state.byId, action.id),
+                byId: omit(state.byId, action.id),
                 fetching: false,
                 error: null,
             }

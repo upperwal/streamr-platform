@@ -1,6 +1,6 @@
 // @flow
 
-import _ from 'lodash'
+import keyBy from 'lodash/keyBy'
 
 import type { DashboardState } from '../../flowtype/states/dashboard-state'
 import type { Action as DashboardAction } from '../../flowtype/actions/dashboard-actions'
@@ -63,7 +63,7 @@ const dashboard = function dashboard(state: DashboardState = initialState, actio
         case GET_DASHBOARDS_SUCCESS:
             return {
                 ...state,
-                byId: _.keyBy(action.dashboards, 'id'),
+                byId: keyBy(action.dashboards, 'id'),
                 fetching: false,
                 error: null,
             }

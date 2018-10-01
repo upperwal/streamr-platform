@@ -1,6 +1,6 @@
 import assert from 'assert-diff'
 
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 import reducer, { initialState } from '$mp/modules/editProduct/reducer'
 import * as constants from '$mp/modules/editProduct/constants'
 import { transactionStates } from '$mp/utils/constants'

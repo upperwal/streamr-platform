@@ -1,6 +1,6 @@
 // @flow
 
-import _ from 'lodash'
+import groupBy from 'lodash/groupBy'
 
 import type { IntegrationKeyState } from '../../flowtype/states/integration-key-state'
 import type { IntegrationKeyAction } from '../../flowtype/actions/integration-key-actions'
@@ -44,7 +44,7 @@ export default function (state: IntegrationKeyState = initialState, action: Inte
         case GET_AND_REPLACE_INTEGRATION_KEYS_SUCCESS:
             return {
                 ...state,
-                listsByService: _.groupBy(action.integrationKeys, (integrationKey) => integrationKey.service),
+                listsByService: groupBy(action.integrationKeys, (integrationKey) => integrationKey.service),
                 fetching: false,
                 error: null,
             }

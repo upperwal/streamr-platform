@@ -6,7 +6,8 @@ import { Table, Button, Input, Alert } from 'reactstrap'
 import FontAwesome from 'react-fontawesome'
 import serialize from 'form-serialize'
 import { error } from 'react-notification-system-redux'
-import _ from 'lodash'
+import differenceWith from 'lodash/differenceWith'
+import isEqual from 'lodash/isEqual'
 import { saveFields } from '../../../../modules/stream/actions'
 
 import type { Stream, StreamField } from '../../../../flowtype/stream-types'
@@ -66,7 +67,7 @@ export class FieldView extends Component<Props, State> {
     onBeforeUnload = (e: Event & { returnValue: ?string }): ?string => {
         const o = (this.props.stream && this.props.stream.config && this.props.stream.config.fields) || []
         const n = this.state.fields || []
-        const changed = o.length !== n.length || _.differenceWith(o, n, _.isEqual).length > 0
+        const changed = o.length !== n.length || differenceWith(o, n, isEqual).length > 0
         if (changed) {
             const message = 'You have unsaved changes in the field editor. Are you sure you want to leave?'
             e.returnValue = message
