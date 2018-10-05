@@ -11,8 +11,7 @@ import Products from '../../containers/Products'
 import LoginPage from '../../containers/LoginPage'
 import AccountPage from '../../containers/AccountPage'
 import ComponentLibrary from '../../components/ComponentLibrary'
-// TODO: RE-ENABLE THIS WHEN USERPAGES ARE READY
-// import UserPages from '../../../userpages'
+import UserPages from '../../../userpages'
 
 import ModalRoot from '../../containers/ModalRoot'
 import Notifications from '../../containers/Notifications'
@@ -65,8 +64,7 @@ const App = () => (
                     <Redirect exact from={links.account} to={formatPath(links.account, 'purchases')} />
                     <Route exact path={links.createProduct} component={CreateProductAuth} />
                     {!isProduction() && <Route exact path={formatPath(links.componentLibrary)} component={ComponentLibrary} />}
-                    {/* TODO: RE-ENABLE THIS WHEN USERPAGES ARE READY */}
-                    {/* {!isProduction() && <UserPages />} */}
+                    {!isProduction() && <UserPages />}
                     <Route exact path="/error" component={ErrorPageView} />
                     <Route component={NotFoundPage} />
                 </Page>

@@ -30,14 +30,13 @@ import globalReducer from './marketplace/modules/global/reducer'
 import relatedProductsReducer from './marketplace/modules/relatedProducts/reducer'
 import transactionsReducer from './marketplace/modules/transactions/reducer'
 
-// TODO: RE-ENABLE THESE WHEN USERPAGES ARE READY
-// import dashboardReducer from './userpages/modules/dashboard/reducer'
-// import canvasReducer from './userpages/modules/canvas/reducer'
-// import permissionReducer from './userpages/modules/permission/reducer'
-// import integrationKeyReducer from './userpages/modules/integrationKey/reducer'
-// import streamReducer from './userpages/modules/stream/reducer'
-// import keyReducer from './userpages/modules/key/reducer'
-// import userpagesUserReducer from './userpages/modules/user/reducer'
+import dashboardReducer from './userpages/modules/dashboard/reducer'
+import canvasReducer from './userpages/modules/canvas/reducer'
+import permissionReducer from './userpages/modules/permission/reducer'
+import integrationKeyReducer from './userpages/modules/integrationKey/reducer'
+import streamReducer from './userpages/modules/stream/reducer'
+import keyReducer from './userpages/modules/key/reducer'
+import userpagesUserReducer from './userpages/modules/user/reducer'
 
 import history from './history'
 import translations from './marketplace/i18n'
@@ -80,15 +79,14 @@ const store = createStore(
         i18n: i18nReducer,
         relatedProducts: relatedProductsReducer,
         transactions: transactionsReducer,
-        // TODO: RE-ENABLE THESE WHEN USERPAGES ARE READY
         // userpages
-        // dashboard: dashboardReducer,
-        // user2: userpagesUserReducer, // temporary
-        // integrationKey: integrationKeyReducer,
-        // canvas: canvasReducer,
-        // permission: permissionReducer,
-        // key: keyReducer,
-        // stream: streamReducer,
+        dashboard: dashboardReducer,
+        user2: userpagesUserReducer, // temporary
+        integrationKey: integrationKeyReducer,
+        canvas: canvasReducer,
+        permission: permissionReducer,
+        key: keyReducer,
+        stream: streamReducer,
     }),
     compose(...toBeComposed),
 )
