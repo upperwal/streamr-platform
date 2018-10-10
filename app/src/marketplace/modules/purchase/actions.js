@@ -2,7 +2,7 @@
 
 import type BN from 'bignumber.js'
 import { createAction } from 'redux-actions'
-import moment from 'moment'
+import { addYears, getUnixTime } from 'date-fns'
 import { getLocation } from 'react-router-redux'
 import { I18n } from 'react-redux-i18n'
 
@@ -111,8 +111,7 @@ export const addFreeProduct = (id: ProductId) => (dispatch: Function) => {
     dispatch(addFreeProductRequest(id))
 
     // subscribe for one year (TODO: move to constant)
-    const endsAt = moment().add(1, 'year').unix() // Unix timestamp (seconds)
-
+    const endsAt = getUnixTime(addYears(new Date(), 1)) // Unix timestamp (seconds)
     return services
         .addFreeProduct(id, endsAt)
         .then(

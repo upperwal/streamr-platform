@@ -5,7 +5,7 @@ import {
     error as errorNotification,
     success as successNotification,
 } from 'react-notification-system-redux'
-import moment from 'moment-timezone'
+import { DateTime } from 'luxon'
 
 import type { ErrorInUi } from '../../flowtype/common-types'
 import type { Stream, CSVImporterSchema } from '../../flowtype/stream-types'
@@ -414,7 +414,7 @@ export const getRange = (id: StreamId) => (
 
 export const deleteDataUpTo = (id: StreamId, date: Date) => (dispatch: Function) => {
     dispatch(deleteDataUpToRequest())
-    return axios.get(`${process.env.STREAMR_URL}/stream/deleteDataUpTo?id=${id}&date=${moment(date).format('YYYY-MM-DD')}`)
+    return axios.get(`${process.env.STREAMR_URL}/stream/deleteDataUpTo?id=${id}&date=${DateTime(date).toFormat('yyyy-LL-dd')}`)
         .then(() => {
             dispatch(deleteDataUpToSuccess())
             dispatch(successNotification({

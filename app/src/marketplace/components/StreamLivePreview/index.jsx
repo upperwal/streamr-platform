@@ -4,7 +4,6 @@ import React, { Component, Fragment } from 'react'
 import classnames from 'classnames'
 import StreamrClient from 'streamr-client'
 import { Table } from 'reactstrap'
-import moment from 'moment-timezone'
 import stringifyObject from 'stringify-object'
 import throttle from 'lodash/throttle'
 import { Translate } from 'react-redux-i18n'
@@ -14,7 +13,7 @@ import { sm } from '$app/scripts/breakpoints'
 
 import { formatDateTime } from '../../utils/time'
 import type { StreamId } from '../../flowtype/stream-types'
-import type { ApiKey, User } from '../../flowtype/user-types'
+import type { ApiKey } from '../../flowtype/user-types'
 
 import styles from './streamLivePreview.pcss'
 
@@ -29,7 +28,6 @@ export type DataPoint = {
 
 type Props = {
     streamId: ?StreamId,
-    currentUser: ?User,
     apiKey: ?ApiKey,
     selectedDataPoint: ?DataPoint,
     onSelectDataPoint: (DataPoint, ?boolean) => void,
@@ -162,7 +160,6 @@ export class StreamLivePreview extends Component<Props, State> {
     }
 
     render() {
-        const tz = (this.props.currentUser && this.props.currentUser.timezone) || moment.tz.guess()
         const { visibleData, mobileTableColumnIndex } = this.state
         return (
             <MediaQuery maxWidth={sm.max}>
@@ -202,7 +199,7 @@ export class StreamLivePreview extends Component<Props, State> {
                                                             onClick={() => this.props.onSelectDataPoint(d)}
                                                         >
                                                             <td className={styles.timestampColumn}>
-                                                                {formatDateTime(d.metadata && d.metadata.timestamp, tz)}
+                                                                {formatDateTime(d.metadata.timestamp)}
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -279,7 +276,7 @@ export class StreamLivePreview extends Component<Props, State> {
                                         {data.map((d) => (
                                             <tr key={d.metadata.offset} onClick={() => this.props.onSelectDataPoint(d)}>
                                                 <td className={styles.timestampColumn}>
-                                                    {formatDateTime(d.metadata && d.metadata.timestamp, tz)}
+                                                    {formatDateTime(d.metadata.timestamp)}
                                                 </td>
                                                 <td className={styles.messageColumn}>
                                                     <div

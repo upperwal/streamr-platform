@@ -2,7 +2,6 @@
 
 import { createSelector } from 'reselect'
 import { denormalize } from 'normalizr'
-import moment from 'moment'
 
 import type { ProductState, StoreState, EntitiesState } from '../../flowtype/store-state'
 import type { ProductId, Product, Subscription } from '../../flowtype/product-types'
@@ -73,7 +72,7 @@ export const selectContractSubscription: (StoreState) => ?ErrorInUi = createSele
 
 export const selectContractSubscriptionIsValid: (StoreState) => boolean = createSelector(
     selectContractSubscription,
-    (subState: ?Subscription): boolean => (subState != null ? isActive(moment(subState.endTimestamp, 'X')) : false),
+    (subState: ?Subscription): boolean => (subState != null ? isActive(subState.endTimestamp) : false),
 )
 
 export const selectContractSubscriptionError: (StoreState) => ?ErrorInUi = createSelector(

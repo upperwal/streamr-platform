@@ -3,9 +3,9 @@
 import React, { Component, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Table, Modal, ModalHeader, ModalBody, Button } from 'reactstrap'
-import moment from 'moment-timezone'
 import stringifyObject from 'stringify-object'
 import { throttle } from 'lodash'
+import { formatDateTime } from '$mp/utils/time'
 
 import type { Stream } from '../../../flowtype/stream-types'
 import type { User } from '../../../flowtype/user-types'
@@ -44,7 +44,7 @@ export class PreviewView extends Component<Props, State> {
         inlineCharacterLimit: compact ? Infinity : 5,
     })
 
-    static prettyPrintDate = (timestamp: ?number, timezone: ?string) => timestamp && moment.tz(timestamp, timezone).format('YYYY-MM-DD HH:mm:ss')
+    static prettyPrintDate = (timestamp: ?number) => formatDateTime(timestamp)
 
     state = {
         visibleData: [],
@@ -112,7 +112,6 @@ export class PreviewView extends Component<Props, State> {
     }
 
     render() {
-        const tz = (this.props.currentUser && this.props.currentUser.timezone) || moment.tz.guess()
         return (
             <Fragment>
                 <h1>Recent Events</h1>
@@ -147,7 +146,7 @@ export class PreviewView extends Component<Props, State> {
                         {this.state.visibleData.map((d) => (
                             <tr key={JSON.stringify(d.metadata)} onClick={() => this.openInfoScreen(d)}>
                                 <td className={styles.timestampColumn}>
-                                    {PreviewView.prettyPrintDate(d.metadata && d.metadata.timestamp, tz)}
+                                    {PreviewView.prettyPrintDate(d.metadata && d.metadata.timestamp)}
                                 </td>
                                 <td className={styles.messageColumn}>
                                     <div className={styles.messagePreview}>
@@ -179,7 +178,6 @@ export class PreviewView extends Component<Props, State> {
                                             this.state.infoScreenMessage
                                             && this.state.infoScreenMessage.metadata
                                             && this.state.infoScreenMessage.metadata.timestamp,
-                                            tz,
                                         )}
                                     </td>
                                 </tr>

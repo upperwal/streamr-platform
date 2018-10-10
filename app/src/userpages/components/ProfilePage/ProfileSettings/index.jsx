@@ -2,8 +2,6 @@
 
 import React, { Fragment, Component } from 'react'
 import { connect } from 'react-redux'
-import moment from 'moment-timezone'
-import Select from 'react-select'
 import { Form, Input, FormGroup, Label, InputGroup, Button } from 'reactstrap'
 
 import { getCurrentUser, updateCurrentUserName, updateCurrentUserTimezone, saveCurrentUser } from '../../../modules/user/actions'
@@ -25,11 +23,6 @@ type DispatchProps = {
 }
 
 type Props = StateProps & DispatchProps
-
-const options = moment.tz.names().map((tz) => ({
-    value: tz,
-    label: tz,
-}))
 
 export class ProfileSettings extends Component<Props> {
     componentDidMount() {
@@ -80,20 +73,6 @@ export class ProfileSettings extends Component<Props> {
                             value={this.props.user ? this.props.user.name : ''}
                             onChange={this.onNameChange}
                             required
-                        />
-                    </FormGroup>
-                    <FormGroup>
-                        <Label>
-                            Timezone
-                        </Label>
-                        <Select
-                            placeholder="Select timezone"
-                            options={options}
-                            value={options.find(({ value }) => this.props.user && this.props.user.timezone === value)}
-                            name="timezone"
-                            onChange={this.onTimezoneChange}
-                            required
-                            clearable={false}
                         />
                     </FormGroup>
                     <FormGroup>

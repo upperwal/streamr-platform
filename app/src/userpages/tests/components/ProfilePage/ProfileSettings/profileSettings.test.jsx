@@ -2,7 +2,6 @@ import React from 'react'
 import { shallow } from 'enzyme'
 import assert from 'assert-diff'
 import sinon from 'sinon'
-import moment from 'moment-timezone'
 
 import * as userActions from '../../../../modules/user/actions'
 
@@ -13,8 +12,6 @@ describe('ProfileSettings', () => {
 
     beforeEach(() => {
         sandbox = sinon.createSandbox()
-        sandbox.stub(moment.tz, 'names')
-            .callsFake(() => ['a', 'b', 'c'])
     })
 
     afterEach(() => {
@@ -28,7 +25,6 @@ describe('ProfileSettings', () => {
                 user={{}}
                 getCurrentUser={spy}
                 updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={() => {}}
             />)
             assert(spy.calledOnce)
@@ -42,7 +38,6 @@ describe('ProfileSettings', () => {
                 user={{}}
                 getCurrentUser={() => {}}
                 updateCurrentUserName={spy}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={() => {}}
             />)
             el.instance().onNameChange({
@@ -55,23 +50,6 @@ describe('ProfileSettings', () => {
         })
     })
 
-    describe('onTimezoneChange', () => {
-        it('must call props.updateCurrentUserTimezone', () => {
-            const spy = sinon.spy()
-            const el = shallow(<ProfileSettings
-                user={{}}
-                getCurrentUser={() => {}}
-                updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={spy}
-                saveCurrentUser={() => {}}
-            />)
-            el.instance().onTimezoneChange({
-                value: 'testtest',
-            })
-            assert(spy.calledOnce)
-            assert(spy.calledWith('testtest'))
-        })
-    })
 
     describe('onSubmit', () => {
         it('must call e.preventDefault', () => {
@@ -80,7 +58,6 @@ describe('ProfileSettings', () => {
                 user={{}}
                 getCurrentUser={() => {}}
                 updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={() => {}}
             />)
             el.instance().onSubmit({
@@ -98,7 +75,6 @@ describe('ProfileSettings', () => {
                 user={user}
                 getCurrentUser={() => {}}
                 updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={spy}
             />)
             el.instance().onSubmit({
@@ -116,7 +92,6 @@ describe('ProfileSettings', () => {
                 user={{}}
                 getCurrentUser={() => {}}
                 updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={() => {}}
             />)
             const header = el.find('h1')
@@ -127,7 +102,6 @@ describe('ProfileSettings', () => {
                 user={{}}
                 getCurrentUser={() => {}}
                 updateCurrentUserName={() => {}}
-                updateCurrentUserTimezone={() => {}}
                 saveCurrentUser={() => {}}
             />)
             const form = el.find('Form')
@@ -142,11 +116,9 @@ describe('ProfileSettings', () => {
                     user={{
                         name: 'testName',
                         username: 'testUsername',
-                        timezone: 'testTimezone',
                     }}
                     getCurrentUser={() => {}}
                     updateCurrentUserName={() => {}}
-                    updateCurrentUserTimezone={() => {}}
                     saveCurrentUser={() => {}}
                 />)
                 form = el.find('Form')
@@ -182,17 +154,6 @@ describe('ProfileSettings', () => {
                 assert.equal(fc.props().onChange, el.instance().onNameChange)
                 assert(fc.props().required)
             })
-
-            it('must have a submit button', () => {
-                const formGroup = form.childAt(4)
-
-                const inputGroup = formGroup.find('InputGroup')
-                const button = inputGroup.find('Button')
-
-                assert.equal(button.childAt(0).text(), 'Save')
-                assert.equal(button.props().type, 'submit')
-                assert.equal(button.props().name, 'submit')
-            })
         })
     })
 
@@ -216,7 +177,6 @@ describe('ProfileSettings', () => {
             assert.equal(typeof mapDispatchToProps(), 'object')
             assert.equal(typeof mapDispatchToProps().getCurrentUser, 'function')
             assert.equal(typeof mapDispatchToProps().updateCurrentUserName, 'function')
-            assert.equal(typeof mapDispatchToProps().updateCurrentUserTimezone, 'function')
             assert.equal(typeof mapDispatchToProps().saveCurrentUser, 'function')
         })
 

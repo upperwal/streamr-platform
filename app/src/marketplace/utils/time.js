@@ -1,20 +1,21 @@
 // @flow
 
-import moment, { type Moment } from 'moment'
+import { isBefore } from 'date-fns'
+import { DateTime, Duration } from 'luxon'
 import BN from 'bignumber.js'
 
 import type { NumberString, TimeUnit } from '../flowtype/common-types'
 
 import { timeUnits } from './constants'
 
-const momentDurationFormatsByTimeUnit = {
-    second: 's',
-    minute: 'm',
-    hour: 'H',
-    day: 'd',
-    week: 'w',
-    month: 'M',
-}
+const luxonTimeUnits = [
+    'second',
+    'minute',
+    'hour',
+    'day',
+    'week',
+    'month',
+]
 
 /**
  * Convert duration to seconds.
@@ -22,14 +23,19 @@ const momentDurationFormatsByTimeUnit = {
  * @param timeUnit Unit, e.g. day, hour, minute, etc.
  */
 export const toSeconds = (quantity: NumberString | BN, timeUnit: TimeUnit): BN => {
-    const format = momentDurationFormatsByTimeUnit[timeUnit]
-    if (!format) {
+    if (!luxonTimeUnits.includes(timeUnit)) {
         throw new Error(`Invalid price unit: ${timeUnit}`)
     }
-    return BN(moment.duration(BN(quantity).toNumber(), format).asSeconds())
+    return BN(Duration.fromObject({
+        [timeUnit]: BN(quantity).toNumber(),
+    }).toFormat('s'))
 }
 
-export const formatDateTime = (timestamp: ?number, timezone: ?string) => timestamp && moment.tz(timestamp, timezone).format('YYYY-MM-DD HH:mm:ss')
+/**
+ * Returns formatted date from a timestamp.
+ * @param timestamp unit expected is seconds.
+ */
+export const formatDateTime = (timestamp: ?number) => DateTime.fromMillis((timestamp || 0) * 1000).toFormat('yyyy-LL-dd HH:mm:ss')
 
 /**
  * Returns short form for given time unit.
@@ -57,5 +63,6 @@ export const getAbbreviation = (timeUnit: TimeUnit) => {
 /**
  * Returns true if the given time is in the future.
  * @param time Time to check
+ * If a unix timestamp is passed, use milliseconds, not seconds.
  */
-export const isActive = (time: string | number | Date | Moment): boolean => moment().isBefore(time)
+export const isActive = (time: string | number | Date): boolean => isBefore(new Date(), time)

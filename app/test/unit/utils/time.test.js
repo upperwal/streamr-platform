@@ -1,5 +1,4 @@
 import assert from 'assert-diff'
-import moment from 'moment-timezone'
 
 import * as all from '$mp/utils/time'
 
@@ -22,9 +21,9 @@ describe('time utils', () => {
 
     describe('formatDateTime', () => {
         it('formats datetime', () => {
-            assert.equal(all.formatDateTime(1, 'UTC'), '1970-01-01 00:00:00')
-            assert.equal(all.formatDateTime(1, 'Europe/Helsinki'), '1970-01-01 02:00:00')
-            assert.equal(all.formatDateTime(), undefined)
+            assert.equal(all.formatDateTime(1539178400), '2018-10-10 15:33:20')
+            assert.equal(all.formatDateTime('1539178400'), '2018-10-10 15:33:20')
+            assert.equal(all.formatDateTime(), '1970-01-01 01:00:00')
         })
     })
 
@@ -43,11 +42,12 @@ describe('time utils', () => {
     describe('isActive', () => {
         it('returns correct status', () => {
             assert.equal(all.isActive(Date.now()), false)
-            assert.equal(all.isActive(moment()), false)
+            assert.equal(all.isActive(Date.now()), false)
             assert.equal(all.isActive(0), false)
             assert.equal(all.isActive(1), false)
             assert.equal(all.isActive('1970-01-01 00:00:00'), false)
             assert.equal(all.isActive('2050-01-01 00:00:00'), true) // in the year 2050 someone will curse me
+            assert.equal(all.isActive(1570537501000), true) // 1yr ahead timestamp (seconds)
         })
     })
 })

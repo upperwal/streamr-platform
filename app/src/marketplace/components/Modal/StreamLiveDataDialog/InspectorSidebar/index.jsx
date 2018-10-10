@@ -1,7 +1,6 @@
 // @flow
 
 import React, { Fragment } from 'react'
-import moment from 'moment-timezone'
 import { Table } from 'reactstrap'
 import stringifyObject from 'stringify-object'
 import { upper } from 'case'
@@ -10,13 +9,11 @@ import { Translate } from 'react-redux-i18n'
 import CopyStreamIdButton from '../CopyStreamIdButton'
 import type { DataPoint } from '../../../StreamLivePreview'
 import { formatDateTime } from '../../../../utils/time'
-import type { User } from '../../../../flowtype/user-types'
 
 import styles from './inspectorSidebar.pcss'
 
 type Props = {
     dataPoint: ?DataPoint,
-    currentUser: ?User,
 }
 
 const formatValue = (data: any): string => {
@@ -28,9 +25,8 @@ const formatValue = (data: any): string => {
     return data.toString()
 }
 
-const InspectorSidebar = ({ dataPoint, currentUser }: Props) => {
+const InspectorSidebar = ({ dataPoint }: Props) => {
     const streamId = dataPoint && dataPoint.metadata.streamId
-    const tz = (currentUser && currentUser.timezone) || moment.tz.guess()
     return (
         <div className={styles.inspectorSidebar}>
             <div className={styles.titleRow}>
@@ -47,7 +43,7 @@ const InspectorSidebar = ({ dataPoint, currentUser }: Props) => {
                             </tr>
                             <tr>
                                 <th><Translate value="modal.streamLiveData.inspectorSidebar.timestamp" /></th>
-                                <td>{dataPoint && formatDateTime(dataPoint.metadata.timestamp, tz)}</td>
+                                <td>{dataPoint && formatDateTime(dataPoint.metadata.timestamp)}</td>
                             </tr>
                             {/* In theory the data doesn't have to be object. Then we just skip it */}
                             {dataPoint && dataPoint.data && typeof dataPoint.data === 'object' && Object.entries(dataPoint.data).map(([k, v]) => {

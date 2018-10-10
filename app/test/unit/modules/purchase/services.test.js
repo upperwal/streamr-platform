@@ -1,11 +1,11 @@
 import assert from 'assert-diff'
 import sinon from 'sinon'
 import moxios from 'moxios'
-import moment from 'moment'
 
 import * as all from '$mp/modules/purchase/services'
 import * as utils from '$mp/utils/smartContract'
 import * as productUtils from '$mp/utils/product'
+import { DateTime } from 'luxon'
 
 describe('purchase - services', () => {
     let sandbox
@@ -27,7 +27,9 @@ describe('purchase - services', () => {
     describe('addFreeProduct', () => {
         it('makes a POST request to subscribe to a free product', async () => {
             const productId = '1'
-            const endsAt = moment().add(1, 'year').unix()
+            const endsAt = parseInt(((DateTime.local().plus({
+                years: 1,
+            }).ts / 1000)), 10)
 
             const getIdSpy = sandbox.spy(productUtils, 'getValidId')
             moxios.wait(() => {
