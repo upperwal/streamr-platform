@@ -8,6 +8,9 @@ import definitions from './definitions'
 
 type Routes = {
     [string]: (?Object) => string,
+    withBasename: {
+        [string]: (?Object) => string,
+    }
 }
 
 type Paths = {
@@ -15,34 +18,48 @@ type Paths = {
 }
 
 /**
+ * Prepend basename.
+ */
+const prependBasename = (pathstr: string, includeBasename: boolean): string => (
+    /^\//.test(pathstr) && includeBasename ? `${process.env.PLATFORM_BASE_PATH.replace(/\/$/, '')}${pathstr}` : pathstr
+)
+
+/**
  * Generates a route function.
  * @param pathstr Path format.
+ * @param includeBasename If set, basename will be prepended to the pathname.
  * @returns Route function.
  */
-export const define = (pathstr: string) => (params: ?Object): string => {
+export const define = (pathstr: string, includeBasename: boolean = false) => (params: ?Object): string => {
+    const route = prependBasename(pathstr, includeBasename)
+
     if (params) {
-        const tokenNames = p2r.parse(pathstr).map((t) => t.name).filter(Boolean)
+        const tokenNames = p2r.parse(route).map((t) => t.name).filter(Boolean)
         const queryKeys = Object.keys(params).filter((key) => !tokenNames.includes(key))
 
-        return `${p2r.compile(pathstr)(params)}?${qs.stringify(pick(params, queryKeys))}`.replace(/\?$/, '')
+        return `${p2r.compile(route)(params)}?${qs.stringify(pick(params, queryKeys))}`.replace(/\?$/, '')
     }
 
-    return pathstr
+    return route
 }
 
 /**
  * Generates final route object.
  */
-export const buildRoutes = (paths: Paths): Routes => (
-    Object.entries(paths).reduce((acc, [name, route]) => {
+export const buildRoutes = (paths: Paths): Routes => {
+    const result = {
+        withBasename: {},
+    }
+
+    Object.entries(paths).forEach(([name, route]) => {
         const value: any = route
 
-        return {
-            ...acc,
-            [name]: define(value),
-        }
-    }, {})
-)
+        result[name] = define(value)
+        result.withBasename[name] = define(value, true)
+    })
+
+    return result
+}
 
 export default buildRoutes(definitions({
     landingPage: 'https://www.streamr.com',

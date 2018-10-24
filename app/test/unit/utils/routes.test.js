@@ -1,6 +1,16 @@
 import { define, buildRoutes } from '$routes'
 
 describe('route utils', () => {
+    const basename = process.env.PLATFORM_BASE_PATH
+
+    beforeAll(() => {
+        process.env.PLATFORM_BASE_PATH = '/basename'
+    })
+
+    afterAll(() => {
+        process.env.PLATFORM_BASE_PATH = basename
+    })
+
     describe('buildRoutes', () => {
         const routes = buildRoutes({
             resource: '/resource/:id',
@@ -20,13 +30,30 @@ describe('route utils', () => {
                 id: 13,
             })).toEqual('https://domain.com/route/13')
         })
+
+        describe('withBasename', () => {
+            it('generates a local route', () => {
+                expect(routes.withBasename.resource()).toEqual('/basename/resource/:id')
+                expect(routes.withBasename.resource({
+                    id: 13,
+                })).toEqual('/basename/resource/13')
+            })
+
+            it('generates an external route', () => {
+                expect(routes.withBasename.external()).toEqual('https://domain.com/route/:id')
+                expect(routes.withBasename.external({
+                    id: 13,
+                })).toEqual('https://domain.com/route/13')
+            })
+        })
     })
 
-    describe('defile', () => {
-        const r = (pathstr, vars, params) => define(pathstr)(params)
+    describe('define', () => {
+        const r = (pathstr, useHistory, params) => define(pathstr, useHistory)(params)
 
         it('renders urls correctly', () => {
             expect(r('https://www.streamr.com/')).toEqual('https://www.streamr.com/')
+            expect(r('https://www.streamr.com/', true)).toEqual('https://www.streamr.com/')
         })
 
         it('prints the raw path when params are falsy', () => {
@@ -83,6 +110,16 @@ describe('route utils', () => {
                 param1: 'value1',
                 param2: 'value2',
             })).toEqual('/resource/1?param1=value1&param2=value2')
+        })
+
+        it('prepends basename when useHistory is set', () => {
+            expect(r('/resource', true)).toEqual('/basename/resource')
+            expect(r('/resource', true, {})).toEqual('/basename/resource')
+        })
+
+        it('does not prepend basename to non-pathnames', () => {
+            expect(r('resource', true)).toEqual('resource')
+            expect(r('resource', true, {})).toEqual('resource')
         })
     })
 })
