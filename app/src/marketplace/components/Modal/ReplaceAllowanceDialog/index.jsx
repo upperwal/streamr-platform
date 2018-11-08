@@ -33,6 +33,7 @@ const ReplaceAllowanceDialog = ({
     if (settingAllowance) {
         return (
             <Dialog
+                key="started"
                 onClose={onCancel}
                 title={translate('modal.setAllowance.started.title')}
                 actions={{
@@ -58,6 +59,7 @@ const ReplaceAllowanceDialog = ({
 
     return (
         <Dialog
+            key="idle"
             onClose={onCancel}
             title={translate('modal.setAllowance.title')}
             waiting={gettingAllowance}

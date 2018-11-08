@@ -31,6 +31,7 @@ export const PurchaseSummaryDialog = ({
     if (purchaseStarted) {
         return (
             <Dialog
+                key="started"
                 onClose={onCancel}
                 title={translate('modal.purchaseSummary.started.title')}
                 actions={{
@@ -58,6 +59,7 @@ export const PurchaseSummaryDialog = ({
 
     return (
         <Dialog
+            key="idle"
             onClose={onCancel}
             title={translate('modal.purchaseSummary.title')}
             actions={{

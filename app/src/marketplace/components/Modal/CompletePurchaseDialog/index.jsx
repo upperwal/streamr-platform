@@ -28,6 +28,7 @@ const CompletePurchaseDialog = ({ onCancel, purchaseState, accountLinked, transl
         case transactionStates.PENDING:
             return (
                 <Dialog
+                    key="pending"
                     onClose={onCancel}
                     title={translate('modal.completePurchase.pending.title')}
                 >
@@ -45,6 +46,7 @@ const CompletePurchaseDialog = ({ onCancel, purchaseState, accountLinked, transl
         case transactionStates.CONFIRMED:
             return (
                 <Dialog
+                    key="confirmed"
                     onClose={onCancel}
                     title={translate('modal.completePurchase.confirmed.title')}
                 >
@@ -63,6 +65,7 @@ const CompletePurchaseDialog = ({ onCancel, purchaseState, accountLinked, transl
         case transactionStates.FAILED:
             return (
                 <Dialog
+                    key="failed"
                     onClose={onCancel}
                     title={translate('modal.completePurchase.failed.title')}
                 >

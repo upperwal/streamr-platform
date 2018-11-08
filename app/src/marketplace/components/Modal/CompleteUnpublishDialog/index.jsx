@@ -25,6 +25,7 @@ const CompleteUnpublishDialog = ({ onCancel, publishState, translate }: Props) =
         case transactionStates.STARTED:
             return (
                 <Dialog
+                    key="started"
                     onClose={onCancel}
                     title={translate('modal.readyToUnpublish.title')}
                 >
@@ -37,6 +38,7 @@ const CompleteUnpublishDialog = ({ onCancel, publishState, translate }: Props) =
         case transactionStates.CONFIRMED:
             return (
                 <Dialog
+                    key="confirmed"
                     onClose={onCancel}
                     title={translate('modal.completeUnpublish.confirmed.title')}
                     autoClose
@@ -50,6 +52,7 @@ const CompleteUnpublishDialog = ({ onCancel, publishState, translate }: Props) =
         case transactionStates.FAILED:
             return (
                 <Dialog
+                    key="failed"
                     onClose={onCancel}
                     title={translate('modal.completeUnpublish.failed.title')}
                 >

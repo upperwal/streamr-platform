@@ -24,6 +24,7 @@ const SaveProductDialog = ({ transactionState, onClose, translate }: Props) => {
         case transactionStates.STARTED:
             return (
                 <Dialog
+                    key="started"
                     onClose={onClose}
                     title={translate('modal.saveProduct.started.title')}
                 >
@@ -36,6 +37,7 @@ const SaveProductDialog = ({ transactionState, onClose, translate }: Props) => {
         case transactionStates.CONFIRMED:
             return (
                 <Dialog
+                    key="confirmed"
                     onClose={onClose}
                     title={translate('modal.saveProduct.confirmed.title')}
                 >
@@ -48,6 +50,7 @@ const SaveProductDialog = ({ transactionState, onClose, translate }: Props) => {
         case transactionStates.FAILED:
             return (
                 <Dialog
+                    key="failed"
                     onClose={onClose}
                     title={translate('modal.saveProduct.failed.title')}
                 >

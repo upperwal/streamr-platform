@@ -37,24 +37,24 @@ class Dialog extends Component<Props, State> {
         helpText: null,
         waiting: false,
         autoClose: false,
+        autoCloseAfter: dialogAutoCloseTimeout,
     }
 
     state = {
         isHelpOpen: false,
     }
 
-    componentDidUpdate(prevProps: Props) {
-        const { autoCloseAfter, autoClose, onClose } = this.props
-        const timeout = autoCloseAfter || (autoClose && dialogAutoCloseTimeout) || null
-
-        if (prevProps.autoCloseAfter !== timeout && timeout != null) {
-            this.clearCloseTimeout()
-            this.autoCloseTimeoutId = setTimeout(onClose, timeout)
+    componentDidMount() {
+        const { autoClose, autoCloseAfter, onClose } = this.props
+        if (autoClose) {
+            this.autoCloseTimeoutId = setTimeout(onClose, autoCloseAfter)
         }
     }
 
     componentWillUnmount() {
-        this.clearCloseTimeout()
+        if (this.autoCloseTimeoutId) {
+            clearTimeout(this.autoCloseTimeoutId)
+        }
     }
 
     onHelpToggle = () => {
@@ -63,14 +63,7 @@ class Dialog extends Component<Props, State> {
         })
     }
 
-    clearCloseTimeout = () => {
-        if (this.autoCloseTimeoutId) {
-            clearTimeout(this.autoCloseTimeoutId)
-            this.autoCloseTimeoutId = null
-        }
-    }
-
-    autoCloseTimeoutId = null
+    autoCloseTimeoutId: ?TimeoutID
 
     render() {
         const {

@@ -25,6 +25,7 @@ const CompleteContractProductPublishDialog = ({ onCancel, publishState, translat
         case transactionStates.STARTED:
             return (
                 <Dialog
+                    key="started"
                     onClose={onCancel}
                     title={translate('modal.completePublish.started.title')}
                     actions={{
@@ -50,6 +51,7 @@ const CompleteContractProductPublishDialog = ({ onCancel, publishState, translat
         case transactionStates.PENDING:
             return (
                 <Dialog
+                    key="pending"
                     onClose={onCancel}
                     title={translate('modal.completePublish.pending.title')}
                 >
@@ -63,6 +65,7 @@ const CompleteContractProductPublishDialog = ({ onCancel, publishState, translat
         case transactionStates.CONFIRMED:
             return (
                 <Dialog
+                    key="confirmed"
                     onClose={onCancel}
                     title={translate('modal.completePublish.confirmed.title')}
                     autoClose
@@ -76,6 +79,7 @@ const CompleteContractProductPublishDialog = ({ onCancel, publishState, translat
         case transactionStates.FAILED:
             return (
                 <Dialog
+                    key="failed"
                     onClose={onCancel}
                     title={translate('modal.completePublish.failed.title')}
                 >
