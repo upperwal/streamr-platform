@@ -1,0 +1,60 @@
+.search {
+  border: none;
+}
+
+.search.open {
+  border-bottom: 2px solid #FF5C00;
+}
+
+.searchInput {
+  width: 0;
+  height: 43px;
+  color: #A3A3A3;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  letter-spacing: 0;
+  transition: all 0.3s ease;
+  border: none;
+  outline: none;
+
+  /* background-image: url('../../assets/images/search.svg');
+  background-position: 0 16px;
+  background-repeat: no-repeat;
+  padding-left: 20px;
+  cursor: pointer; */
+}
+
+.searchInput::placeholder {
+  color: transparent;
+}
+
+.searchInput.open {
+  width: 200px;
+  cursor: initial;
+
+  /* border-bottom: 2px solid rgb(204, 204, 204); */
+}
+
+.searchInput.open::placeholder {
+  color: #A3A3A3;
+}
+
+.searchIcon {
+  stroke: #A3A3A3;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.searchIcon.open {
+  stroke: #FF5C00;
+}
+
+.clearIcon {
+  display: none;
+  transition: all 0.1s ease;
+}
+
+.clearIcon.open {
+  display: inline-block;
+  cursor: pointer;
+}
