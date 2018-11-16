@@ -134,8 +134,7 @@ class CanvasList extends Component<Props> {
 
     onSortChange = (sortOption) => {
         const { filter, updateFilter, getCanvases } = this.props
-        const results = sortOptions.filter((s) => s.id === sortOption)
-        const apiField = (results && results.length > 0 && results[0].apiName) || null
+        const apiField = this.mapSortByFromIdToApi(sortOption)
 
         const newFilter = {
             ...filter,
@@ -145,7 +144,12 @@ class CanvasList extends Component<Props> {
         getCanvases()
     }
 
-    mapSortBy = (apiSortBy: ?string) => {
+    mapSortByFromIdToApi = (id: ?string) => {
+        const filtered = sortOptions.filter((s) => s.id === id)
+        return (filtered && filtered.length > 0 && filtered[0].apiName) || null
+    }
+
+    mapSortByFromApiToDisplayName = (apiSortBy: ?string) => {
         const filtered = sortOptions.filter((s) => s.apiName === apiSortBy)
         return (filtered && filtered.length > 0 && filtered[0].displayName) || null
     }
@@ -157,7 +161,7 @@ class CanvasList extends Component<Props> {
             <Layout
                 headerAdditionalComponent={<CreateCanvasButton />}
                 headerSearchComponent={searchComponent(filter && filter.search, this.onSearchChange)}
-                headerFilterComponent={sortDropdownComponent(this.mapSortBy(filter && filter.sortBy), this.onSortChange)}
+                headerFilterComponent={sortDropdownComponent(this.mapSortByFromApiToDisplayName(filter && filter.sortBy), this.onSortChange)}
             >
                 <Container>
                     <Helmet>
