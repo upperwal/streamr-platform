@@ -7,16 +7,19 @@ import {
     GET_MY_PURCHASES_REQUEST,
     GET_MY_PURCHASES_SUCCESS,
     GET_MY_PURCHASES_FAILURE,
+    UPDATE_FILTER,
 } from './constants'
 import type {
     MyPurchasesAction,
     MyPurchasesErrorAction,
+    MyPurchasesFilterAction,
 } from './types'
 
 export const initialState: MyPurchaseListState = {
     ids: [],
     fetching: false,
     error: null,
+    filter: null,
 }
 
 const reducer: (MyPurchaseListState) => MyPurchaseListState = handleActions({
@@ -36,6 +39,11 @@ const reducer: (MyPurchaseListState) => MyPurchaseListState = handleActions({
         ...state,
         fetching: false,
         error: action.payload.error,
+    }),
+
+    [UPDATE_FILTER]: (state: MyPurchaseListState, action: MyPurchasesFilterAction) => ({
+        ...state,
+        filter: action.payload.filter,
     }),
 
 }, initialState)
