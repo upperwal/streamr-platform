@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import withErrorBoundary from '$shared/utils/withErrorBoundary'
 import ErrorComponentView from '$shared/components/ErrorComponentView'
 
+import Layout from '$mp/components/Layout'
 import UndoContainer from '$editor/shared/components/UndoContainer'
 import Subscription from '$editor/shared/components/Subscription'
 import { ClientProvider, ClientContext } from '$editor/shared/components/Client'
@@ -103,44 +104,48 @@ const CanvasLoader = withErrorBoundary(ErrorComponentView)(class CanvasLoader ex
     }
 
     init() {
-        const currentCanvas = this.context.state
-        const { canvas: parentCanvas, moduleHash, subCanvasKey } = this.props
-        const currentId = currentCanvas && currentCanvas.id
-        const canvasId = currentId || parentCanvas.id
-        const { client } = this.props
-        if (client && canvasId && currentId !== canvasId && this.state.isLoading !== canvasId) {
+        const canvas = this.context.state
+        const currentId = canvas && canvas.id
+        const canvasId = currentId || this.props.canvasId
+        if (canvasId && currentId !== canvasId && this.state.isLoading !== canvasId) {
             // load canvas if needed and not already loading
-            this.loadSubCanvas(canvasId, moduleHash, subCanvasKey)
+            this.loadSubCanvas(canvasId)
         }
     }
 
-    loadSubCanvas = async (canvasId, moduleHash, subCanvasKey) => {
+    load = async (canvasId) => {
         this.setState({ isLoading: canvasId })
+        let newCanvas = await services.loadCanvas({ id: canvasId })
+        // ignore result if unmounted or canvas changed
+        if (this.unmounted || this.state.isLoading !== canvasId) { return }
+        newCanvas = CanvasState.updateCanvas(newCanvas)
+        // replace/init top of undo stack with loaded canvas
+        this.context.replace(() => newCanvas)
+        this.setState({ isLoading: false })
+    }
+
+    loadSubCanvas = async (canvasId) => {
+        this.setState({ isLoading: canvasId })
+        const parentCanvas = await services.loadCanvas({ id: this.props.parentCanvasId })
         const data = await this.props.send({
             canvasId,
-            moduleHash,
-            subCanvasKey,
         })
+
         // ignore result if unmounted or canvas changed
         if (this.unmounted || this.state.isLoading !== canvasId) { return }
 
-        const { canvas } = this.props
         let newCanvas = {
             ...data.json,
         }
 
         // subcanvas is adhoc if the parent is adhoc
-        newCanvas.adhoc = canvas.adhoc
+        newCanvas.adhoc = parentCanvas.adhoc
         // subcanvas is running if the parent is running
-        newCanvas.state = canvas.state
+        newCanvas.state = parentCanvas.state
         // subcanvas cannot be edited, only viewed
         newCanvas.readOnly = true
         // subJson.id contains the wrong thing (the module domain object id)
-        newCanvas.id = `${canvas.id}/modules/${moduleHash}` // TODO: hack, move to client/services
-
-        if (subCanvasKey) {
-            newCanvas.id = `${newCanvas.id}/keys/${subCanvasKey}`
-        }
+        newCanvas.id = canvasId // TODO: hack, move to client/services
 
         newCanvas = CanvasState.updateCanvas(newCanvas)
         // replace/init top of undo stack with loaded canvas
@@ -169,15 +174,17 @@ const CanvasEditWrap = () => (
 )
 
 export default (props) => (
-    <ClientProvider autoDisconnect={false}>
-        <ClientContext.Consumer>
-            {({ client, send }) => (
-                <UndoContainer key={props.canvas.id}>
-                    <CanvasLoader client={client} send={send} {...props}>
-                        <CanvasEditWrap />
-                    </CanvasLoader>
-                </UndoContainer>
-            )}
-        </ClientContext.Consumer>
-    </ClientProvider>
+    <Layout className={styles.layout} footer={false}>
+        <ClientProvider>
+            <ClientContext.Consumer>
+                {({ client, send }) => (
+                    <UndoContainer key={props.canvasId}>
+                        <CanvasLoader client={client} send={send} {...props}>
+                            <CanvasEditWrap />
+                        </CanvasLoader>
+                    </UndoContainer>
+                )}
+            </ClientContext.Consumer>
+        </ClientProvider>
+    </Layout>
 )
