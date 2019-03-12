@@ -1,8 +1,18 @@
+
+@import 'variables.pcss';
+
 .loadingIndicator {
   top: 2px;
 }
 
 .content {
   background-color: #EFEFEF;
-  padding: 1.5rem 0;
+  padding: 1.5rem 0 6rem 0;
+  min-height: calc(100vh - 293px);
+}
+
+@media (--md-down) {
+  .content {
+    min-height: calc(100vh - 277px);
+  }
 }
