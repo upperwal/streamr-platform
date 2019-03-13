@@ -1,3 +1,6 @@
+
+@import 'variables.pcss';
+
 .profile {
   display: flex;
   margin: 24px 0 64px 0;
@@ -13,13 +16,14 @@
 }
 
 .tabBar {
+  position: relative;
   display: flex;
   line-height: 32px;
 }
 
 .searchBar {
   display: flex;
-  margin-right: 36px;
+  margin-right: 72px;
   height: 45px;
   max-width: 190px;
 }
@@ -27,6 +31,20 @@
 .filterBar {
   display: flex;
   margin-left: auto;
+}
+
+@media (--md-down) {
+  .filterBar {
+    position: absolute;
+    top: 75px;
+    right: 0;
+  }
+}
+
+@media (--sm-down) {
+  .filterBar {
+    display: none;
+  }
 }
 
 .filterBar > div {
