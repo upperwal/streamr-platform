@@ -1,10 +1,12 @@
 // @flow
 /* eslint-disable */
-import React, { useRef, useCallback, type Node } from 'react'
+import React, { useRef, useCallback, useContext, type Node } from 'react'
 import cx from 'classnames'
 import ModuleStyles from '$editor/shared/components/Module.pcss'
-import RenameInput from '$editor/shared/components/RenameInput'
 import ModuleUI from '$editor/shared/components/ModuleUI'
+import HamburgerButton from '$editor/shared/components/HamburgerButton'
+import ModuleHeader from '$editor/shared/components/ModuleHeader'
+import * as RunController from '../RunController'
 import { Resizer } from '../Resizer'
 import Ports from '../Ports'
 
@@ -40,7 +42,6 @@ type Props = {
     // FIXME: Types.
     onPort: any,
     resizeable?: boolean,
-    running?: boolean,
     selectedModuleHash: string,
     style?: any,
 }
@@ -54,11 +55,11 @@ const Module = ({
     moduleSidebarIsOpen,
     onPort,
     resizeable,
-    running,
     selectedModuleHash,
     style,
     ...props
 }: Props) => {
+    const runController = useContext(RunController.Context)
     const {
         layout: { width: minWidth, height: minHeight },
         hash,
@@ -124,28 +125,19 @@ const Module = ({
             ref={el}
             {...props}
         >
-            <div className={cx(ModuleStyles.moduleHeader, ModuleStyles.dragHandle)}>
-                <RenameInput
-                    className={ModuleStyles.name}
-                    inputClassName={ModuleStyles.dragCancel}
-                    value={displayName || name}
-                    onChange={onChangeModuleName}
-                    disabled={!!running}
-                    required
-                />
-                <button
-                    type="button"
-                    className={cx(styles.optionsButton, ModuleStyles.dragCancel)}
+            <div className={ModuleStyles.selectionDecorator} />
+            <ModuleHeader
+                className={cx(styles.header, ModuleStyles.dragHandle)}
+                editable={!runController.isActive}
+                label={module.displayName || module.name}
+                onLabelChange={onChangeModuleName}
+            >
+                <HamburgerButton
+                    className={ModuleStyles.dragCancel}
                     onFocus={onFocusOptionsButton}
                     onClick={onTriggerOptions}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <g fill="none" fillRule="evenodd" stroke="#cdcdcd" strokeLinecap="round" strokeWidth="1.5">
-                            <path d="M7 16h10M7 12h10M7 8h10" />
-                        </g>
-                    </svg>
-                </button>
-            </div>
+                />
+            </ModuleHeader>
             <Ports
                 className={styles.ports}
                 api={api}
@@ -161,7 +153,8 @@ const Module = ({
                 canvas={canvas}
                 moduleHash={hash}
                 canvasId={canvas.id}
-                isActive={!!running}
+                isActive={!!runController.isRunning}
+                isSubscriptionActive={!!runController.isActive}
             />
             {!!resizeable && (
                 <Resizer

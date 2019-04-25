@@ -169,7 +169,6 @@ class CanvasElements extends React.PureComponent {
                                 api={api}
                                 selectedModuleHash={selectedModuleHash}
                                 moduleSidebarIsOpen={moduleSidebarIsOpen}
-                                running={canvas.state === CanvasState.RunStates.Running}
                                 resizeable={isModuleResizable(m)}
                                 {...api.module}
                             />
