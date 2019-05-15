@@ -516,11 +516,27 @@ export const updateEditStream = (stream: ?Stream) => ({
     stream,
 })
 
-export const updateEditStreamField = (field: string, data: any) => ({
-    type: UPDATE_EDIT_STREAM_FIELD,
-    field,
-    data,
-})
+export const updateEditStreamField = (field: string, data: any) => {
+    console.log('blah')
+    return ({
+        type: UPDATE_EDIT_STREAM_FIELD,
+        field,
+        data,
+    })
+}
+
+export const deleteStreamField = (field: string, data: any) => (dispatch: Function, getState: Function) => {
+    const stream = selectOpenStream(getState())
+    dispatch(updateEditStreamField(field, data))
+    if (stream) {
+        handleEntities(streamSchema, dispatch)({
+            id: stream.id,
+            config: {
+                field: data,
+            },
+        })
+    }
+}
 
 export const initEditStream = () => (dispatch: Function, getState: Function) => {
     const stream = selectOpenStream(getState())

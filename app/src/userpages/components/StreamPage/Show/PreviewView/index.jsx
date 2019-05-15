@@ -19,6 +19,7 @@ type Props = {
     stream: ?Stream,
     currentUser: ?User,
     authApiKeyId: ?ResourceKeyId,
+    pendingAutosave?: boolean,
 }
 
 type State = {
@@ -45,7 +46,7 @@ export class PreviewView extends Component<Props, State> {
     }
 
     render() {
-        const { stream, currentUser, authApiKeyId } = this.props
+        const { stream, currentUser, authApiKeyId, pendingAutosave } = this.props
         const { isRunning, hasData } = this.state
 
         if (stream) {
@@ -75,6 +76,7 @@ export class PreviewView extends Component<Props, State> {
                                             className={styles.inspectButton}
                                             color="userpages"
                                             tag={Link}
+                                            disabled={pendingAutosave}
                                             to={routes.userPageStreamPreview({
                                                 streamId: stream.id,
                                             })}

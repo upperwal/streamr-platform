@@ -7,6 +7,9 @@ import { push } from 'react-router-redux'
 import cx from 'classnames'
 import { withRouter } from 'react-router-dom'
 import MediaQuery from 'react-responsive'
+import isEqual from 'lodash/isEqual'
+import isEmpty from 'lodash/isEmpty'
+import debounce from 'lodash/debounce'
 
 import type { Stream, StreamId } from '$shared/flowtype/stream-types'
 import type { StoreState } from '$shared/flowtype/store-state'
@@ -51,6 +54,8 @@ type StateProps = {
 
 type State = {
     saving: boolean,
+    pendingAutosave: boolean,
+    requestedAutosave: boolean,
 }
 
 type DispatchProps = {
@@ -59,7 +64,7 @@ type DispatchProps = {
     openStream: (id: StreamId) => void,
     getMyStreamPermissions: (id: StreamId) => void,
     save: (stream: ?Stream) => void,
-    cancel: () => void,
+    cancel: (pendingAutosave: boolean) => void,
     updateStream: (stream: Stream) => void,
     initEditStream: () => void,
     initNewStream: () => void,
@@ -83,6 +88,8 @@ type Props = StateProps & DispatchProps & RouterProps
 export class StreamShowView extends Component<Props, State> {
     state = {
         saving: false,
+        pendingAutosave: false,
+        requestedAutosave: false,
     }
 
     unmounted: boolean = false
@@ -94,6 +101,41 @@ export class StreamShowView extends Component<Props, State> {
     componentDidMount() {
         this.initStreamShow()
     }
+
+    componentDidUpdate(prevProps: Props) {
+        if (this.props.editedStream && prevProps.editedStream) {
+            if (this.autosaveNeeded(this.props.editedStream, prevProps.editedStream)) {
+                this.debouncedAutosave()
+            }
+        }
+    }
+
+    autosaveNeeded = (currentStreamState: Stream, previousStreamState: Stream): boolean => {
+        if ((!this.state.pendingAutosave && !isEmpty(currentStreamState) && (!isEqual(currentStreamState, previousStreamState)))
+            || this.state.requestedAutosave) {
+            this.setState({
+                pendingAutosave: true,
+                requestedAutosave: false,
+            })
+            return true
+        }
+        return false
+    }
+
+    requestAutosave = () => {
+        this.setState({
+            requestedAutosave: true,
+        })
+    }
+
+    autosave = () => {
+        const { editedStream } = this.props
+        if (editedStream) {
+            this.onSave(editedStream, false)
+        }
+    }
+
+    debouncedAutosave = debounce(this.autosave, 3000)
 
     initStreamShow() {
         if (this.props.match.params.id) {
@@ -122,18 +164,23 @@ export class StreamShowView extends Component<Props, State> {
         this.initStream(newStreamId)
     }
 
-    onSave = (editedStream: Stream) => {
+    onSave = (editedStream: Stream, saveAndExit: boolean = true) => {
         const { save, redirectToUserPages } = this.props
-
         this.setState({
             saving: true,
         }, async () => {
             try {
-                await save(this.addTempIdsToStreamFields(editedStream) || editedStream)
+                await save(editedStream)
                 if (!this.unmounted) {
                     this.setState({
                         saving: false,
-                    }, redirectToUserPages)
+                        pendingAutosave: false,
+                        requestedAutosave: false,
+                    }, () => {
+                        if (saveAndExit) {
+                            return redirectToUserPages
+                        }
+                    })
                 }
             } catch (e) {
                 console.warn(e)
@@ -141,30 +188,17 @@ export class StreamShowView extends Component<Props, State> {
                 if (!this.unmounted) {
                     this.setState({
                         saving: false,
+                        pendingAutosave: false,
+                        requestedAutosave: false,
                     })
                 }
             }
         })
     }
 
-    addTempIdsToStreamFields = (editedStream: Stream) => {
-        if (editedStream && editedStream.config && editedStream.config.fields) {
-            editedStream.config.fields.map((field) => {
-                if (field.id) {
-                    delete field.id
-                }
-                return {
-                    ...field,
-                }
-            })
-            return {
-                ...editedStream,
-            }
-        }
-    }
-
     render() {
         const { editedStream, cancel, currentUser, authApiKeyId } = this.props
+        const { pendingAutosave } = this.state
 
         return (
             <Layout noHeader noFooter>
@@ -178,7 +212,7 @@ export class StreamShowView extends Component<Props, State> {
                                     color: 'link',
                                     outline: true,
                                     onClick: () => {
-                                        cancel()
+                                        cancel(pendingAutosave)
                                     },
                                 },
                                 saveChanges: {
@@ -187,7 +221,7 @@ export class StreamShowView extends Component<Props, State> {
                                     spinner: this.state.saving,
                                     onClick: () => {
                                         if (editedStream) {
-                                            this.onSave(editedStream)
+                                            this.onSave(editedStream, true)
                                         }
                                     },
                                 },
@@ -203,16 +237,16 @@ export class StreamShowView extends Component<Props, State> {
                                     color: 'link',
                                     outline: true,
                                     onClick: () => {
-                                        cancel()
+                                        cancel(pendingAutosave)
                                     },
                                 },
                                 saveChanges: {
-                                    title: I18n.t('userpages.profilePage.toolbar.done'),
+                                    title: I18n.t('userpages.profilePage.toolbar.saveAndExit'),
                                     color: 'primary',
                                     spinner: this.state.saving,
                                     onClick: () => {
                                         if (editedStream) {
-                                            this.onSave(editedStream)
+                                            this.onSave(editedStream, true)
                                         }
                                     },
                                 },
@@ -232,7 +266,9 @@ export class StreamShowView extends Component<Props, State> {
                                 title="Configure"
                                 customStyled
                             >
-                                <ConfigureView />
+                                <ConfigureView
+                                    requestAutosave={this.requestAutosave}
+                                />
                             </TOCPage.Section>
                             <TOCPage.Section
                                 id="preview"
@@ -242,6 +278,7 @@ export class StreamShowView extends Component<Props, State> {
                                     stream={editedStream}
                                     currentUser={currentUser}
                                     authApiKeyId={authApiKeyId}
+                                    pendingAutosave={pendingAutosave}
                                 />
                             </TOCPage.Section>
                             <TOCPage.Section
@@ -287,16 +324,27 @@ const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
         dispatch(openStream(null))
         if (stream) {
             const updateOrSave = stream.id ? updateStream : createStream
-            return dispatch(updateOrSave(stream)).then(() => {
-                dispatch(push(routes.userPageStreamListing()))
-            })
+            return dispatch(updateOrSave(stream))
         }
     },
     redirectToUserPages: () => dispatch(push(routes.userPages())),
-    cancel: () => {
-        dispatch(openStream(null))
-        dispatch(updateEditStream(null))
-        dispatch(push(routes.userPageStreamListing()))
+    cancel: (pendingAutosave: boolean) => {
+        if (pendingAutosave) {
+            // eslint-disable-next-line no-restricted-globals, no-alert
+            if (confirm('You have unsaved changes, are you sure you want to leave this page?')) {
+                dispatch(push(routes.userPageStreamListing()))
+            } else {
+                console.log('cancel1')
+                dispatch(openStream(null))
+                dispatch(updateEditStream(null))
+                dispatch(push(routes.userPageStreamListing()))
+            }
+        } else {
+            console.log('cancel2')
+            dispatch(openStream(null))
+            dispatch(updateEditStream(null))
+            dispatch(push(routes.userPageStreamListing()))
+        }
     },
     updateStream: (stream: Stream) => dispatch(updateStream(stream)),
     initEditStream: () => dispatch(initEditStream()),

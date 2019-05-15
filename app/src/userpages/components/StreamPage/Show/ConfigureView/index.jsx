@@ -13,7 +13,7 @@ import type { StoreState } from '$shared/flowtype/store-state'
 import FieldList from '$shared/components/FieldList'
 import FieldItem from '$shared/components/FieldList/FieldItem'
 import Dropdown from '$shared/components/Dropdown'
-import { updateEditStreamField, updateEditStream } from '$userpages/modules/userPageStreams/actions'
+import { updateEditStreamField, updateEditStream, deleteStreamField } from '$userpages/modules/userPageStreams/actions'
 import { selectEditedStream } from '$userpages/modules/userPageStreams/selectors'
 import TextInput from '$shared/components/TextInput'
 import Toggle from '$shared/components/Toggle'
@@ -30,7 +30,9 @@ type StateProps = {
 type DispatchProps = {
     copyStreamId: (string) => void,
     editField: (string, any) => void,
+    deleteField: (string, any) => void,
     updateEditStream: (data: Stream) => void,
+    requestAutosave?: () => void,
 }
 
 type Props = StateProps & DispatchProps
@@ -44,27 +46,20 @@ export class ConfigureView extends Component<Props, State> {
         isAddingField: false,
     }
 
-    componentDidUpdate(prevProps: Props) {
-        if (this.validFieldProps(prevProps) && this.validFieldProps(this.props) &&
-        // $FlowFixMe
-        (this.props.stream.config.fields !== prevProps.stream.config.fields)) {
-            const { editField } = this.props
-            const fields = this.getStreamFields()
-            editField('config.fields', fields)
-        }
-    }
-
     validFieldProps = (props: Props) => props.stream && props.stream.config && props.stream.config.fields
 
     getStreamFields = () => {
+        console.log('enter getStreamFields')
         const { stream } = this.props
         if (stream && stream.config && stream.config.fields) {
+            console.log('enter addTempIdsToStreamFields')
             return this.addTempIdsToStreamFields(stream)
         }
         return []
     }
 
     addTempIdsToStreamFields = (stream: Stream) => (
+        // Temp IDs are used only on the frontend to provide a static identity for the stream fields
         // $FlowFixMe
         stream.config.fields.map((field) => (
             {
@@ -84,6 +79,7 @@ export class ConfigureView extends Component<Props, State> {
     onFieldNameChange = (fieldName: string, value: string) => {
         const { editField } = this.props
         const fields = this.getStreamFields()
+        debugger
         const index = fields.findIndex((field) => field.name === fieldName)
         if (this.liveEditIsValid(value, fields)) {
             editField(`config.fields[${index}].name`, value)
@@ -129,14 +125,14 @@ export class ConfigureView extends Component<Props, State> {
     }
 
     deleteField = (name: string) => {
-        const { editField } = this.props
+        const { deleteField } = this.props
         const fields = this.getStreamFields().filter((field) => field.name !== name)
-        editField('config.fields', fields)
+        deleteField('config.fields', fields)
     }
 
     onAutoConfigureChange = (checked: boolean) => {
         const { updateEditStream, stream } = this.props
-
+        console.log('enter onAutoConfigureChange')
         updateEditStream({
             ...stream,
             autoConfigure: checked,
@@ -145,7 +141,7 @@ export class ConfigureView extends Component<Props, State> {
 
     onRequireSignedChange = (checked: boolean) => {
         const { updateEditStream, stream } = this.props
-
+        console.log('enter onRequireSignedChange')
         updateEditStream({
             ...stream,
             requireSignedData: checked,
@@ -280,9 +276,22 @@ const mapStateToProps = (state: StoreState): StateProps => ({
     stream: selectEditedStream(state),
 })
 
-const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Function, ownProps: Props): DispatchProps => ({
     copyStreamId: (id) => dispatch(copy(id)),
-    editField: (field: string, data: any) => dispatch(updateEditStreamField(field, data)),
+    editField: (field: string, data: any) => {
+        console.log('enter editField()')
+        dispatch(updateEditStreamField(field, data))
+        if (ownProps.requestAutosave) {
+            ownProps.requestAutosave()
+        }
+    },
+    deleteField: (field: string, data: any) => {
+        console.log('enter deleteField()')
+        dispatch(deleteStreamField(field, data))
+        if (ownProps.requestAutosave) {
+            ownProps.requestAutosave()
+        }
+    },
     updateEditStream: (data: Stream) => dispatch(updateEditStream(data)),
 })
 
