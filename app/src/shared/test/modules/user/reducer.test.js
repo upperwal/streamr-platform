@@ -5,7 +5,10 @@ import * as constants from '$shared/modules/user/constants'
 
 describe('user - reducer', () => {
     it('has initial state', () => {
-        assert.deepStrictEqual(reducer(undefined, {}), initialState)
+        assert.deepStrictEqual(reducer(undefined, {}), {
+            ...initialState,
+            fetchingUserData: true,
+        })
     })
 
     describe('USER_DATA', () => {
@@ -25,7 +28,6 @@ describe('user - reducer', () => {
             const user = {
                 name: 'Tester1',
                 username: 'tester1@streamr.com',
-                timezone: 'Zulu',
             }
 
             const expectedState = {
@@ -74,7 +76,6 @@ describe('user - reducer', () => {
                 payload: {
                     user: {
                         email: 'test3',
-                        timezone: 'test4',
                     },
                 },
             }), {
@@ -83,7 +84,6 @@ describe('user - reducer', () => {
                 user: {
                     name: 'test',
                     email: 'test3',
-                    timezone: 'test4',
                 },
             })
         })
@@ -97,7 +97,6 @@ describe('user - reducer', () => {
                     user: {
                         name: 'test',
                         email: 'test3',
-                        timezone: 'test4',
                     },
                 },
             }), {
@@ -106,7 +105,6 @@ describe('user - reducer', () => {
                 user: {
                     name: 'test',
                     email: 'test3',
-                    timezone: 'test4',
                 },
             })
         })

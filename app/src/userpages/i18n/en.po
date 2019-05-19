@@ -33,7 +33,7 @@ msgid "userpages##canvases##noCanvasesResult##clearFilters"
 msgstr "Clear filters"
 
 msgid "userpages##canvases##title"
-msgstr "My Canvases"
+msgstr "Canvases"
 
 msgid "userpages##canvases##menu##edit"
 msgstr "Edit"
@@ -105,22 +105,22 @@ msgid "userpages##header##dashboards"
 msgstr "Dashboards"
 
 msgid "userpages##title##dashboards"
-msgstr "My Dashboards"
+msgstr "Dashboards"
 
 msgid "userpages##title##products"
-msgstr "My Products"
+msgstr "Products"
 
 msgid "userpages##title##purchases"
-msgstr "My Purchases"
+msgstr "Purchases"
 
 msgid "userpages##title##streams"
-msgstr "My Streams"
+msgstr "Streams"
 
 msgid "userpages##title##transactions"
-msgstr "My Transactions"
+msgstr "Transactions"
 
 msgid "userpages##title##profile"
-msgstr "Streamr Profile"
+msgstr "Profile"
 
 msgid "userpages##header##products"
 msgstr "Products"
@@ -307,6 +307,12 @@ msgstr "You can configure your stream’s fields and data types here. If you’r
 
 msgid "userpages##streams##edit##configure##autoConfigure"
 msgstr "Always try to autoconfigure field names and types"
+
+msgid "userpages##streams##edit##configure##autodetect"
+msgstr "Autodetect fields"
+
+msgid "userpages##streams##edit##configure##waiting"
+msgstr "Waiting..."
 
 msgid "userpages##streams##edit##configure##requireSignedData"
 msgstr "Require all messages in this stream to be signed"
@@ -680,10 +686,10 @@ msgid "modal##shareResource##anonymousAccess"
 msgstr "Who can access this?"
 
 msgid "modal##shareResource##onlyInvited"
-msgstr "Only people you've invited"
+msgstr "Private — only people you’ve invited"
 
 msgid "modal##shareResource##withLink"
-msgstr "Anyone with the link and people you've invited"
+msgstr "Public — viewable by anyone with the link or via the API"
 
 msgid "modal##shareResource##enterEmailAddress"
 msgstr "Enter email address"

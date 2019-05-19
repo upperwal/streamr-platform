@@ -1,6 +1,7 @@
 // @flow
 
 import { formatExternalUrl } from '$shared/utils/url'
+import routes from '$routes'
 
 const streamrRoot = process.env.STREAMR_URL || ''
 
@@ -40,32 +41,32 @@ module.exports = {
         userPage: '/docs/userpage',
     },
     userpages: {
-        main: '/u',
-        canvases: '/u/canvases',
-        dashboards: '/u/dashboards',
-        streams: '/u/streams',
-        streamCreate: '/u/stream/show',
-        streamShow: '/u/stream/show',
-        streamPreview: 'u/stream/preview',
-        profile: '/u/profile/edit',
-        products: '/u/products',
-        purchases: '/u/purchases',
-        transactions: '/u/transactions',
-        settings: '/u/settings',
+        main: '/core',
+        canvases: '/core/canvases',
+        dashboards: '/core/dashboards',
+        streams: '/core/streams',
+        streamCreate: '/core/stream/show',
+        streamShow: '/core/stream/show',
+        streamPreview: '/core/stream/preview',
+        profile: '/core/profile/edit',
+        products: '/core/products',
+        purchases: '/core/purchases',
+        transactions: '/core/transactions',
+        settings: '/core/settings',
     },
     editor: {
         canvasEditor: '/canvas/editor',
         dashboardEditor: '/dashboard/editor',
     },
     community: {
-        trello: 'https://trello.com/b/j24hxvjg/streamr-milestone-1',
-        telegram: 'https://t.me/streamrdata',
-        reddit: 'https://reddit.com/r/streamr',
-        twitter: 'https://twitter.com/streamr',
-        linkedin: 'https://www.linkedin.com/company/streamr-ltd-/',
-        youtube: 'https://www.youtube.com/channel/UCGWEA61RueG-9DV53s-ZyJQ',
-        medium: 'https://medium.com/streamrblog',
-        github: 'https://github.com/streamr-dev',
+        trello: routes.communityTrello(),
+        telegram: routes.communityTelegram(),
+        reddit: routes.communityReddit(),
+        twitter: routes.communityTwitter(),
+        linkedin: routes.communityLinkedin(),
+        youtube: routes.communityYoutube(),
+        medium: routes.communityMedium(),
+        github: routes.communityGithub(),
     },
     contact: {
         general: 'mailto:contact@streamr.com',

@@ -253,7 +253,9 @@ const CanvasEditComponent = class CanvasEdit extends Component {
             },
         })
 
-        this.setCanvas({ type: 'Update Module' }, (canvas) => (
+        if (this.unmounted) { return }
+
+        this.replaceCanvas((canvas) => (
             CanvasState.updateModule(canvas, hash, () => newModule)
         ))
     }
@@ -356,7 +358,7 @@ const CanvasEditComponent = class CanvasEdit extends Component {
         const resendTo = settings.endDate
         return (
             <div className={styles.CanvasEdit}>
-                <Helmet title={canvas.name} />
+                <Helmet title={`${canvas.name} | Streamr Core`} />
                 <Subscription
                     uiChannel={canvas.uiChannel}
                     resendFrom={canvas.adhoc ? resendFrom : undefined}

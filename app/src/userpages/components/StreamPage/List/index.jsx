@@ -268,14 +268,8 @@ class StreamList extends Component<Props, State> {
     }
 
     render() {
-        const {
-            fetching,
-            streams,
-            showStream,
-            filter,
-            user,
-        } = this.props
-        const timezone = (user && user.timezone) || moment.tz.guess()
+        const { fetching, streams, showStream, filter } = this.props
+        const timezone = moment.tz.guess()
         const { dialogTargetStream, activeDialog } = this.state
 
         return (
@@ -303,9 +297,7 @@ class StreamList extends Component<Props, State> {
                 }
                 loading={fetching}
             >
-                <Helmet>
-                    <title>{I18n.t('userpages.title.streams')}</title>
-                </Helmet>
+                <Helmet title={`Streamr Core | ${I18n.t('userpages.title.streams')}`} />
                 {!!dialogTargetStream && activeDialog === Dialogs.SHARE && (
                     <ShareDialog
                         resourceTitle={dialogTargetStream.name}

@@ -961,6 +961,23 @@ export function getRelevantCanvasId(canvas) {
 }
 
 /**
+ * Fixes erroneous initialValue of {} back to null.
+ * See https://streamr.atlassian.net/browse/CORE-1718
+ */
+
+export function workaroundInitialValueWeirdness(canvas) {
+    let nextCanvas = canvas
+    canvas.modules.forEach((canvasModule) => {
+        canvasModule.inputs.forEach((port) => {
+            if (port.initialValue !== null && typeof port.initialValue === 'object') {
+                nextCanvas = setPortUserValue(nextCanvas, port.id, null)
+            }
+        })
+    })
+    return nextCanvas
+}
+
+/**
  * Cleanup
  */
 
@@ -968,7 +985,7 @@ export function updateCanvas(canvas, path, fn) {
     if (!canvas || typeof canvas !== 'object') {
         throw new Error(`bad canvas (${typeof canvas})`)
     }
-    return limitLayout(updateVariadic(updatePortConnections(update(path, fn, canvas))))
+    return limitLayout(updateVariadic(updatePortConnections(workaroundInitialValueWeirdness(update(path, fn, canvas)))))
 }
 
 export function moduleCategoriesIndex(modules = [], path = [], index = []) {
@@ -984,7 +1001,15 @@ export function moduleCategoriesIndex(modules = [], path = [], index = []) {
             moduleCategoriesIndex(m.children, path.concat(m.data), index)
         }
     })
-    return index
+    return index.sort(compareModules)
+}
+
+// sorts module index. Sorts first by path and then by name.
+function compareModules(a, b) {
+    if (a.path === b.path) {
+        return a.name.localeCompare(b.name)
+    }
+    return a.path ? a.path.localeCompare(b.path) : 0
 }
 
 const getModuleCategoriesIndex = memoize(moduleCategoriesIndex)
@@ -998,6 +1023,11 @@ export function moduleSearch(moduleCategories, search) {
     const exactMatches = moduleIndex.filter((m) => {
         const target = m.name.toLowerCase()
         return target.split(/\s+/).join(' ') === terms.join(' ')
+    })
+
+    const startsWith = moduleIndex.filter((m) => {
+        const target = m.name.toLowerCase()
+        return target.split(/\s+/).join(' ').startsWith(terms.join(' '))
     })
 
     const nameMatches = moduleIndex.filter((m) => {
@@ -1014,5 +1044,5 @@ export function moduleSearch(moduleCategories, search) {
         ))
     })
 
-    return uniqBy([...exactMatches, ...nameMatches, ...pathMatches], 'id')
+    return uniqBy([...exactMatches, ...startsWith, ...nameMatches, ...pathMatches], 'id')
 }
