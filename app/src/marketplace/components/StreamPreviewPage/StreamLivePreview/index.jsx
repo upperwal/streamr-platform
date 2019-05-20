@@ -1,6 +1,7 @@
 // @flow
 
 import React, { Component, Fragment } from 'react'
+import { connect } from 'react-redux'
 import classnames from 'classnames'
 import StreamrClient from 'streamr-client'
 import { Table } from 'reactstrap'
@@ -12,6 +13,7 @@ import MediaQuery from 'react-responsive'
 import SwipeableViews from 'react-swipeable-views'
 import { sm } from '$app/scripts/breakpoints'
 
+import { getMyResourceKeys } from '$shared/modules/resourceKey/actions'
 import { formatDateTime } from '../../../utils/time'
 import type { StreamId } from '$shared/flowtype/stream-types'
 import type { ResourceKeyId } from '$shared/flowtype/resource-key-types'
@@ -36,6 +38,7 @@ type Props = {
     run?: boolean,
     userpagesPreview?: boolean,
     hasData?: () => void,
+    getKeys: () => void,
 }
 
 type State = {
@@ -86,6 +89,11 @@ export class StreamLivePreview extends Component<Props, State> {
         this.setState({
             mobileTableColumnIndex: index,
         })
+    }
+
+    createClientAndSubscribe = async () => {
+        await this.props.getKeys()
+        this.createClientAndSubscribe()
     }
 
     dataColumn: ?HTMLTableCellElement = null
@@ -340,4 +348,10 @@ export class StreamLivePreview extends Component<Props, State> {
     }
 }
 
-export default StreamLivePreview
+const mapStateToProps = (): StateProps => ({})
+
+const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
+    getKeys: () => dispatch(getMyResourceKeys()),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(StreamLivePreview)
