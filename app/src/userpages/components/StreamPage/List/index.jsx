@@ -49,10 +49,10 @@ export const CreateStreamButton = () => (
     <Button
         color="primary"
         className={styles.createStreamButton}
+        tag={Link}
+        to={links.userpages.streamCreate}
     >
-        <Link to={links.userpages.streamCreate}>
-            <Translate value="userpages.streams.createStream" />
-        </Link>
+        <Translate value="userpages.streams.createStream" />
     </Button>
 )
 
@@ -83,8 +83,6 @@ const getSortOptions = (): Array<SortOption> => {
     const filters = getFilters()
     return [
         filters.RECENT,
-        filters.SHARED,
-        filters.MINE,
         filters.NAME_ASC,
         filters.NAME_DESC,
     ]

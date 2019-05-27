@@ -97,14 +97,6 @@ const forwardTo = (routeFn: Function) => ({ location: { search } }: Location) =>
     <Redirect to={routeFn(qs.parse(search))} />
 )
 
-const resolveEnvironmentRoot = () => {
-    if (isProduction()) {
-        window.location.href = process.env.PLATFORM_ORIGIN_URL
-    }
-    window.location.href = marketplace.main
-    return null
-}
-
 const AuthenticationRouter = () => ([
     <Route exact path={routes.login()} component={LoginPage} key="LoginPage" />,
     <Route exact path={routes.logout()} component={LogoutPage} key="LogoutPage" />,
@@ -129,7 +121,7 @@ const MarketplaceRouter = () => ([
 ])
 
 const DocsRouter = () => ([
-    <Route exact path={docs.main} component={GettingStartedPage} key="GettingStartedPage" />,
+    <Route exact path={docs.gettingStarted} component={GettingStartedPage} key="GettingStartedPage" />,
     <Route exact path={docs.introduction} component={IntroductionPage} key="IntroductionPage" />,
     <Route exact path={docs.tutorials} component={TutorialsPage} key="TutorialsPage" />,
     <Route exact path={docs.visualEditor} component={VisualEditorPage} key="VisualEditorPage" />,
@@ -137,6 +129,7 @@ const DocsRouter = () => ([
     <Route exact path={docs.dataMarketplace} component={MarketplacePage} key="MarketplacePage" />,
     <Route exact path={docs.userPage} component={UserPage} key="UserPage" />,
     <Route exact path={docs.api} component={ApiPage} key="ApiPage" />,
+    <Redirect from={docs.main} to={docs.introduction} key="DocsRoot" />,
 ])
 
 const UserpagesRouter = () => ([
@@ -153,12 +146,12 @@ const UserpagesRouter = () => ([
 ])
 
 const EditorRouter = () => ([
+    <Route exact path="/" component={Products} key="root" />, // edge case for localhost
     <Route exact path={formatPath(editor.canvasEditor, ':id?')} component={CanvasEditorAuth} key="CanvasEditor" />,
     <Route exact path={formatPath(editor.dashboardEditor, ':id?')} component={DashboardEditorAuth} key="DashboardEditor" />,
 ])
 
 const MiscRouter = () => ([
-    <Route exact path={links.root} key="root" component={() => resolveEnvironmentRoot()} />,
     <Route exact path="/error" component={ErrorPageView} key="ErrorPageView" />,
     <Route component={NotFoundPage} key="NotFoundPage" />,
 ])

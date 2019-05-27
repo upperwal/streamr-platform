@@ -41,10 +41,10 @@ const CreateDashboardButton = () => (
     <Button
         color="primary"
         className={styles.createDashboardButton}
+        tag={Link}
+        to={links.editor.dashboardEditor}
     >
-        <Link to={links.editor.dashboardEditor}>
-            <Translate value="userpages.dashboards.createDashboard" />
-        </Link>
+        <Translate value="userpages.dashboards.createDashboard" />
     </Button>
 )
 
@@ -53,8 +53,6 @@ const getSortOptions = (): Array<SortOption> => {
     return [
         filters.NAME_ASC,
         filters.NAME_DESC,
-        filters.SHARED,
-        filters.MINE,
     ]
 }
 
