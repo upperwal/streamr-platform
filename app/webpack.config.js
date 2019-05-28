@@ -145,6 +145,7 @@ module.exports = {
                 gaId: process.env.GOOGLE_ANALYTICS_ID,
             },
         }),
+        new webpack.HashedModuleIdsPlugin(), // so that file hashes don't change unexpectedly
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
@@ -173,27 +174,8 @@ module.exports = {
         ] : []),
         ...(process.env.SENTRY_DSN ? [
             new SentryPlugin({
-                // commented out original config. TODO: replace (testing new config on staging)
-                // include: dist,
-                // validate: true,
-                // ignore: [
-                //     '.cache',
-                //     '.DS_STORE',
-                //     '.env',
-                //     '.storybook',
-                //     'bin',
-                //     'coverage',
-                //     'node_modules',
-                //     'scripts',
-                //     'stories',
-                //     'test',
-                //     'travis_scripts',
-                //     'webpack.config.js',
-                // ],
-                include: '.',
-                validate: false,
-                debug: true,
-                rewrite: true,
+                include: dist,
+                validate: true,
                 ignore: [
                     '.cache',
                     '.DS_STORE',
@@ -292,13 +274,27 @@ module.exports = {
         port: process.env.PORT || 3333,
         publicPath,
     },
-    // automatically creates a vendor chunk & also
-    // seems to prevent out of memory errors during dev ??
-    // optimization: { removing optimization {} for debugging. TODO: Add back in.
-    //     splitChunks: {
-    //         chunks: 'all',
-    //     },
-    // },
+    optimization: {
+        runtimeChunk: 'single',
+        splitChunks: {
+            chunks: 'all',
+            maxInitialRequests: Infinity,
+            minSize: 0,
+            cacheGroups: {
+                vendor: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name(module) {
+                        // get the name. E.g. node_modules/packageName/not/this/part.js
+                        // or node_modules/packageName
+                        const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1]
+
+                        // npm package names are URL-safe, but some servers don't like @ symbols
+                        return `npm.${packageName.replace('@', '')}`
+                    },
+                },
+            },
+        },
+    },
     resolve: {
         extensions: ['.js', '.jsx', '.json'],
         symlinks: false,
