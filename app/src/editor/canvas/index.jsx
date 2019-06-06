@@ -298,9 +298,12 @@ const CanvasEditComponent = class CanvasEdit extends Component {
         await canvasController.load(canvas.id)
     }
 
-    onDoneMessage = () => (
-        this.loadSelf()
-    )
+    onDoneMessage = () => {
+        const { runController } = this.props
+        if (runController.isRunning && !runController.isStopping) {
+            this.loadSelf()
+        }
+    }
 
     onErrorMessage = (error) => {
         pushErrorNotification({

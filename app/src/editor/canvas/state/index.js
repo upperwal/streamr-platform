@@ -695,6 +695,20 @@ export function limitLayout(canvas) {
     return nextCanvas
 }
 
+export function copyLayout(targetCanvas, sourceCanvas) {
+    let nextCanvas = targetCanvas
+    sourceCanvas.modules.forEach(({ hash, layout }) => {
+        const targetModule = getModule(nextCanvas, hash)
+        if (!targetModule) { return }
+        nextCanvas = updateModule(nextCanvas, hash, (targetModule) => ({
+            ...targetModule,
+            layout,
+        }))
+    })
+
+    return nextCanvas
+}
+
 /**
  * Ensures historical 'beginDate' is before 'endDate'
  */
