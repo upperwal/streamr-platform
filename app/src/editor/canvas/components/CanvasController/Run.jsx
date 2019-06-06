@@ -94,20 +94,23 @@ function useRunController(canvas = EMPTY) {
     const stop = useCallback(async (canvas) => {
         setIsStopping(true)
         return stopPending.wrap(() => services.stop(canvas))
-            .then((canvas) => {
+            .then(async () => {
+                if (!isMountedRef.current) { return }
+                const stoppedCanvas = await services.loadCanvas(canvas)
                 if (!isMountedRef.current) { return }
                 setIsStopping(false)
-                return canvas
+                return replaceCanvas((canvas) => CanvasState.copyLayout(stoppedCanvas, canvas))
             }, async (err) => {
                 if (isStateNotAllowedError(err)) {
                     if (!canvas.adhoc) { return } // trying to stop an already stopped canvas, ignore
                     const parent = await unlinkParent(canvas) // ensure adhoc canvas gets unlinked
                     if (!isMountedRef.current) { return }
+                    setIsStopping(false)
                     replaceCanvas(() => parent)
                     return
                 }
-
-                if (isMountedRef.current) { setIsStopping(false) }
+                if (!isMountedRef.current) { return }
+                setIsStopping(false)
                 throw err
             })
     }, [stopPending, setIsStopping, isMountedRef, unlinkParent, replaceCanvas])
@@ -115,7 +118,7 @@ function useRunController(canvas = EMPTY) {
     const exit = useCallback(async (canvas) => {
         const newCanvas = await exitPending.wrap(() => services.loadParentCanvas(canvas))
         if (!isMountedRef.current) { return }
-        replaceCanvas(() => newCanvas)
+        return replaceCanvas((canvas) => CanvasState.copyLayout(newCanvas, canvas))
     }, [exitPending, replaceCanvas, isMountedRef])
 
     const unlinkAdhocOnStop = useCallback(async (isRunning) => {
