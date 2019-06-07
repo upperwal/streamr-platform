@@ -295,7 +295,7 @@ const CanvasEditComponent = class CanvasEdit extends Component {
 
     onDoneMessage = () => {
         const { runController } = this.props
-        if (runController.isRunning) {
+        if (!runController.isPending && runController.isRunning) {
             this.loadSelf()
         }
     }

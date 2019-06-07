@@ -39,7 +39,6 @@ function useRunController(canvas = EMPTY) {
     const unlinkPending = usePending('UNLINK')
 
     const [isStarting, setIsStarting] = useState(false) // true immediately before starting a canvas
-    const [isStopping, setIsStopping] = useState(false) // true immediately before stopping a canvas
 
     const isRunning = CanvasState.isRunning(canvas)
     const isHistorical = CanvasState.isHistoricalModeSelected(canvas)
@@ -91,29 +90,32 @@ function useRunController(canvas = EMPTY) {
         unlinkPending.wrap(() => services.unlinkParentCanvas(canvas))
     ), [unlinkPending])
 
-    const stop = useCallback(async (canvas) => {
-        setIsStopping(true)
-        return stopPending.wrap(() => services.stop(canvas))
-            .then(async () => {
-                if (!isMountedRef.current) { return }
-                const stoppedCanvas = await services.loadCanvas(canvas)
-                if (!isMountedRef.current) { return }
-                setIsStopping(false)
-                return replaceCanvas((canvas) => CanvasState.copyLayout(stoppedCanvas, canvas))
-            }, async (err) => {
-                if (isStateNotAllowedError(err)) {
-                    if (!canvas.adhoc) { return } // trying to stop an already stopped canvas, ignore
+    const stop = useCallback((canvas) => (
+        stopPending.wrap(async () => {
+            try {
+                await services.stop(canvas)
+            } catch (error) {
+                if (canvas.adhoc) {
+                    console.warn({ error }) // eslint-disable-line no-console
                     const parent = await unlinkParent(canvas) // ensure adhoc canvas gets unlinked
                     if (!isMountedRef.current) { return }
-                    setIsStopping(false)
                     replaceCanvas(() => parent)
                     return
                 }
-                if (!isMountedRef.current) { return }
-                setIsStopping(false)
-                throw err
-            })
-    }, [stopPending, setIsStopping, isMountedRef, unlinkParent, replaceCanvas])
+
+                if (isStateNotAllowedError(error)) {
+                    // trying to stop an already stopped canvas, ignore
+                } else {
+                    if (!isMountedRef.current) { return }
+                    throw error
+                }
+            }
+
+            const stoppedCanvas = await services.loadCanvas(canvas)
+            if (!isMountedRef.current) { return }
+            return replaceCanvas(() => CanvasState.copyLayout(stoppedCanvas, canvas))
+        })
+    ), [stopPending, isMountedRef, unlinkParent, replaceCanvas])
 
     const exit = useCallback(async (canvas) => {
         const newCanvas = await exitPending.wrap(() => services.loadParentCanvas(canvas))
@@ -130,8 +132,6 @@ function useRunController(canvas = EMPTY) {
 
     // if state changes starting must have ended
     useCanvasStateChangeEffect(canvas, useCallback(() => setIsStarting(false), [setIsStarting]))
-    // if state changes stopping must have ended
-    useCanvasStateChangeEffect(canvas, useCallback(() => setIsStopping(false), [setIsStopping]))
 
     const isAnyPending = [
         createAdhocPending,
@@ -141,7 +141,7 @@ function useRunController(canvas = EMPTY) {
         unlinkPending,
     ].some(({ isPending }) => isPending)
 
-    const isPending = !!(isStopping || isStarting || isAnyPending)
+    const isPending = !!(isStarting || isAnyPending)
 
     // controls whether user can currently start/stop canvas
     const canChangeRunState = (
@@ -158,7 +158,6 @@ function useRunController(canvas = EMPTY) {
     return useMemo(() => ({
         canChangeRunState,
         isStarting,
-        isStopping,
         isPending,
         canvas: canvas.id,
         isActive,
@@ -171,7 +170,7 @@ function useRunController(canvas = EMPTY) {
         stop,
         exit,
     }), [canvas, isPending, isStarting, isActive, isRunning, isHistorical, isEditable,
-        hasSharePermission, hasWritePermission, isStopping, start, stop, exit, canChangeRunState])
+        hasSharePermission, hasWritePermission, start, stop, exit, canChangeRunState])
 }
 
 export default function RunControllerProvider({ children, canvas }) {
