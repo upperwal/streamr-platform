@@ -112,7 +112,10 @@ const CanvasEditComponent = class CanvasEdit extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.canvas !== prevProps.canvas) {
+        if (this.props.canvas !== prevProps.canvas || (
+            // canvas changed or became editable
+            !prevProps.runController.isEditable && this.props.runController.isEditable
+        )) {
             this.autosave()
         }
     }
