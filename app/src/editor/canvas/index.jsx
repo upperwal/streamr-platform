@@ -24,6 +24,7 @@ import * as RunController from './components/CanvasController/Run'
 import useCanvas from './components/CanvasController/useCanvas'
 import useCanvasUpdater from './components/CanvasController/useCanvasUpdater'
 import useUpdatedTime from './components/CanvasController/useUpdatedTime'
+import useCanvasActions from './components/CanvasController/useCanvasActions'
 
 import Canvas from './components/Canvas'
 import CanvasToolbar from './components/Toolbar'
@@ -143,16 +144,12 @@ const CanvasEditComponent = class CanvasEdit extends Component {
         this.props.setUpdated(newCanvas.updated)
     }
 
-    removeModule = async ({ hash }) => {
-        const action = { type: 'Remove Module' }
-        this.setCanvas(action, (canvas) => (
-            CanvasState.removeModule(canvas, hash)
-        ))
+    removeModule = async (hash) => {
+        this.props.canvasActions.removeModule(hash)
     }
 
     addModule = async ({ id, configuration }) => {
         const { canvas, canvasController } = this.props
-        const action = { type: 'Add Module' }
         const moduleData = await canvasController.loadModule(canvas, {
             ...configuration,
             id,
@@ -160,9 +157,7 @@ const CanvasEditComponent = class CanvasEdit extends Component {
 
         if (this.unmounted) { return }
 
-        this.setCanvas(action, (canvas) => (
-            CanvasState.addModule(canvas, moduleData)
-        ))
+        this.props.canvasActions.addModule(moduleData)
     }
 
     duplicateCanvas = async () => {
@@ -181,19 +176,11 @@ const CanvasEditComponent = class CanvasEdit extends Component {
     }
 
     renameCanvas = (name) => {
-        this.setCanvas({ type: 'Rename Canvas' }, (canvas) => ({
-            ...canvas,
-            name,
-        }))
+        this.props.canvasActions.renameCanvas(name)
     }
 
     updateModule = (hash, value) => {
-        this.setCanvas({ type: 'Update Module' }, (canvas) => (
-            CanvasState.updateModule(canvas, hash, (module) => ({
-                ...module,
-                ...value,
-            }))
-        ))
+        this.props.canvasActions.updateModule(hash, value)
     }
 
     loadNewDefinition = async (hash) => {
@@ -229,51 +216,27 @@ const CanvasEditComponent = class CanvasEdit extends Component {
     }
 
     renameModule = (hash, displayName) => {
-        this.setCanvas({ type: 'Rename Module' }, (canvas) => (
-            CanvasState.updateModule(canvas, hash, (module) => ({
-                ...module,
-                displayName,
-            }))
-        ))
+        this.props.canvasActions.renameModule(hash, displayName)
     }
 
     setModuleOptions = (hash, options) => {
-        this.setCanvas({ type: 'Set Module Options' }, (canvas) => (
-            CanvasState.setModuleOptions(canvas, hash, options)
-        ))
+        this.props.canvasActions.setModuleOptions(hash, options)
     }
 
     setRunTab = (runTab) => {
-        this.setCanvas({ type: 'Set Run Tab' }, (canvas) => (
-            CanvasState.updateCanvas(canvas, 'settings.editorState', (editorState = {}) => ({
-                ...editorState,
-                runTab,
-            }))
-        ))
+        this.props.canvasActions.setRunTab(runTab)
     }
 
     setHistorical = (update = {}) => {
-        this.setCanvas({ type: 'Set Historical Range' }, (canvas) => (
-            CanvasState.setHistoricalRange(canvas, update)
-        ))
+        this.props.canvasActions.setHistorical(update)
     }
 
     setSpeed = (speed) => {
-        this.setCanvas({ type: 'Set Speed' }, (canvas) => (
-            CanvasState.updateCanvas(canvas, 'settings', (settings = {}) => ({
-                ...settings,
-                speed: String(speed),
-            }))
-        ))
+        this.props.canvasActions.setSpeed(speed)
     }
 
     setSaveState = (serializationEnabled) => {
-        this.setCanvas({ type: 'Set Save State' }, (canvas) => (
-            CanvasState.updateCanvas(canvas, 'settings', (settings = {}) => ({
-                ...settings,
-                serializationEnabled: String(!!serializationEnabled) /* legacy compatibility. it wants a string */,
-            }))
-        ))
+        this.props.canvasActions.setSaveState(serializationEnabled)
     }
 
     canvasStart = async (options = {}) => {
@@ -439,6 +402,7 @@ const CanvasEdit = withRouter(({ canvas, ...props }) => {
 
 const CanvasEditWrap = () => {
     const { replaceCanvas, setCanvas } = useCanvasUpdater()
+    const canvasActions = useCanvasActions()
     const { undo } = useContext(UndoContainer.Context)
     const canvas = useCanvas()
     if (!canvas) {
@@ -459,6 +423,7 @@ const CanvasEditWrap = () => {
                     push={setCanvas}
                     undo={undo}
                     canvas={canvas}
+                    canvasActions={canvasActions}
                 />
             </RunController.Provider>
         </SubscriptionStatus.Provider>

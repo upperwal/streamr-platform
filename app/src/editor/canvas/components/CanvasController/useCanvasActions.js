@@ -6,10 +6,10 @@ import useCanvasUpdater from './useCanvasUpdater'
 
 function usePortActions() {
     const { setCanvas } = useCanvasUpdater()
-    const setPortUserValue = useCallback((portId, value, done) => (
+    const setPortUserValue = useCallback((portId, value) => (
         setCanvas({ type: 'Set Port Value' }, (canvas) => (
             CanvasState.setPortUserValue(canvas, portId, value)
-        ), done)
+        ))
     ), [setCanvas])
 
     const setPortOptions = useCallback((portId, options) => (
