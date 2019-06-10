@@ -317,7 +317,7 @@ const CanvasEditComponent = class CanvasEdit extends Component {
                 <Canvas
                     className={styles.Canvas}
                     canvas={canvas}
-                    selectedModuleHash={this.state.selectedModuleHash}
+                    canvasActions={this.props.canvasActions}
                     selectModule={this.selectModule}
                     updateModule={this.updateModule}
                     renameModule={this.renameModule}

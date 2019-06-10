@@ -2,8 +2,6 @@ import React from 'react'
 import cx from 'classnames'
 import debounce from 'lodash/debounce'
 
-import * as CanvasState from '../state'
-
 import Module from './Module'
 import { DragDropProvider } from './DragDropContext'
 import Cables from './Cables'
@@ -11,24 +9,6 @@ import Cables from './Cables'
 import styles from './Canvas.pcss'
 
 export default class Canvas extends React.PureComponent {
-    setPortUserValue = (portId, value, done) => {
-        this.props.setCanvas({ type: 'Set Port Value' }, (canvas) => (
-            CanvasState.setPortUserValue(canvas, portId, value)
-        ), done)
-    }
-
-    setPortOptions = (portId, options) => {
-        this.props.setCanvas({ type: 'Set Port Options' }, (canvas) => (
-            CanvasState.setPortOptions(canvas, portId, options)
-        ))
-    }
-
-    updateModuleSize = (moduleHash, diff) => {
-        this.props.setCanvas({ type: 'Resize Module' }, (canvas) => (
-            CanvasState.updateModuleSize(canvas, moduleHash, diff)
-        ))
-    }
-
     /**
      * Module & Port Drag/Drop APIs
      * note: don't add state to this as the api object doesn't change
@@ -53,13 +33,13 @@ export default class Canvas extends React.PureComponent {
         pushNewDefinition: (...args) => (
             this.props.pushNewDefinition(...args)
         ),
-        updateModuleSize: this.updateModuleSize,
+        updateModuleSize: this.props.canvasActions.updateModuleSize,
         setCanvas: (...args) => (
             this.props.setCanvas(...args)
         ),
         port: {
-            onChange: this.setPortUserValue,
-            setPortOptions: this.setPortOptions,
+            onChange: this.props.canvasActions.setPortUserValue,
+            setPortOptions: this.props.canvasActions.setPortOptions,
         },
     }
 
