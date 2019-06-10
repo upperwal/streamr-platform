@@ -9,13 +9,13 @@ import ErrorComponentView from '$shared/components/ErrorComponentView'
 import UndoContainer, { UndoControls } from '$editor/shared/components/UndoContainer'
 import { ClientProvider } from '$editor/shared/components/Client'
 import * as sharedServices from '$editor/shared/services'
+import { ModalProvider } from '$editor/shared/components/Modal'
+import { SelectionProvider } from '$editor/shared/hooks/useSelection'
 
 import links from '../../links'
 
 import Dashboard from './components/Dashboard'
 import DashboardToolbar from './components/Toolbar'
-import { ModalProvider } from '$editor/shared/components/Modal'
-import { SelectionProvider } from './components/Selection'
 
 import * as DashboardState from './state'
 import * as services from './services'
