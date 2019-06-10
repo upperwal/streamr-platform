@@ -16,6 +16,7 @@ import { ModalProvider } from '$editor/shared/components/Modal'
 import * as sharedServices from '$editor/shared/services'
 import BodyClass from '$shared/components/BodyClass'
 import Sidebar from '$editor/shared/components/Sidebar'
+import { useSelectionContext, SelectionProvider } from '$editor/shared/hooks/useSelection'
 import ModuleSidebar from './components/ModuleSidebar'
 import KeyboardShortcutsSidebar from './components/KeyboardShortcutsSidebar'
 
@@ -83,10 +84,10 @@ const CanvasEditComponent = class CanvasEdit extends Component {
 
     selectModule = async ({ hash } = {}) => {
         this.setState(({ moduleSidebarIsOpen, keyboardShortcutIsOpen }) => ({
-            selectedModuleHash: hash,
             // close sidebar if no selection
             moduleSidebarIsOpen: hash == null ? keyboardShortcutIsOpen : moduleSidebarIsOpen,
         }))
+        this.props.selection.only(hash)
     }
 
     onKeyDown = (event) => {
@@ -367,7 +368,7 @@ const CanvasEditComponent = class CanvasEdit extends Component {
                         <ModuleSidebar
                             onClose={this.moduleSidebarClose}
                             canvas={canvas}
-                            selectedModuleHash={this.state.selectedModuleHash}
+                            selectedModuleHash={this.props.selection.last()}
                             setModuleOptions={this.setModuleOptions}
                         />
                     )}
@@ -387,6 +388,7 @@ const CanvasEdit = withRouter(({ canvas, ...props }) => {
     const canvasController = CanvasController.useController()
     const [updated, setUpdated] = useUpdatedTime(canvas.updated)
     useCanvasNotifications(canvas)
+    const selection = useSelectionContext()
 
     return (
         <CanvasEditComponent
@@ -396,6 +398,7 @@ const CanvasEdit = withRouter(({ canvas, ...props }) => {
             canvasController={canvasController}
             updated={updated}
             setUpdated={setUpdated}
+            selection={selection}
         />
     )
 })
@@ -439,7 +442,9 @@ const CanvasContainer = withRouter(withErrorBoundary(ErrorComponentView)((props)
         <UndoContainer key={props.match.params.id}>
             <UndoControls disabled={isDisabled} />
             <CanvasController.Provider>
-                <CanvasEditWrap />
+                <SelectionProvider>
+                    <CanvasEditWrap />
+                </SelectionProvider>
             </CanvasController.Provider>
         </UndoContainer>
     </ClientProvider>
