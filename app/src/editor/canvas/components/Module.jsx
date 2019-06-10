@@ -13,6 +13,7 @@ import { RunStates, getPort, getModuleForPort } from '../state'
 import Ports from './Ports'
 import ModuleDragger from './ModuleDragger'
 import * as RunController from './CanvasController/Run'
+import useCanvasActions from './CanvasController/useCanvasActions'
 
 import Probe from './Resizable/SizeConstraintProvider/Probe'
 import ModuleStyles from '$editor/shared/components/Module.pcss'
@@ -272,8 +273,11 @@ function ModuleError(props) {
 
 const CanvasModuleWithErrorBoundary = withErrorBoundary(ModuleError)(CanvasModule)
 
-export default withErrorBoundary(ModuleError)((props) => (
-    <ModuleDragger module={props.module} api={props.api}>
-        <CanvasModuleWithErrorBoundary {...props} />
-    </ModuleDragger>
-))
+export default withErrorBoundary(ModuleError)((props) => {
+    const canvasActions = useCanvasActions()
+    return (
+        <ModuleDragger module={props.module} onDragEnd={canvasActions.moveModule}>
+            <CanvasModuleWithErrorBoundary {...props} />
+        </ModuleDragger>
+    )
+})
