@@ -59,14 +59,37 @@ if (process.env.SENTRY_DSN) {
                 dsn: process.env.SENTRY_DSN,
                 release: process.env.VERSION,
                 environment: process.env.SENTRY_ENVIRONMENT,
+                integrations: [new Sentry.Integrations.RewriteFrames()],
+                whitelistUrls: [
+                    window.location.origin,
+                    process.env.PLATFORM_PUBLIC_PATH,
+                    process.env.PLATFORM_ORIGIN_URL,
+                    process.env.STREAMR_URL,
+                ].filter(Boolean),
                 debug: true,
             })
         ),
         reportError: (error: Error, extra: Object = {}) => {
             Sentry.withScope((scope) => {
+                scope.setTag('error_boundary', true)
                 if (extra) {
                     scope.setExtras(extra)
                 }
+
+                Sentry.captureException(error)
+            })
+        },
+        reportWarning: (error: Error, extra: Object = {}) => {
+            console.warn({
+                error,
+                extra,
+            }) // eslint-disable-line no-console
+            Sentry.withScope((scope) => {
+                scope.setTag('error_boundary', true)
+                if (extra) {
+                    scope.setExtras(extra)
+                }
+                scope.setLevel('warning')
 
                 Sentry.captureException(error)
             })
