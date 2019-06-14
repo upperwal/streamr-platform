@@ -64,6 +64,8 @@ const CanvasEditComponent = function CanvasEdit(props) {
     const isMounted = useIsMounted()
     const canvasRef = useRef()
     canvasRef.current = canvas
+    const runControllerRef = useRef()
+    runControllerRef.current = runController
 
     const {
         removeModule,
@@ -165,12 +167,12 @@ const CanvasEditComponent = function CanvasEdit(props) {
     ), [runController, canvasRef])
 
     const loadSelf = useCallback(async () => (
-        runController.load(canvasRef.current.id)
-    ), [runController, canvasRef])
+        canvasController.load(canvasRef.current.id)
+    ), [canvasController, canvasRef])
 
     const autostart = useCallback(async () => {
         if (isDeleted) { return } // do not autostart deleted canvases
-        if (canvasRef.current.adhoc && !runController.isActive) {
+        if (canvasRef.current.adhoc && !runController.isPending && !runController.isActive && !runController.canvasDidRun) {
             // do not autostart running/non-adhoc canvases
             return canvasStart()
         }
@@ -182,7 +184,6 @@ const CanvasEditComponent = function CanvasEdit(props) {
             // do not autosave running/adhoc canvases or if we have no write permission
             return
         }
-
         const newCanvas = await services.autosave(canvasRef.current)
         if (!isMounted()) { return }
         // ignore new canvas, just extract updated time from it
@@ -238,7 +239,7 @@ const CanvasEditComponent = function CanvasEdit(props) {
             if (!isMounted()) { return }
             replace((canvas) => CanvasState.replaceModule(canvas, moduleData))
         } catch (error) {
-            console.error(error.message)
+            console.error(error)
             // undo value change
             undo()
         }
