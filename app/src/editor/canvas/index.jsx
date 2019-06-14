@@ -1,4 +1,4 @@
-import React, { Component, useContext } from 'react'
+import React, { useContext, useCallback, useEffect, useState, useRef } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 
@@ -15,8 +15,10 @@ import { ClientProvider } from '$editor/shared/components/Client'
 import { ModalProvider } from '$editor/shared/components/Modal'
 import * as sharedServices from '$editor/shared/services'
 import BodyClass from '$shared/components/BodyClass'
+import useIsMounted from '$shared/hooks/useIsMounted'
 import Sidebar from '$editor/shared/components/Sidebar'
 import { useSelectionContext, SelectionProvider } from '$editor/shared/hooks/useSelection'
+import useLatch from '$editor/shared/hooks/useLatch'
 import ModuleSidebar from './components/ModuleSidebar'
 import KeyboardShortcutsSidebar from './components/KeyboardShortcutsSidebar'
 
@@ -41,164 +43,209 @@ import styles from './index.pcss'
 
 const { RunStates } = CanvasState
 
-const CanvasEditComponent = class CanvasEdit extends Component {
-    state = {
-        moduleSearchIsOpen: this.props.runController.isEditable,
-        moduleSidebarIsOpen: false,
-        keyboardShortcutIsOpen: false,
-    }
+const CanvasEditComponent = function CanvasEdit(props) {
+    const {
+        undo,
+        runController,
+        push,
+        replace,
+        selection,
+        canvasActions,
+        canvas,
+        setUpdated,
+        canvasController,
+        history,
+    } = props
 
-    setCanvas = (action, fn, done) => {
-        if (this.unmounted) { return }
-        this.props.push(action, fn, done)
-    }
+    const [isDeleted, setIsDeleted] = useState(false)
+    const moduleSearchLatch = useLatch(runController.isEditable, 'moduleSearchLatch')
+    const moduleSidebarLatch = useLatch(false, 'moduleSidebarLatch')
+    const keyboardShortcutsLatch = useLatch(false, 'keyboardShortcutsLatch')
+    const isMounted = useIsMounted()
+    const canvasRef = useRef()
+    canvasRef.current = canvas
 
-    replaceCanvas = (fn, done) => {
-        if (this.unmounted) { return }
-        this.props.replace(fn, done)
-    }
+    const {
+        removeModule,
+        renameCanvas,
+        updateModule,
+        renameModule,
+        setModuleOptions,
+        setRunTab,
+        setHistorical,
+        setSpeed,
+        setSaveState,
+    } = canvasActions
 
-    moduleSearchOpen = (show = true) => {
-        this.setState({
-            moduleSearchIsOpen: !!show,
-        })
-    }
+    // simulate setState onDone callback
+    const queued = useRef([])
+    useEffect(() => {
+        if (!queued.current.length) { return }
+        const fns = queued.current.slice()
+        queued.current.length = 0
+        if (!isMounted()) { return }
+        fns.forEach((fn) => fn())
+    }, [isMounted])
 
-    moduleSidebarOpen = (show = true) => {
-        this.setState({
-            moduleSidebarIsOpen: !!show,
-            keyboardShortcutIsOpen: false,
-        })
-    }
+    const queueFn = useCallback((fn) => {
+        if (typeof fn === 'function') {
+            queued.current.push(fn)
+        }
+    }, [queued])
 
-    moduleSidebarClose = () => {
-        this.moduleSidebarOpen(false)
-    }
+    const setCanvas = useCallback((action, fn, done) => {
+        if (!isMounted()) { return }
+        push(action, fn)
+        queueFn(done)
+    }, [isMounted, push, queueFn])
 
-    keyboardShortcutOpen = (show = true) => {
-        this.setState({
-            moduleSidebarIsOpen: !!show,
-            keyboardShortcutIsOpen: !!show,
-        })
-    }
+    const replaceCanvas = useCallback((fn, done) => {
+        if (!isMounted()) { return }
+        replace(fn)
+        queueFn(done)
+    }, [isMounted, replace, queueFn])
 
-    selectModule = async ({ hash } = {}) => {
-        this.setState(({ moduleSidebarIsOpen, keyboardShortcutIsOpen }) => ({
-            // close sidebar if no selection
-            moduleSidebarIsOpen: hash == null ? keyboardShortcutIsOpen : moduleSidebarIsOpen,
-        }))
-        this.props.selection.only(hash)
-    }
+    const moduleSearchOpen = moduleSearchLatch.open
 
-    onKeyDown = (event) => {
+    const moduleSidebarOpen = useCallback((show = true) => {
+        keyboardShortcutsLatch.close()
+        moduleSidebarLatch.open(show)
+    }, [keyboardShortcutsLatch, moduleSidebarLatch])
+
+    const moduleSidebarClose = moduleSidebarLatch.close
+
+    const keyboardShortcutOpen = useCallback((show = true) => {
+        keyboardShortcutsLatch.open(show)
+        moduleSidebarLatch.open(show)
+    }, [keyboardShortcutsLatch, moduleSidebarLatch])
+
+    const selectModule = useCallback(async ({ hash } = {}) => {
+        if (hash == null) {
+            selection.none()
+            return
+        }
+        selection.only(hash)
+    }, [selection])
+
+    const selectedModule = selection.last()
+    useEffect(() => {
+        if (!selectedModule && moduleSidebarLatch.isOpen()) {
+            moduleSidebarLatch.close()
+        }
+    }, [selectedModule, moduleSidebarLatch])
+
+    const onKeyDown = useCallback((event) => {
         const hash = Number(event.target.dataset.modulehash)
         if (Number.isNaN(hash)) {
             return
         }
 
         if (event.code === 'Backspace' || event.code === 'Delete') {
-            this.removeModule({ hash })
+            removeModule(hash)
         }
-    }
+    }, [removeModule])
 
-    componentDidMount() {
-        window.addEventListener('keydown', this.onKeyDown)
-        this.autosave()
-        this.autostart()
-    }
-
-    componentWillUnmount() {
-        this.unmounted = true
-        window.removeEventListener('keydown', this.onKeyDown)
-        this.autosave()
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.canvas !== prevProps.canvas || (
-            // canvas changed or became editable
-            !prevProps.runController.isEditable && this.props.runController.isEditable
-        )) {
-            this.autosave()
+    useEffect(() => {
+        window.addEventListener('keydown', onKeyDown)
+        return () => {
+            window.removeEventListener('keydown', onKeyDown)
         }
-    }
+    }, [onKeyDown])
 
-    async autostart() {
-        const { canvas, runController } = this.props
-        if (this.isDeleted) { return } // do not autostart deleted canvases
-        if (canvas.adhoc && !runController.isActive) {
+    const canvasStart = useCallback(async (options = {}) => (
+        runController.start(canvasRef.current, options)
+    ), [runController, canvasRef])
+
+    const canvasStop = useCallback(async () => (
+        runController.stop(canvasRef.current)
+    ), [runController, canvasRef])
+
+    const canvasExit = useCallback(async () => (
+        runController.exit(canvasRef.current)
+    ), [runController, canvasRef])
+
+    const loadSelf = useCallback(async () => (
+        runController.load(canvasRef.current.id)
+    ), [runController, canvasRef])
+
+    const autostart = useCallback(async () => {
+        if (isDeleted) { return } // do not autostart deleted canvases
+        if (canvasRef.current.adhoc && !runController.isActive) {
             // do not autostart running/non-adhoc canvases
-            return this.canvasStart()
+            return canvasStart()
         }
-    }
+    }, [canvasRef, runController, isDeleted, canvasStart])
 
-    async autosave() {
-        const { canvas, runController } = this.props
-        if (this.isDeleted) { return } // do not autosave deleted canvases
+    const autosave = useCallback(async () => {
+        if (isDeleted) { return } // do not autosave deleted canvases
         if (!runController.isEditable) {
             // do not autosave running/adhoc canvases or if we have no write permission
             return
         }
 
-        const newCanvas = await services.autosave(canvas)
-        if (this.unmounted) { return }
+        const newCanvas = await services.autosave(canvasRef.current)
+        if (!isMounted()) { return }
         // ignore new canvas, just extract updated time from it
-        this.props.setUpdated(newCanvas.updated)
-    }
+        setUpdated(newCanvas.updated)
+    }, [canvasRef, isDeleted, isMounted, runController, setUpdated])
 
-    removeModule = async (hash) => {
-        this.props.canvasActions.removeModule(hash)
-    }
+    useEffect(() => {
+        autosave()
+        autostart()
+        return () => {
+            if (!isMounted()) {
+                autosave()
+            }
+        }
+    }, [autosave, autostart, isMounted])
 
-    addModule = async ({ id, configuration }) => {
-        const { canvas, canvasController } = this.props
+    const { isEditable } = runController
+
+    useEffect(() => {
+        // canvas changed or became editable
+        if (isEditable) {
+            autosave()
+        }
+    }, [canvas, isEditable, autosave])
+
+    const addModule = useCallback(async ({ id, configuration }) => {
         const moduleData = await canvasController.loadModule(canvas, {
             ...configuration,
             id,
         })
 
-        if (this.unmounted) { return }
+        if (!isMounted()) { return }
 
-        this.props.canvasActions.addModule(moduleData)
-    }
+        canvasActions.addModule(moduleData)
+    }, [canvasController, canvas, canvasActions, isMounted])
 
-    duplicateCanvas = async () => {
-        const { canvas, canvasController } = this.props
-        await canvasController.duplicate(canvas)
-    }
+    const duplicateCanvas = useCallback(async () => (
+        canvasController.duplicate(canvasRef.current)
+    ), [canvasController])
 
-    deleteCanvas = async () => {
-        const { canvas, canvasController } = this.props
-        this.isDeleted = true
-        await canvasController.remove(canvas)
-    }
+    const deleteCanvas = useCallback(async () => {
+        setIsDeleted(true)
+        return canvasController.remove(canvasRef.current)
+    }, [canvasRef, setIsDeleted, canvasController])
 
-    newCanvas = async () => {
-        this.props.history.push(links.editor.canvasEditor)
-    }
+    const newCanvas = useCallback(() => (
+        history.push(links.editor.canvasEditor)
+    ), [history])
 
-    renameCanvas = (name) => {
-        this.props.canvasActions.renameCanvas(name)
-    }
-
-    updateModule = (hash, value) => {
-        this.props.canvasActions.updateModule(hash, value)
-    }
-
-    loadNewDefinition = async (hash) => {
-        const { canvas, canvasController, replace } = this.props
+    const loadNewDefinition = useCallback(async (hash) => {
         try {
-            const moduleData = await canvasController.loadModule(canvas, { hash })
-            if (this.unmounted) { return }
+            const moduleData = await canvasController.loadModule(canvasRef.current, { hash })
+            if (!isMounted()) { return }
             replace((canvas) => CanvasState.replaceModule(canvas, moduleData))
         } catch (error) {
             console.error(error.message)
             // undo value change
-            this.props.undo()
+            undo()
         }
-    }
+    }, [canvasRef, canvasController, replace, undo, isMounted])
 
-    pushNewDefinition = async (hash, value) => {
-        const module = CanvasState.getModule(this.props.canvas, hash)
+    const pushNewDefinition = useCallback(async (hash, value) => {
+        const module = CanvasState.getModule(canvasRef.current, hash)
 
         // Update the module info, this will throw if anything went wrong.
         const newModule = await sharedServices.getModule({
@@ -209,75 +256,30 @@ const CanvasEditComponent = class CanvasEdit extends Component {
             },
         })
 
-        if (this.unmounted) { return }
+        if (!isMounted()) { return }
 
-        this.replaceCanvas((canvas) => (
+        replaceCanvas((canvas) => (
             CanvasState.updateModule(canvas, hash, () => newModule)
         ))
-    }
+    }, [replaceCanvas, canvasRef, isMounted])
 
-    renameModule = (hash, displayName) => {
-        this.props.canvasActions.renameModule(hash, displayName)
-    }
-
-    setModuleOptions = (hash, options) => {
-        this.props.canvasActions.setModuleOptions(hash, options)
-    }
-
-    setRunTab = (runTab) => {
-        this.props.canvasActions.setRunTab(runTab)
-    }
-
-    setHistorical = (update = {}) => {
-        this.props.canvasActions.setHistorical(update)
-    }
-
-    setSpeed = (speed) => {
-        this.props.canvasActions.setSpeed(speed)
-    }
-
-    setSaveState = (serializationEnabled) => {
-        this.props.canvasActions.setSaveState(serializationEnabled)
-    }
-
-    canvasStart = async (options = {}) => {
-        const { canvas, runController } = this.props
-        return runController.start(canvas, options)
-    }
-
-    canvasStop = async () => {
-        const { canvas, runController } = this.props
-        return runController.stop(canvas)
-    }
-
-    canvasExit = async () => {
-        const { canvas, runController } = this.props
-        return runController.exit(canvas)
-    }
-
-    loadSelf = async () => {
-        const { canvas, canvasController } = this.props
-        await canvasController.load(canvas.id)
-    }
-
-    onDoneMessage = () => {
-        const { runController } = this.props
+    const onDoneMessage = useCallback(async () => {
         if (!runController.isPending && runController.isRunning) {
-            this.loadSelf()
+            loadSelf()
         }
-    }
+    }, [runController, loadSelf])
 
-    onErrorMessage = (error) => {
+    const onErrorMessage = useCallback(async (error) => {
         pushErrorNotification({
             message: error.error,
             error,
         })
-        return this.loadSelf()
-    }
+        return loadSelf()
+    }, [loadSelf])
 
-    onWarningMessage = ({ msg = '', hash, ...opts } = {}) => {
+    const onWarningMessage = useCallback(({ msg = '', hash, ...opts } = {}) => {
         if (hash != null) {
-            const module = CanvasState.getModule(this.props.canvas, hash)
+            const module = CanvasState.getModule(canvasRef.current, hash)
             if (module) {
                 const moduleName = module.displayName || module.name
                 msg = `${moduleName}: ${msg}`
@@ -288,99 +290,99 @@ const CanvasEditComponent = class CanvasEdit extends Component {
             hash,
             ...opts,
         })
-    }
+    }, [canvasRef])
 
-    render() {
-        const { canvas, runController } = this.props
-        if (!canvas) {
-            return (
-                <div className={styles.CanvasEdit}>
-                    <CanvasToolbar className={styles.CanvasToolbar} />
-                </div>
-            )
-        }
-        const { moduleSidebarIsOpen, keyboardShortcutIsOpen } = this.state
-        const { settings } = canvas
-        const resendFrom = settings.beginDate
-        const resendTo = settings.endDate
+    if (!canvas) {
         return (
             <div className={styles.CanvasEdit}>
-                <Helmet title={`${canvas.name} | Streamr Core`} />
-                <Subscription
-                    uiChannel={canvas.uiChannel}
-                    resendFrom={canvas.adhoc ? resendFrom : undefined}
-                    resendTo={canvas.adhoc ? resendTo : undefined}
-                    isActive={runController.isActive}
-                    onDoneMessage={this.onDoneMessage}
-                    onWarningMessage={this.onWarningMessage}
-                    onErrorMessage={this.onErrorMessage}
-                />
-                <Canvas
-                    className={styles.Canvas}
-                    canvas={canvas}
-                    canvasActions={this.props.canvasActions}
-                    selectModule={this.selectModule}
-                    updateModule={this.updateModule}
-                    renameModule={this.renameModule}
-                    moduleSidebarOpen={this.moduleSidebarOpen}
-                    moduleSidebarIsOpen={moduleSidebarIsOpen && !keyboardShortcutIsOpen}
-                    setCanvas={this.setCanvas}
-                    loadNewDefinition={this.loadNewDefinition}
-                    pushNewDefinition={this.pushNewDefinition}
-                >
-                    {runController.hasWritePermission ? (
-                        <CanvasStatus updated={this.props.updated} />
-                    ) : (
-                        <CannotSaveStatus />
-                    )}
-                </Canvas>
-                <ModalProvider>
-                    <CanvasToolbar
-                        className={styles.CanvasToolbar}
-                        canvas={canvas}
-                        setCanvas={this.setCanvas}
-                        renameCanvas={this.renameCanvas}
-                        deleteCanvas={this.deleteCanvas}
-                        newCanvas={this.newCanvas}
-                        duplicateCanvas={this.duplicateCanvas}
-                        moduleSearchIsOpen={this.state.moduleSearchIsOpen}
-                        moduleSearchOpen={this.moduleSearchOpen}
-                        setRunTab={this.setRunTab}
-                        setHistorical={this.setHistorical}
-                        setSpeed={this.setSpeed}
-                        setSaveState={this.setSaveState}
-                        canvasStart={this.canvasStart}
-                        canvasStop={this.canvasStop}
-                        keyboardShortcutOpen={this.keyboardShortcutOpen}
-                        canvasExit={this.canvasExit}
-                    />
-                </ModalProvider>
-                <Sidebar
-                    className={styles.ModuleSidebar}
-                    isOpen={moduleSidebarIsOpen}
-                >
-                    {moduleSidebarIsOpen && keyboardShortcutIsOpen && (
-                        <KeyboardShortcutsSidebar
-                            onClose={() => this.keyboardShortcutOpen(false)}
-                        />
-                    )}
-                    {moduleSidebarIsOpen && !keyboardShortcutIsOpen && (
-                        <ModuleSidebar
-                            onClose={this.moduleSidebarClose}
-                            canvas={canvas}
-                            selectedModuleHash={this.props.selection.last()}
-                            setModuleOptions={this.setModuleOptions}
-                        />
-                    )}
-                </Sidebar>
-                <ModuleSearch
-                    addModule={this.addModule}
-                    isOpen={runController.isEditable && this.state.moduleSearchIsOpen}
-                    open={this.moduleSearchOpen}
-                />
+                <CanvasToolbar className={styles.CanvasToolbar} />
             </div>
         )
     }
+
+    const moduleSidebarIsOpen = moduleSidebarLatch.isOpen()
+    const keyboardShortcutIsOpen = keyboardShortcutsLatch.isOpen()
+    const { settings } = canvas
+    const resendFrom = settings.beginDate
+    const resendTo = settings.endDate
+    return (
+        <div className={styles.CanvasEdit}>
+            <Helmet title={`${canvas.name} | Streamr Core`} />
+            <Subscription
+                uiChannel={canvas.uiChannel}
+                resendFrom={canvas.adhoc ? resendFrom : undefined}
+                resendTo={canvas.adhoc ? resendTo : undefined}
+                isActive={runController.isActive}
+                onDoneMessage={onDoneMessage}
+                onWarningMessage={onWarningMessage}
+                onErrorMessage={onErrorMessage}
+            />
+            <Canvas
+                className={styles.Canvas}
+                canvas={canvas}
+                selectedModuleHash={selection.last()}
+                canvasActions={canvasActions}
+                selectModule={selectModule}
+                updateModule={updateModule}
+                renameModule={renameModule}
+                moduleSidebarOpen={moduleSidebarOpen}
+                moduleSidebarIsOpen={moduleSidebarIsOpen && !keyboardShortcutIsOpen}
+                setCanvas={setCanvas}
+                loadNewDefinition={loadNewDefinition}
+                pushNewDefinition={pushNewDefinition}
+            >
+                {runController.hasWritePermission ? (
+                    <CanvasStatus updated={props.updated} />
+                ) : (
+                    <CannotSaveStatus />
+                )}
+            </Canvas>
+            <ModalProvider>
+                <CanvasToolbar
+                    className={styles.CanvasToolbar}
+                    canvas={canvas}
+                    setCanvas={setCanvas}
+                    renameCanvas={renameCanvas}
+                    deleteCanvas={deleteCanvas}
+                    newCanvas={newCanvas}
+                    duplicateCanvas={duplicateCanvas}
+                    moduleSearchIsOpen={moduleSearchLatch.isOpen()}
+                    moduleSearchOpen={moduleSearchOpen}
+                    setRunTab={setRunTab}
+                    setHistorical={setHistorical}
+                    setSpeed={setSpeed}
+                    setSaveState={setSaveState}
+                    canvasStart={canvasStart}
+                    canvasStop={canvasStop}
+                    keyboardShortcutOpen={keyboardShortcutOpen}
+                    canvasExit={canvasExit}
+                />
+            </ModalProvider>
+            <Sidebar
+                className={styles.ModuleSidebar}
+                isOpen={moduleSidebarIsOpen}
+            >
+                {moduleSidebarIsOpen && keyboardShortcutIsOpen && (
+                    <KeyboardShortcutsSidebar
+                        onClose={() => keyboardShortcutOpen(false)}
+                    />
+                )}
+                {moduleSidebarIsOpen && !keyboardShortcutIsOpen && (
+                    <ModuleSidebar
+                        onClose={moduleSidebarClose}
+                        canvas={canvas}
+                        selectedModuleHash={selection.last()}
+                        setModuleOptions={setModuleOptions}
+                    />
+                )}
+            </Sidebar>
+            <ModuleSearch
+                addModule={addModule}
+                isOpen={runController.isEditable && moduleSearchLatch.isOpen()}
+                open={moduleSearchLatch.open}
+            />
+        </div>
+    )
 }
 
 const CanvasEdit = withRouter(({ canvas, ...props }) => {

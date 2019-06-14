@@ -8,7 +8,7 @@ import withErrorBoundary from '$shared/utils/withErrorBoundary'
 import ModuleUI from '$editor/shared/components/ModuleUI'
 import { UiEmitter } from '$editor/shared/components/RunStateLoader'
 
-import { RunStates } from '../state'
+import { RunStates, getPort, getModuleForPort } from '../state'
 
 import Ports from './Ports'
 import ModuleDragger from './ModuleDragger'
@@ -87,8 +87,20 @@ class CanvasModule extends React.PureComponent {
 
     onPortValueChange = (portId, value) => {
         // Check if reload is needed after the change
-        const { canvasActions } = this.props
+        const { canvasActions, api, canvas } = this.props
+        const port = getPort(canvas, portId)
+        const portModule = getModuleForPort(canvas, portId)
         canvasActions.setPortUserValue(portId, value)
+        // temporary hack
+        setTimeout(() => {
+            if (!this.unmounted &&
+                port &&
+                (port.updateOnChange || port.type === 'EthereumContract') &&
+                port.value !== value
+            ) {
+                api.loadNewDefinition(portModule.hash)
+            }
+        })
     }
 
     onHamburgerButtonFocus = (e) => {
@@ -106,6 +118,7 @@ class CanvasModule extends React.PureComponent {
             module,
             canvas,
             className,
+            canvasActions,
             selectedModuleHash,
             moduleSidebarIsOpen,
             onPort,

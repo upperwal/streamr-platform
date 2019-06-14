@@ -46,6 +46,7 @@ export default class Canvas extends React.PureComponent {
     render() {
         const {
             className,
+            canvasActions,
             canvas,
             selectedModuleHash,
             moduleSidebarIsOpen,
@@ -58,6 +59,7 @@ export default class Canvas extends React.PureComponent {
                     key={canvas.id}
                     canvas={canvas}
                     api={this.api}
+                    canvasActions={canvasActions}
                     selectedModuleHash={selectedModuleHash}
                     moduleSidebarIsOpen={moduleSidebarIsOpen}
                     {...this.api.module}
@@ -129,7 +131,13 @@ class CanvasElements extends React.PureComponent {
     }
 
     render() {
-        const { canvas, api, selectedModuleHash, moduleSidebarIsOpen } = this.props
+        const {
+            canvas,
+            api,
+            selectedModuleHash,
+            moduleSidebarIsOpen,
+            canvasActions,
+        } = this.props
         if (!canvas) { return null }
         return (
             <div className={styles.CanvasElements}>
@@ -150,6 +158,7 @@ class CanvasElements extends React.PureComponent {
                                 api={api}
                                 selectedModuleHash={selectedModuleHash}
                                 moduleSidebarIsOpen={moduleSidebarIsOpen}
+                                canvasActions={canvasActions}
                                 {...api.module}
                             />
                         ))}
