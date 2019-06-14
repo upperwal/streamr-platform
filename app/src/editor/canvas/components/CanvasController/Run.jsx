@@ -15,6 +15,7 @@ import * as CanvasState from '../../state'
 
 import useCanvasStateChangeEffect from '../../hooks/useCanvasStateChangeEffect'
 import useCanvasUpdater from './useCanvasUpdater'
+import useCanvasLoadCallback from './useCanvasLoadCallback'
 import useCanvas from './useCanvas'
 
 export const RunControllerContext = React.createContext()
@@ -33,6 +34,7 @@ function useRunController() {
     const { permissions } = useContext(PermissionContext)
     const { replaceCanvas } = useCanvasUpdater()
     const isMountedRef = useIsMountedRef()
+    const canvasLoad = useCanvasLoadCallback()
 
     const createAdhocPending = usePending('CREATE ADHOC')
     const startPending = usePending('START')
@@ -99,11 +101,14 @@ function useRunController() {
     const stop = useCallback(async (canvas) => {
         setIsStopping(true)
         return stopPending.wrap(() => services.stop(canvas))
-            .then((canvas) => {
+            .then(async () => {
                 if (!isMountedRef.current) { return }
                 setCanvasDidRun(true)
+                const prevCanvas = canvas
+                await canvasLoad(canvas.id)
+                if (!isMountedRef.current) { return }
                 setIsStopping(false)
-                return canvas
+                return replaceCanvas((canvas) => CanvasState.copyLayout(canvas, prevCanvas))
             }, async (err) => {
                 if (isStateNotAllowedError(err)) {
                     if (!canvas.adhoc) { return } // trying to stop an already stopped canvas, ignore
@@ -118,7 +123,7 @@ function useRunController() {
                 }
                 throw err
             })
-    }, [stopPending, setIsStopping, isMountedRef, unlinkParent, replaceCanvas])
+    }, [stopPending, setIsStopping, isMountedRef, unlinkParent, replaceCanvas, canvasLoad])
 
     const exit = useCallback(async (canvas) => {
         const newCanvas = await exitPending.wrap(() => services.loadParentCanvas(canvas))
