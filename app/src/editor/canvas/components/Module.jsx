@@ -130,6 +130,9 @@ class CanvasModule extends React.PureComponent {
 
         const moduleSpecificStyles = [ModuleStyles[module.jsModule], ModuleStyles[module.widget]]
         const isResizable = isModuleResizable(module)
+        const disabled = this.context.isPending // disable edits while loading
+        const arePortsDisabled = disabled || this.context.isRunning // ports cannot be edited while running
+
         return (
             /* eslint-disable-next-line max-len */
             /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-tabindex */
@@ -140,7 +143,7 @@ class CanvasModule extends React.PureComponent {
                 onFocus={() => api.selectModule({ hash: module.hash })}
                 className={cx(className, styles.CanvasModule, ModuleStyles.ModuleBase, ...moduleSpecificStyles, {
                     [ModuleStyles.isSelected]: isSelected,
-                    [ModuleStyles.disabled]: this.context.isPending, // disable edits while loading
+                    [ModuleStyles.disabled]: disabled,
                 })}
                 width={parseInt(layout.width, 10)}
                 height={parseInt(layout.height, 10)}
@@ -158,7 +161,7 @@ class CanvasModule extends React.PureComponent {
                     >
                         {isRunning && !!module.canRefresh && (
                             <ModuleHeaderButton
-                                className={ModuleStyles.dragCancel}
+                                className={cx(ModuleStyles.disabledCancel, ModuleStyles.dragCancel)}
                                 onFocus={this.onFocusOptionsButton}
                                 onClick={this.onRefreshModule}
                             >
@@ -169,7 +172,7 @@ class CanvasModule extends React.PureComponent {
                             </ModuleHeaderButton>
                         )}
                         <ModuleHeaderButton
-                            className={ModuleStyles.dragCancel}
+                            className={cx(ModuleStyles.disabledCancel, ModuleStyles.dragCancel)}
                             onClick={this.onTriggerOptions}
                             onFocus={this.onHamburgerButtonFocus}
                             data-modulehash={(
@@ -189,6 +192,7 @@ class CanvasModule extends React.PureComponent {
                         canvas={canvas}
                         module={module}
                         onPort={onPort}
+                        disabled={arePortsDisabled}
                         onValueChange={this.onPortValueChange}
                     />
                 </div>

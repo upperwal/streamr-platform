@@ -5,6 +5,7 @@ import cx from 'classnames'
 
 import Probe from '$editor/canvas/components/Resizable/SizeConstraintProvider/Probe'
 import { Context as SizeConstraintContext } from '../Resizable/SizeConstraintProvider'
+import { DragDropContext } from '../DragDropContext'
 import Port from './Port'
 import styles from './ports.pcss'
 
@@ -12,6 +13,7 @@ type Props = {
     api: any,
     canvas: any,
     className?: ?string,
+    disabled?: boolean,
     module: any,
     onPort: any,
     onValueChange: any,
@@ -21,6 +23,7 @@ const Ports = ({
     api,
     canvas,
     className,
+    disabled,
     module,
     onPort,
     onValueChange,
@@ -36,6 +39,11 @@ const Ports = ({
         refreshProbes()
     }, [maxPorts, refreshProbes])
 
+    const { isDragging, data } = useContext(DragDropContext)
+    const { portId } = data || {}
+    const dragInProgress = !!(isDragging && portId != null)
+    const isDisabled = !!(disabled || dragInProgress)
+
     return !!(inputs.length || outputs.length) && (
         <div className={cx(styles.root, className)}>
             <div className={styles.ports}>
@@ -44,6 +52,7 @@ const Ports = ({
                     <Port
                         api={api}
                         canvas={canvas}
+                        disabled={isDisabled}
                         key={port.id}
                         onPort={onPort}
                         onValueChange={onValueChange}
@@ -62,6 +71,7 @@ const Ports = ({
                     <Port
                         api={api}
                         canvas={canvas}
+                        disabled={isDisabled}
                         key={port.id}
                         onPort={onPort}
                         onValueChange={onValueChange}

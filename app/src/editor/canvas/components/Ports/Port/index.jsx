@@ -1,12 +1,11 @@
 // @flow
 
-import React, { useCallback, useState, useEffect, useContext, useMemo } from 'react'
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import cx from 'classnames'
 import startCase from 'lodash/startCase'
 import EditableText from '$shared/components/EditableText'
 import useGlobalEventWithin from '$shared/hooks/useGlobalEventWithin'
 import useKeyDown from '$shared/hooks/useKeyDown'
-import { DragDropContext } from '../../DragDropContext'
 import Option from '../Option'
 import Plug from '../Plug'
 import Menu from '../Menu'
@@ -17,6 +16,7 @@ import styles from './port.pcss'
 type Props = {
     api: any,
     canvas: any,
+    disabled?: boolean,
     onPort: any,
     onValueChange: (any, any, any) => void,
     onSizeChange: () => void,
@@ -27,6 +27,7 @@ type Props = {
 const Port = ({
     api,
     canvas,
+    disabled,
     onPort,
     onSizeChange,
     onValueChange: onValueChangeProp,
@@ -91,10 +92,6 @@ const Port = ({
         onSizeChange()
     }, [port.id, onValueChangeProp, onSizeChange])
 
-    const { isDragging, data } = useContext(DragDropContext)
-    const { portId } = data || {}
-    const dragInProgress = !!isDragging && portId != null
-
     const plug = (
         <Plug
             api={api}
@@ -121,7 +118,7 @@ const Port = ({
     return (
         <div
             className={cx(styles.root, {
-                [styles.dragInProgress]: !!dragInProgress,
+                [styles.disabled]: !!disabled,
             })}
         >
             {!!contextMenuTarget && (

@@ -3,9 +3,13 @@
   display: flex;
 }
 
-.root:not(.dragInProgress):hover .portOption {
-  opacity: 1;
+.root.disabled {
+  pointer-events: none;
+}
+
+.root:not(.disabled):hover .portOption {
   pointer-events: all;
+  opacity: 1;
 }
 
 .spaceholder {
