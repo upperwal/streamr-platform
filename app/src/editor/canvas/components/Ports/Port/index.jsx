@@ -96,6 +96,7 @@ const Port = ({
         <Plug
             api={api}
             canvas={canvas}
+            disabled={disabled}
             onContextMenu={onContextMenu}
             onValueChange={onValueChangeProp}
             port={port}

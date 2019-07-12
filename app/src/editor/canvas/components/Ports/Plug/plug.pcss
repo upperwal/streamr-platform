@@ -77,10 +77,6 @@
   background-color: #C90000;
 }
 
-.rejectDrop .dragger {
-  cursor: default;
-}
-
 .allowDrop .inner {
   background-color: #00C900;
 }
@@ -93,8 +89,18 @@
   box-shadow: 0 0 0 calc(0.125 * var(--um)) #ADF5FF;
 }
 
-.isDragged.dragger {
+.dragger {
+  cursor: pointer;
+}
+
+.disabled,
+.dragger.isDragged {
   pointer-events: none;
+}
+
+.rejectDrop .dragger,
+.disabled .dragger {
+  cursor: default;
 }
 
 .isDragged.dragSource {

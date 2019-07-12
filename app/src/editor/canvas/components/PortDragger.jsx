@@ -136,6 +136,7 @@ class DraggablePort extends React.Component {
     render() {
         return (
             <Draggable
+                disabled={this.props.disabled}
                 defaultClassNameDragging={Plug.styles.isDragged}
                 handle={`.${Dragger.styles.dragHandle}`}
                 cancel={`.${Dragger.styles.dragCancel}`}
@@ -149,9 +150,15 @@ class DraggablePort extends React.Component {
     }
 }
 
-export function DragSource({ api, port, onValueChange, className }) {
+export function DragSource({
+    api,
+    className,
+    disabled,
+    onValueChange,
+    port,
+}) {
     return (
-        <DraggablePort api={api} port={port} onValueChange={onValueChange}>
+        <DraggablePort api={api} disabled={disabled} port={port} onValueChange={onValueChange}>
             <div
                 className={cx(Dragger.styles.root, Dragger.styles.source, Dragger.styles.dragHandle, className)}
             />

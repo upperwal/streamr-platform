@@ -1,6 +1,6 @@
 // @flow
 
-import React, { useEffect, useRef, useContext } from 'react'
+import React, { useEffect, useRef, useContext, useCallback } from 'react'
 import cx from 'classnames'
 import { type Ref } from '$shared/flowtype/common-types'
 import { DropTarget, DragSource } from '../../PortDragger'
@@ -16,8 +16,10 @@ import styles from './plug.pcss'
 type Props = {
     api: any,
     onValueChange: any,
+    onContextMenu: any,
     canvas: any,
     className?: ?string,
+    disabled?: boolean,
     port: any,
     register?: ?(any, ?HTMLDivElement) => void,
 }
@@ -26,8 +28,10 @@ const Plug = ({
     api,
     canvas,
     className,
+    disabled,
     port,
     register,
+    onContextMenu,
     onValueChange,
     ...props
 }: Props) => {
@@ -53,14 +57,19 @@ const Plug = ({
     const draggingFromSameModule = dragInProgress && hasPort(canvas, sourcePortId) && arePortsOfSameModule(canvas, sourcePortId, port.id)
     const canDrop = dragInProgress && canConnectPorts(canvas, fromId, port.id)
 
+    // don't show native context menu when right-click disabled.
+    const preventRightClick = useCallback((event) => event.preventDefault(), [])
+
     return (
         <div
             {...props}
+            onContextMenu={!disabled ? onContextMenu : preventRightClick}
             className={cx(styles.root, className, {
-                [styles.allowDrop]: !draggingFromSameModule && canDrop,
-                [styles.idle]: !dragInProgress,
-                [styles.ignoreDrop]: draggingFromSameModule,
-                [styles.rejectDrop]: dragInProgress && !draggingFromSameModule && !canDrop,
+                [styles.allowDrop]: !disabled && !draggingFromSameModule && canDrop,
+                [styles.idle]: !disabled && !dragInProgress,
+                [styles.ignoreDrop]: !disabled && draggingFromSameModule,
+                [styles.rejectDrop]: !disabled && dragInProgress && !draggingFromSameModule && !canDrop,
+                [styles.disabled]: disabled,
             })}
         >
             <div
@@ -80,8 +89,9 @@ const Plug = ({
             />
             <DragSource
                 api={api}
-                onValueChange={onValueChange}
                 className={cx(styles.dragger, styles.dragSource)}
+                disabled={disabled}
+                onValueChange={onValueChange}
                 port={port}
             />
         </div>
