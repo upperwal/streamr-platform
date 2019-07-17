@@ -1,16 +1,9 @@
 import { setupAuthorizationHeader } from '$editor/shared/tests/utils'
 
 import * as Services from '../services'
+import * as Linking from '../state/linking'
 
-const canvasMatcher = {
-    id: expect.any(String),
-    name: expect.any(String),
-    created: expect.any(String),
-    updated: expect.any(String),
-    uiChannel: expect.objectContaining({
-        id: expect.any(String),
-    }),
-}
+import { canvasMatcher } from './utils'
 
 describe('Adhoc Canvases', () => {
     let teardown
@@ -39,28 +32,19 @@ describe('Adhoc Canvases', () => {
                 }),
             })
 
-            // check parent canvas updated
-            const updatedParentCanvas = await Services.loadCanvas(parentCanvas)
-            expect(updatedParentCanvas).toMatchObject({
-                ...parentCanvas,
-                ...canvasMatcher,
-                settings: expect.objectContaining({
-                    childCanvasId: adhocCanvas.id, // captures child canvas id
-                }),
-            })
+            // check parent canvas linked
+            expect(Linking.getLink(parentCanvas.id)).toEqual(adhocCanvas.id)
         })
 
         it('can unlink adhoc canvas', async () => {
             const parentCanvas = await Services.create()
             const adhocCanvas = await Services.createAdhocCanvas(parentCanvas)
-            const updatedParentCanvas = await Services.unlinkParentCanvas(adhocCanvas)
+            const updatedParentCanvas = await Services.unlinkAndLoadParentCanvas(adhocCanvas)
+            // check canvases unlinked
+            expect(Linking.getLink(parentCanvas.id)).not.toBeTruthy()
             expect(updatedParentCanvas).toMatchObject({
                 ...parentCanvas,
                 ...canvasMatcher,
-                id: parentCanvas.id, // should have loaded parent canvas
-                settings: expect.not.objectContaining({
-                    childCanvasId: expect.anything(), // child canvas id unset
-                }),
             })
         })
 
@@ -73,12 +57,31 @@ describe('Adhoc Canvases', () => {
                 ...canvasMatcher,
                 id: adhocCanvas.id, // should have loaded adhoc canvas
             })
-            await Services.unlinkParentCanvas(adhocCanvas)
+            await Services.unlinkAndLoadParentCanvas(adhocCanvas)
             const nextLoadedCanvas = await Services.loadRelevantCanvas(parentCanvas)
             expect(nextLoadedCanvas).toMatchObject({
                 ...parentCanvas,
                 ...canvasMatcher,
+                id: parentCanvas.id, // should have loaded parent canvas
+            })
+        })
+
+        it('will load parent canvas as the "relevant" canvas if adhoc canvas is missing', async () => {
+            const parentCanvas = await Services.create()
+            const adhocCanvas = await Services.createAdhocCanvas(parentCanvas)
+            await Services.deleteCanvas({ id: adhocCanvas.id })
+
+            const loadedCanvas = await Services.loadRelevantCanvas(parentCanvas)
+            expect(loadedCanvas).toMatchCanvas(parentCanvas, {
                 id: parentCanvas.id, // should have loaded adhoc canvas
+            })
+
+            expect(loadedCanvas).not.toHaveProperty('settings.childCanvasId')
+
+            await Services.unlinkAndLoadParentCanvas(adhocCanvas)
+            const nextLoadedCanvas = await Services.loadRelevantCanvas(parentCanvas)
+            expect(nextLoadedCanvas).toMatchCanvas(parentCanvas, {
+                id: parentCanvas.id, // should still have loaded parent canvas
             })
         })
     })

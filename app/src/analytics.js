@@ -1,6 +1,7 @@
 // @flow
 
 import * as Sentry from '@sentry/browser'
+import { RewriteFrames } from '@sentry/integrations'
 import LogRocket from 'logrocket'
 
 type ErrorServiceId = string
@@ -43,6 +44,10 @@ export class Analytics {
         Object.keys(this.services).forEach((id) => this.services[id].reportError && this.services[id].reportError(error, extra))
     }
 
+    reportWarning = (error: Error, extra: Object = {}) => {
+        Object.keys(this.services).forEach((id) => this.services[id].reportWarning && this.services[id].reportWarning(error, extra))
+    }
+
     getMiddlewares = () => Object.keys(this.services).reduce((result, id) => ([
         ...result,
         ...(this.services[id].getMiddleware ? [this.services[id].getMiddleware()] : []),
@@ -59,6 +64,7 @@ if (process.env.SENTRY_DSN) {
                 dsn: process.env.SENTRY_DSN,
                 release: process.env.VERSION,
                 environment: process.env.SENTRY_ENVIRONMENT,
+                integrations: [new RewriteFrames()],
                 whitelistUrls: [
                     window.location.origin,
                     process.env.PLATFORM_PUBLIC_PATH,
@@ -78,6 +84,7 @@ if (process.env.SENTRY_DSN) {
                 Sentry.captureException(error)
             })
         },
+
         reportWarning: (error: Error, extra: Object = {}) => {
             console.warn({
                 error,

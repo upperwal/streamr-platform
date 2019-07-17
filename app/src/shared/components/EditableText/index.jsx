@@ -1,9 +1,9 @@
 // @flow
 
-import React, { useState, useCallback, Fragment, useEffect, useRef } from 'react'
+import React, { useState, useCallback, Fragment, useEffect, useRef, type Node } from 'react'
 import cx from 'classnames'
 import { type Ref } from '$shared/flowtype/common-types'
-import ModuleHeader from '$editor/shared/components/ModuleHeader'
+import ModuleStyles from '$editor/shared/components/Module.pcss'
 import TextControl from '../TextControl'
 import styles from './editableText.pcss'
 
@@ -14,9 +14,12 @@ type Props = {
     disabled?: boolean,
     editing?: boolean,
     editOnFocus?: boolean,
+    selectAllOnFocus?: boolean,
     onChange?: (string) => void,
+    onCommit?: (string) => void,
     onModeChange?: ?(boolean) => void,
     placeholder?: ?string,
+    probe?: Node,
     setEditing: (boolean) => void,
 }
 
@@ -27,9 +30,12 @@ const EditableText = ({
     disabled,
     editing,
     editOnFocus,
+    selectAllOnFocus,
     onChange: onChangeProp,
+    onCommit,
     onModeChange,
     placeholder,
+    probe,
     setEditing,
     ...props
 }: Props) => {
@@ -49,9 +55,13 @@ const EditableText = ({
     const onFocus = useCallback(() => {
         setHasFocus(true)
     }, [setHasFocus])
-    const onChange = useCallback((e: SyntheticInputEvent<EventTarget>) => {
-        setValue(e.target.value)
-    }, [setValue])
+
+    const onChange = useCallback(({ target: { value: val } }: SyntheticInputEvent<EventTarget>) => {
+        setValue(val)
+        if (onChangeProp) {
+            onChangeProp(val)
+        }
+    }, [onChangeProp])
 
     const initialRender: Ref<boolean> = useRef(true)
 
@@ -77,7 +87,7 @@ const EditableText = ({
                 [styles.idle]: !editing,
                 [styles.disabled]: disabled,
                 [styles.blank]: (editing && !value) || (!editing && !children),
-                [ModuleHeader.styles.dragCancel]: !!editing,
+                [ModuleStyles.dragCancel]: !!editing,
             })}
             onDoubleClick={startEditing}
             {...((editOnFocus && !disabled) ? {
@@ -88,6 +98,7 @@ const EditableText = ({
             } : {})}
         >
             <span className={styles.inner}>
+                {probe}
                 {editing && !disabled ? (
                     <Fragment>
                         <TextControl
@@ -97,11 +108,11 @@ const EditableText = ({
                             flushHistoryOnBlur
                             onBlur={onBlur}
                             onChange={onChange}
-                            onCommit={onChangeProp}
+                            onCommit={onCommit}
                             onFocus={onFocus}
                             placeholder={placeholder}
                             revertOnEsc
-                            selectAllOnFocus
+                            selectAllOnFocus={selectAllOnFocus}
                             spellCheck="false"
                             value={children}
                         />
@@ -119,6 +130,7 @@ EditableText.defaultProps = {
     children: '',
     className: null,
     editOnFocus: false,
+    selectAllOnFocus: true,
     immediateCommit: false,
     onChange: () => {},
 }

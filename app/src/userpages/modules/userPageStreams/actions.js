@@ -1,6 +1,7 @@
 // @flow
 
 import cloneDeep from 'lodash/cloneDeep'
+import { I18n } from 'react-redux-i18n'
 
 import type { ErrorInUi } from '$shared/flowtype/common-types'
 import type { Stream, StreamId, StreamIdList, StreamFieldList, CSVImporterSchema, StreamStatus } from '$shared/flowtype/stream-types'
@@ -16,9 +17,10 @@ import { getError } from '$shared/utils/request'
 import { selectUserData } from '$shared/modules/user/selectors'
 import { getParamsForFilter } from '$userpages/utils/filters'
 import CsvSchemaError from '$shared/errors/CsvSchemaError'
+import { formatApiUrl } from '$shared/utils/url'
 
 import * as services from './services'
-import { selectFilter, selectOpenStream } from './selectors'
+import { selectFilter, selectOpenStream, selectPageSize, selectOffset } from './selectors'
 
 export const GET_STREAM_REQUEST = 'userpages/streams/GET_STREAM_REQUEST'
 export const GET_STREAM_SUCCESS = 'userpages/streams/GET_STREAM_SUCCESS'
@@ -27,6 +29,7 @@ export const GET_STREAM_FAILURE = 'userpages/streams/GET_STREAM_FAILURE'
 export const GET_STREAMS_REQUEST = 'userpages/streams/GET_STREAMS_REQUEST'
 export const GET_STREAMS_SUCCESS = 'userpages/streams/GET_STREAMS_SUCCESS'
 export const GET_STREAMS_FAILURE = 'userpages/streams/GET_STREAMS_FAILURE'
+export const CLEAR_STREAM_LIST = 'userpages/streams/CLEAR_STREAM_LIST'
 
 export const GET_MY_STREAM_PERMISSIONS_REQUEST = 'userpages/streams/GET_MY_STREAM_PERMISSIONS_REQUEST'
 export const GET_MY_STREAM_PERMISSIONS_SUCCESS = 'userpages/streams/GET_MY_STREAM_PERMISSIONS_SUCCESS'
@@ -106,12 +109,13 @@ const getStreamFailure = (error: ErrorInUi) => ({
 })
 
 const getStreamsRequest = () => ({
-    type: GET_STREAM_REQUEST,
+    type: GET_STREAMS_REQUEST,
 })
 
-const getStreamsSuccess = (streams: StreamIdList) => ({
+const getStreamsSuccess = (streams: StreamIdList, hasMoreResults: boolean) => ({
     type: GET_STREAMS_SUCCESS,
     streams,
+    hasMoreResults,
 })
 
 const getStreamsFailure = (error: ErrorInUi) => ({
@@ -252,6 +256,10 @@ const getStreamRangeRequest = () => ({
     type: GET_STREAM_RANGE_REQUEST,
 })
 
+const clearStreamList = () => ({
+    type: CLEAR_STREAM_LIST,
+})
+
 export const getStream = (id: StreamId) => (dispatch: Function) => {
     dispatch(getStreamRequest())
     return services.getStream(id)
@@ -285,29 +293,58 @@ export const updateStreamStatus = (id: StreamId) => (dispatch: Function) => (
 )
 
 export const updateStreamStatuses = (ids: StreamIdList) => (dispatch: Function) => {
-    ids.forEach((id: StreamId) => (
-        dispatch(updateStreamStatus(id))
-    ))
+    let cancelled = false
+
+    const fetchStatuses = async () => {
+        for (let index = 0; index < ids.length && !cancelled; index += 1) {
+            // eslint-disable-next-line no-await-in-loop
+            await dispatch(updateStreamStatus(ids[index]))
+        }
+    }
+
+    fetchStatuses()
+
+    return () => {
+        cancelled = true
+    }
 }
 
-export const getStreams = () => (dispatch: Function, getState: Function) => {
+let streamStatusCancel = () => null
+
+export const cancelStreamStatusFetch = () => {
+    streamStatusCancel()
+}
+
+export const getStreams = (replace: ?boolean = false) => (dispatch: Function, getState: Function) => {
     dispatch(getStreamsRequest())
 
-    const filter = selectFilter(getState())
+    const state = getState()
+    const filter = selectFilter(state)
     const params = getParamsForFilter(filter, {
         uiChannel: false,
         sortBy: 'lastUpdated',
     })
+    const pageSize = selectPageSize(state)
+    let offset = selectOffset(state)
 
-    return services.getStreams(params)
-        .then((data) => data.map((stream) => ({
-            ...stream,
-            streamStatus: 'inactive',
-        })))
-        .then(handleEntities(streamsSchema, dispatch))
-        .then((ids) => {
-            dispatch(getStreamsSuccess(ids))
-            dispatch(updateStreamStatuses(ids))
+    // If we are replacing, reset the offset before API call
+    if (replace) {
+        offset = 0
+    }
+
+    streamStatusCancel()
+
+    return services.getStreams(params, pageSize, offset)
+        .then(({ streams, hasMoreResults }) => {
+            const ids = handleEntities(streamsSchema, dispatch)(streams.map((stream) => ({
+                ...stream,
+                streamStatus: 'inactive',
+            })))
+            if (replace) {
+                dispatch(clearStreamList())
+            }
+            dispatch(getStreamsSuccess(ids, hasMoreResults))
+            streamStatusCancel = dispatch(updateStreamStatuses(ids))
         })
         .catch((e) => {
             dispatch(getStreamsFailure(e))
@@ -384,7 +421,7 @@ export const updateStream = (stream: Stream) => (dispatch: Function) => {
         .then(() => {
             dispatch(updateStreamSuccess(stream.id))
             Notification.push({
-                title: 'Stream saved successfully',
+                title: I18n.t('userpages.streams.actions.saveStreamSuccess'),
                 icon: NotificationIcon.CHECKMARK,
             })
         })
@@ -398,24 +435,23 @@ export const updateStream = (stream: Stream) => (dispatch: Function) => {
         })
 }
 
-export const deleteStream = (id: StreamId) => (dispatch: Function): Promise<void> => {
+export const deleteStream = (id: StreamId) => async (dispatch: Function): Promise<void> => {
     dispatch(deleteStreamRequest())
-    return services.deleteStream(id)
-        .then(() => {
-            dispatch(deleteStreamSuccess(id))
-            Notification.push({
-                title: 'Stream deleted successfully',
-                icon: NotificationIcon.CHECKMARK,
-            })
+    try {
+        const deleteStream = await api.del(formatApiUrl('streams', id))
+        dispatch(deleteStreamSuccess(id))
+        Notification.push({
+            title: I18n.t('userpages.streams.actions.deleteStreamSuccess'),
+            icon: NotificationIcon.CHECKMARK,
         })
-        .catch((e) => {
-            dispatch(deleteStreamFailure(e))
-            Notification.push({
-                title: e.message,
-                icon: NotificationIcon.ERROR,
-            })
-            throw e
+        return deleteStream
+    } catch (e) {
+        dispatch(deleteStreamFailure(e))
+        Notification.push({
+            title: e.message,
+            icon: NotificationIcon.ERROR,
         })
+    }
 }
 
 export const saveFields = (id: StreamId, fields: StreamFieldList) => (dispatch: Function) => {
@@ -574,7 +610,7 @@ export const streamFieldsAutodetect = (id: StreamId) => (dispatch: Function) => 
                 fields: data.config.fields,
             },
         }))
-        .then(({ config: { fields } }, err) => {
+        .then(({ config: { fields } }) => {
             if (fields) {
                 dispatch(getStreamFieldAutodetectSuccess(fields))
                 Notification.push({
@@ -582,6 +618,7 @@ export const streamFieldsAutodetect = (id: StreamId) => (dispatch: Function) => 
                     icon: NotificationIcon.CHECKMARK,
                 })
             }
+        }, (err) => {
             if (err) {
                 dispatch(getStreamFieldAutodetectFailure(err))
                 Notification.push({

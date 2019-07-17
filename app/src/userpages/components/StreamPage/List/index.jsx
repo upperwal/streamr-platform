@@ -17,15 +17,15 @@ import type { Stream, StreamId } from '$shared/flowtype/stream-types'
 
 import SvgIcon from '$shared/components/SvgIcon'
 import links from '$shared/../links'
-import { getStreams, updateFilter, deleteStream, getStreamStatus } from '$userpages/modules/userPageStreams/actions'
-import { selectStreams, selectFetching, selectFilter } from '$userpages/modules/userPageStreams/selectors'
+import { getStreams, updateFilter, deleteStream, getStreamStatus, cancelStreamStatusFetch } from '$userpages/modules/userPageStreams/actions'
+import { selectStreams, selectFetching, selectFilter, selectHasMoreSearchResults } from '$userpages/modules/userPageStreams/selectors'
 import { getFilters } from '$userpages/utils/constants'
 import Table from '$shared/components/Table'
 import DropdownActions from '$shared/components/DropdownActions'
 import Meatball from '$shared/components/Meatball'
 import StatusIcon from '$shared/components/StatusIcon'
 import Layout from '$userpages/components/Layout'
-import Search from '$shared/components/Search'
+import Search from '../../Header/Search'
 import Dropdown from '$shared/components/Dropdown'
 import confirmDialog from '$shared/utils/confirm'
 import { getResourcePermissions } from '$userpages/modules/permission/actions'
@@ -40,6 +40,7 @@ import NoStreamsView from './NoStreams'
 import DocsShortcuts from '$userpages/components/DocsShortcuts'
 import breakpoints from '$app/scripts/breakpoints'
 import Notification from '$shared/utils/Notification'
+import LoadMore from '$mp/components/LoadMore'
 
 import styles from './streamsList.pcss'
 
@@ -65,16 +66,18 @@ export type StateProps = {
     permissions: {
         [ResourceId]: Array<Permission>,
     },
+    hasMoreResults: boolean,
 }
 
 export type DispatchProps = {
-    getStreams: () => void,
+    getStreams: (replace?: boolean) => void,
     updateFilter: (filter: Filter) => void,
     showStream: (StreamId) => void,
     deleteStream: (StreamId) => void,
     copyToClipboard: (string) => void,
     getStreamPermissions: (id: StreamId) => void,
     refreshStreamStatus: (id: StreamId) => Promise<void>,
+    cancelStreamStatusFetch: () => void,
 }
 
 type Props = StateProps & DispatchProps
@@ -147,6 +150,10 @@ class StreamList extends Component<Props, State> {
         getStreams()
     }
 
+    componentWillUnmount() {
+        this.props.cancelStreamStatusFetch()
+    }
+
     onSearchChange = (value: string) => {
         const { filter, updateFilter, getStreams } = this.props
         const newFilter = {
@@ -154,7 +161,7 @@ class StreamList extends Component<Props, State> {
             search: value,
         }
         updateFilter(newFilter)
-        getStreams()
+        getStreams(true)
     }
 
     onSortChange = (sortOptionId) => {
@@ -167,7 +174,7 @@ class StreamList extends Component<Props, State> {
                 ...sortOption.filter,
             }
             updateFilter(newFilter)
-            getStreams()
+            getStreams(true)
         }
     }
 
@@ -177,7 +184,7 @@ class StreamList extends Component<Props, State> {
             ...this.defaultFilter,
             search: '',
         })
-        getStreams()
+        getStreams(true)
     }
 
     confirmDeleteStream = async (stream: Stream) => {
@@ -194,14 +201,6 @@ class StreamList extends Component<Props, State> {
 
         if (confirmed) {
             this.props.deleteStream(stream.id)
-        }
-    }
-
-    loadStreamPermissions = (id: StreamId) => {
-        const { permissions, getStreamPermissions, fetchingPermissions } = this.props
-
-        if (!fetchingPermissions && !permissions[id]) {
-            getStreamPermissions(id)
         }
     }
 
@@ -266,9 +265,17 @@ class StreamList extends Component<Props, State> {
     }
 
     render() {
-        const { fetching, streams, showStream, filter } = this.props
+        const {
+            fetching,
+            streams,
+            showStream,
+            filter,
+            hasMoreResults,
+            getStreams,
+        } = this.props
         const timezone = moment.tz.guess()
         const { dialogTargetStream, activeDialog } = this.state
+        const nowTime = moment.tz(Date.now(), timezone)
 
         return (
             <Layout
@@ -321,7 +328,10 @@ class StreamList extends Component<Props, State> {
                     {streams && streams.length > 0 && (
                         <Fragment>
                             <MediaQuery minWidth={lg.min}>
-                                <div className={styles.streamsTable}>
+                                <div className={cx(styles.streamsTable, {
+                                    [styles.streamsTableLoadingMore]: !!(fetching && hasMoreResults),
+                                })}
+                                >
                                     <Table>
                                         <thead>
                                             <tr>
@@ -349,10 +359,14 @@ class StreamList extends Component<Props, State> {
                                                         />}
                                                     </Table.Th>
                                                     <Table.Td noWrap title={stream.description}>{stream.description}</Table.Td>
-                                                    <Table.Td noWrap>{moment.tz(stream.lastUpdated, timezone).fromNow()}</Table.Td>
+                                                    <Table.Td noWrap>
+                                                        {stream.lastUpdated && (
+                                                            moment.min(moment.tz(stream.lastUpdated, timezone), nowTime).fromNow()
+                                                        )}
+                                                    </Table.Td>
                                                     <Table.Td>
                                                         {stream.lastData && (
-                                                            moment.tz(stream.lastData, timezone).fromNow()
+                                                            moment.min(moment.tz(stream.lastData, timezone), nowTime).fromNow()
                                                         )}
                                                     </Table.Td>
                                                     <Table.Td className={styles.statusColumn}>
@@ -365,11 +379,6 @@ class StreamList extends Component<Props, State> {
                                                         <DropdownActions
                                                             title={<Meatball alt={I18n.t('userpages.streams.actions')} />}
                                                             noCaret
-                                                            onMenuToggle={(open) => {
-                                                                if (open) {
-                                                                    this.loadStreamPermissions(stream.id)
-                                                                }
-                                                            }}
                                                             menuProps={{
                                                                 modifiers: {
                                                                     offset: {
@@ -389,14 +398,15 @@ class StreamList extends Component<Props, State> {
                                                             <DropdownActions.Item onClick={() => this.onOpenSnippetDialog(stream)}>
                                                                 <Translate value="userpages.streams.actions.copySnippet" />
                                                             </DropdownActions.Item>
-                                                            <DropdownActions.Item onClick={() => this.onOpenShareDialog(stream)}>
+                                                            <DropdownActions.Item
+                                                                onClick={() => this.onOpenShareDialog(stream)}
+                                                            >
                                                                 <Translate value="userpages.streams.actions.share" />
                                                             </DropdownActions.Item>
                                                             <DropdownActions.Item onClick={() => this.onRefreshStatus(stream.id)}>
                                                                 <Translate value="userpages.streams.actions.refresh" />
                                                             </DropdownActions.Item>
                                                             <DropdownActions.Item
-                                                                disabled={!this.hasWritePermission(stream.id)}
                                                                 onClick={() => this.confirmDeleteStream(stream)}
                                                             >
                                                                 <Translate value="userpages.streams.actions.delete" />
@@ -407,10 +417,17 @@ class StreamList extends Component<Props, State> {
                                             ))}
                                         </tbody>
                                     </Table>
+                                    <LoadMore
+                                        hasMoreSearchResults={!fetching && hasMoreResults}
+                                        onClick={() => getStreams()}
+                                    />
                                 </div>
                             </MediaQuery>
                             <MediaQuery maxWidth={lg.min}>
-                                <div className={styles.streamsTable}>
+                                <div className={cx(styles.streamsTable, {
+                                    [styles.streamsTableLoadingMore]: !!(fetching && hasMoreResults),
+                                })}
+                                >
                                     <Table>
                                         <tbody>
                                             {streams.map((stream) => (
@@ -437,14 +454,18 @@ class StreamList extends Component<Props, State> {
                                                                     {stream.description}
                                                                 </span>
                                                                 <span className={styles.lastUpdatedStreamMobile}>
-                                                                    {moment.tz(stream.lastUpdated, timezone).fromNow()}
+                                                                    {stream.lastUpdated && (
+                                                                        moment.min(moment.tz(stream.lastUpdated, timezone), nowTime).fromNow()
+                                                                    )}
                                                                 </span>
                                                             </div>
                                                             <div>
                                                                 <span className={styles.lastUpdatedStreamTablet}>
-                                                                    {moment.tz(stream.lastUpdated, timezone).fromNow()}
+                                                                    {stream.lastUpdated && (
+                                                                        moment.min(moment.tz(stream.lastUpdated, timezone), nowTime).fromNow()
+                                                                    )}
                                                                 </span>
-                                                                <StatusIcon className={styles.tabletStatusStreamIcon} />
+                                                                <StatusIcon status={stream.streamStatus} className={styles.tabletStatusStreamIcon} />
                                                             </div>
                                                         </div>
                                                     </Table.Td>
@@ -452,6 +473,10 @@ class StreamList extends Component<Props, State> {
                                             ))}
                                         </tbody>
                                     </Table>
+                                    <LoadMore
+                                        hasMoreSearchResults={!fetching && hasMoreResults}
+                                        onClick={() => getStreams()}
+                                    />
                                 </div>
                             </MediaQuery>
                         </Fragment>
@@ -470,16 +495,18 @@ const mapStateToProps = (state) => ({
     filter: selectFilter(state),
     fetchingPermissions: selectFetchingPermissions(state),
     permissions: selectStreamPermissions(state),
+    hasMoreResults: selectHasMoreSearchResults(state),
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    getStreams: () => dispatch(getStreams()),
+    getStreams: (replace: boolean = false) => dispatch(getStreams(replace)),
     updateFilter: (filter) => dispatch(updateFilter(filter)),
     showStream: (id: StreamId) => dispatch(push(`${links.userpages.streamShow}/${id}`)),
     deleteStream: (id: StreamId) => dispatch(deleteStream(id)),
     copyToClipboard: (text) => copy(text),
     getStreamPermissions: (id: StreamId) => dispatch(getResourcePermissions('STREAM', id)),
     refreshStreamStatus: (id: StreamId) => dispatch(getStreamStatus(id)),
+    cancelStreamStatusFetch,
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(StreamList)

@@ -8,6 +8,7 @@ import cx from 'classnames'
 import type { Stream } from '$shared/flowtype/stream-types'
 import SvgIcon from '$shared/components/SvgIcon'
 import { type Ref } from '$shared/flowtype/common-types'
+import { getModuleBoundingBox, findNonOverlappingPosition } from '$editor/shared/utils/boundingBox'
 
 import { getModuleCategories, getStreams } from '../services'
 import { moduleSearch } from '../state'
@@ -113,6 +114,7 @@ type Props = {
     isOpen: boolean,
     open: (open: boolean) => void,
     addModule: (module: Object) => void,
+    canvas: any,
 }
 
 type State = {
@@ -183,7 +185,7 @@ export class ModuleSearch extends React.PureComponent<Props, State> {
     searchStreams = debounce(async (value) => {
         // remove 'stream' term from search
         // ensures we can pseudo 'filter results to streams' using "stream searchterm"
-        const streamSearchString = value.replace(/(\s+|^)stream(\s+|$)/g, ' ').trim()
+        const streamSearchString = value.replace(/^streams?\s/g, ' ').trim()
         const params = {
             id: '',
             search: streamSearchString,
@@ -197,13 +199,13 @@ export class ModuleSearch extends React.PureComponent<Props, State> {
 
         if (this.unmounted) { return }
         // throw away results if no longer current
-        if (this.currentSearch.trim() !== value.trim()) { return }
+        if (this.currentSearch !== value) { return }
 
         this.setState({ matchingStreams })
     }, 500)
 
     onChange = async (value: string) => {
-        const trimmedValue = value.trim()
+        const trimmedValue = value.trim().replace(/\s+/g, ' ') // trim & collapse whitespace
         this.currentSearch = trimmedValue
 
         // Search modules
@@ -284,11 +286,20 @@ export class ModuleSearch extends React.PureComponent<Props, State> {
         const selfRect = this.selfRef.current.getBoundingClientRect()
         const canvasRect = canvasElement.getBoundingClientRect()
 
-        // Align module to the top right corner of ModuleSearch with a 32px offset
-        return {
+        const myBB = {
+            // Align module to the top right corner of ModuleSearch with a 32px offset
             x: (selfRect.right - canvasRect.left - 20) + 32,
             y: selfRect.top - canvasRect.top - 20,
+            // TODO: It would be nice to use actual module size here but we know
+            //       it only after the module has been added to the canvas
+            width: 100,
+            height: 50,
         }
+
+        const boundingBoxes = this.props.canvas.modules.map((m) => getModuleBoundingBox(m))
+
+        const stackOffset = 16 // pixels
+        return findNonOverlappingPosition(myBB, boundingBoxes, stackOffset)
     }
 
     renderMenu = () => {

@@ -1,10 +1,9 @@
-# Streamr Frontend App
+# Streamr Core frontend
 
-The frontend app is being built on top of the existing Data Marketplace code and as such, some things will look unfinished while a more consolidated app is being built.
+This is the Streamr Core application frontend, which includes tooling for creating and editing Streamr resources 
+(streams, canvases, dashboards, products), the data marketplace, and related documentation.
 
-**Notes**
-
-* Routes for the Editor and Userpage are temporarily added as part of the Marketplace app (however, these routes are disabled for production builds for now to keep the releasable bundle size smaller)
+The Core frontend runs against an API backend and Ethereum smart contracts. For more information see [Backend](#backend).
 
 ## Folder structure
 
@@ -15,7 +14,12 @@ Although the frontend consists of a single app, the code is structured into diff
 * `editor` is the visual programming environment for canvases
 * `marketplace` contains the data marketplace
 * `shared` has shared code and utilities
-* `userpages` are the user's profile pages
+* `userpages` contains the views for managing a user's Streamr resources
+* `routes` contains the list of App routes.
+* `utils` contains commonly used utilities, used throughout the App. 
+* `stories` storybook stories.
+* `test` App unit tests. 
+* `travis_scripts` Deployment scripts.
 
 ## Getting Started
 
@@ -26,12 +30,13 @@ npm install
 npm start
 ```
 
-Webpack is configured with live reloading and will be served on http://localhost once the backend docker instance is running (see [Backend](#backend)).
+Webpack is configured with live reloading and will be served on http://localhost once the backend stack is running on Docker (see [Backend](#backend)).
 
 ### Documentation
 
-The live documentation can be found at [streamr.com/docs](https://streamr.com/docs). The documentation content files are held in `/src/docs/content` as MDX files (jsx flavoured markdown). Community contributions are encouraged, please see the [Docs Editing Guide](https://github.com/streamr-dev/streamr-platform/app/src/docs/docsEditingGuide.md) for more information.
-
+The live documentation can be found at [streamr.com/docs](https://streamr.com/docs). 
+The documentation content files are held in `/src/docs/content` as MDX files (jsx flavoured markdown). 
+Community contributions are encouraged, please see the [Docs Editing Guide](https://github.com/streamr-dev/streamr-platform/app/src/docs/docsEditingGuide.md) for more information.
 
 ### Environment & Smart contract configuration
 
@@ -63,8 +68,8 @@ Development values (set the values in your `.env`):
 | MARKETPLACE_CONTRACT_ADDRESS | `0x0af64558670a3b761B57e465Cb80B62254b39619` |                                 |
 | TOKEN_CONTRACT_ADDRESS       | `0x8e3877fe5551f9c14bc9b062bbae9d84bc2f5d4e` |                                 |
 | WEB3_REQUIRED_NETWORK_ID     | 4                                            | Rinkeby                         |
-| WEB3_PUBLIC_HTTP_PROVIDER    | https://rinkeby.infura.io                    | Infura (Rinkeby)                |
-| WEB3_PUBLIC_WS_PROVIDER      | wss://rinkeby.infura.io/ws                   | Infura (Rinkeby)                |
+| WEB3_PUBLIC_HTTP_PROVIDER    | https://rinkeby.infura.io/v3/{projectId}     | Infura (Rinkeby)                |
+| WEB3_PUBLIC_WS_PROVIDER      | wss://rinkeby.infura.io/ws/v3/{projectId}    | Infura (Rinkeby)                |
 | BUNDLE_ANALYSIS              | 1                                            | PLATFORM_ORIGIN_URL/report.html |
 
 Optional config values:
@@ -79,19 +84,48 @@ Optional config values:
 
 Use `.travis.yml` to set the production values.
 
+### Smart contract configuration
+
+To be able to use the Marketplace, you'll need to configure these variables into your `.env` file:
+
+| Variable                     | Description                                                          |
+|------------------------------|----------------------------------------------------------------------|
+| MARKETPLACE_CONTRACT_ADDRESS | Address of the deployed Marketplace contract                         |
+| TOKEN_CONTRACT_ADDRESS       | Address of the deployed Token contract                               |
+| WEB3_REQUIRED_NETWORK_ID     | This is used to check that the user has selected the correct network |
+| WEB3_PUBLIC_HTTP_PROVIDER    | A public provider used to query Marketplace methods without Metamask |
+| WEB3_PUBLIC_WS_PROVIDER      | A public websocket prodiver (currently not in use)                   |
+
+Development values (set the values in your `.env`):
+
+| Variable                     | Value                                        | Description      |
+|------------------------------|----------------------------------------------|------------------|
+| MARKETPLACE_CONTRACT_ADDRESS | `0x0af64558670a3b761B57e465Cb80B62254b39619` |                  |
+| TOKEN_CONTRACT_ADDRESS       | `0x8e3877fe5551f9c14bc9b062bbae9d84bc2f5d4e` |                  |
+| WEB3_REQUIRED_NETWORK_ID     | 4                                            | Rinkeby          |
+| WEB3_PUBLIC_HTTP_PROVIDER    | https://rinkeby.infura.io                    | Infura (Rinkeby) |
+| WEB3_PUBLIC_WS_PROVIDER      | wss://rinkeby.infura.io/ws                   | Infura (Rinkeby) |
+
+Use `.travis.yml` to set the production values.
+
 #### Routes
 
-Marketplace: [/](/)
+Marketplace: [/marketplace](/marketplace)
 
-Core Pages:  [/core/](/core)
+Core Pages:  [/core](/core)
 
 Docs: [/docs](/docs)
 
 ### Backend
 
-To run the app locally, you must install the docker environment to match what is in production. Follow the instructions here: https://github.com/streamr-dev/streamr-docker-dev
+To run the app locally, you must install and start the development environment running on Docker. 
+Follow the instructions [https://github.com/streamr-dev/streamr-docker-dev](here) to start the
+full stack:
+
+`streamr-docker-dev start --all`
 
 Note that the instructions also include login credentials for the local app. 
+
 
 ### Git Branches
 

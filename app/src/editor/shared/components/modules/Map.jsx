@@ -4,21 +4,23 @@ import React from 'react'
 import cx from 'classnames'
 import isEqual from 'lodash/isEqual'
 import throttle from 'lodash/throttle'
-import merge from 'lodash/merge'
 import remove from 'lodash/remove'
 import L from 'leaflet'
 import type { LatLngBounds } from 'react-leaflet'
 
 import Map, { type Marker, type TracePoint } from '../Map/Map'
 import ModuleSubscription from '../ModuleSubscription'
+import { isRunning } from '$editor/canvas/state'
 
 import styles from './Map.pcss'
 
-const UPDATE_INTERVAL_MS = 250
+const UPDATE_INTERVAL_MS = 50
 
 type Props = {
     className?: ?string,
     module: Object,
+    canvas: Object,
+    api: any,
 }
 
 type State = {
@@ -44,7 +46,7 @@ type Message = {
 /*
     MapModule handles following modules: Map, ImageMap
 */
-export default class MapModule extends React.Component<Props, State> {
+export default class MapModule extends React.PureComponent<Props, State> {
     state = {
         markers: {},
         imageMap: !!('customImageUrl' in this.props.module.options),
@@ -79,6 +81,14 @@ export default class MapModule extends React.Component<Props, State> {
 
         if (this.state.imageMap && customImageUrl !== prevProps.module.options.customImageUrl.value) {
             this.loadImage(customImageUrl)
+        }
+
+        if (this.props.canvas && isRunning(this.props.canvas) !== isRunning(prevProps.canvas) && isRunning(this.props.canvas)) {
+            // Clear markers when canvas is started
+            /* eslint-disable-next-line react/no-did-update-set-state */
+            this.setState({
+                markers: {},
+            })
         }
     }
 
@@ -142,10 +152,7 @@ export default class MapModule extends React.Component<Props, State> {
             }
 
             // Update marker data
-            this.queuedMarkers = {
-                ...this.queuedMarkers,
-                [marker.id]: marker,
-            }
+            this.queuedMarkers[marker.id] = marker
             this.flushMarkerData()
         } else if (msg.t === 'd') {
             if (msg.pointList && msg.pointList.length > 0) {
@@ -230,6 +237,29 @@ export default class MapModule extends React.Component<Props, State> {
         return value
     }
 
+    onViewportChanged = (centerLat: number, centerLong: number, zoom: number) => {
+        const { module, api } = this.props
+        const nextModule = {
+            ...module,
+            options: {
+                ...module.options,
+                centerLat: {
+                    ...module.options.centerLat,
+                    value: centerLat,
+                },
+                centerLng: {
+                    ...module.options.centerLng,
+                    value: centerLong,
+                },
+                zoom: {
+                    ...module.options.zoom,
+                    value: zoom,
+                },
+            },
+        }
+        api.updateModule(module.hash, nextModule)
+    }
+
     flushMarkerData = throttle(() => {
         if (this.unmounted) {
             return
@@ -238,9 +268,23 @@ export default class MapModule extends React.Component<Props, State> {
         const { queuedMarkers } = this
         this.queuedMarkers = {}
 
-        this.setState((state) => ({
-            markers: merge(state.markers, queuedMarkers),
-        }))
+        this.setState((state) => {
+            const markers = { ...state.markers }
+            // $FlowFixMe Object.values() returns mixed[]
+            Object.values(queuedMarkers).forEach((m: Marker) => {
+                const marker = markers[m.id]
+                if (marker) {
+                    marker.lat = m.lat
+                    marker.long = m.long
+                    marker.rotation = m.rotation
+                } else {
+                    markers[m.id] = m
+                }
+            })
+            return {
+                markers,
+            }
+        })
     }, UPDATE_INTERVAL_MS)
 
     render() {
@@ -267,6 +311,7 @@ export default class MapModule extends React.Component<Props, State> {
                     minZoom={this.getModuleOption('minZoom', 2)}
                     maxZoom={this.getModuleOption('maxZoom', 18)}
                     zoom={this.getModuleOption('zoom', 12)}
+                    autoZoom={this.getModuleOption('autoZoom', false)}
                     /* For Map */
                     traceColor={this.getModuleParam('traceColor', '#FFFFFF')}
                     traceWidth={this.getModuleOption('traceWidth', 2)}
@@ -279,6 +324,8 @@ export default class MapModule extends React.Component<Props, State> {
                     isImageMap={imageMap}
                     imageBounds={imageBounds}
                     imageUrl={this.getModuleOption('customImageUrl', null)}
+                    /* Events */
+                    onViewportChanged={this.onViewportChanged}
                 />
             </div>
         )

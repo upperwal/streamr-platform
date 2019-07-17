@@ -34,13 +34,13 @@ class CodeEditorWindow extends React.Component {
 
     onBlur = () => {
         const { code } = this.state
-        if (code != null && code !== this.props.code) {
+        if (code != null && code !== this.props.code && this.props.onChange) {
             this.props.onChange(code)
         }
-        this.setState(() => ({
+        this.setState({
             code: undefined,
             editorResetKey: uniqueId('CodeEditorWindow'),
-        }))
+        })
     }
 
     onApply = () => {
@@ -51,7 +51,9 @@ class CodeEditorWindow extends React.Component {
             if (this.unmounted) { return }
             const code = this.state.code != null ? this.state.code : this.props.code
             try {
-                await this.props.onApply(code)
+                if (this.props.onApply) {
+                    await this.props.onApply(code)
+                }
 
                 if (this.unmounted) { return }
 
@@ -81,17 +83,14 @@ class CodeEditorWindow extends React.Component {
             onClose,
             onShowDebug,
             readOnly,
-            position,
-            onPositionUpdate,
+            code,
+            ...canvasWindowProps
         } = this.props
 
-        const code = this.state.code != null ? this.state.code : this.props.code
+        const content = this.state.code != null ? this.state.code : code
 
         return (
-            <DraggableCanvasWindow
-                start={position}
-                onPositionUpdate={onPositionUpdate}
-            >
+            <DraggableCanvasWindow {...canvasWindowProps}>
                 <div className={styles.editorDialog}>
                     <DraggableCanvasWindow.Dialog
                         title="Code Editor"
@@ -101,7 +100,7 @@ class CodeEditorWindow extends React.Component {
                             <AceEditor
                                 ref={this.editor}
                                 name={editorResetKey}
-                                value={code}
+                                value={content}
                                 className={styles.editor}
                                 mode="java"
                                 theme="textmate"
@@ -109,8 +108,7 @@ class CodeEditorWindow extends React.Component {
                                 onBlur={this.onBlur}
                                 width="100%"
                                 height="100%"
-                                maxLines={20}
-                                minLines={20}
+                                maxLines={Infinity}
                                 setOptions={{
                                     tabSize: 2,
                                     useSoftTabs: true,

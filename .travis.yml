@@ -60,8 +60,8 @@ jobs:
     - MARKETPLACE_CONTRACT_ADDRESS=0xA10151D088f6f2705a05d6c83719e99E079A61C1
     - TOKEN_CONTRACT_ADDRESS=0x0Cf0Ee63788A0849fE5297F3407f701E122cC023
     - WEB3_REQUIRED_NETWORK_ID=1
-    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io
-    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws
+    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io/v3/17c3985baecb4c4d94a1edc2c4d23206
+    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws/v3/17c3985baecb4c4d94a1edc2c4d23206
     - SENTRY_DSN=https://e012761929d24baa96ca82772f60b395@sentry.io/1203154
     - LOGROCKET_SLUG=et0uhu/streamr-frontend-local
     script: "$TRAVIS_BUILD_DIR/app/travis_scripts/visual-tests.sh"
@@ -140,8 +140,8 @@ jobs:
     - MARKETPLACE_CONTRACT_ADDRESS=0xA10151D088f6f2705a05d6c83719e99E079A61C1
     - TOKEN_CONTRACT_ADDRESS=0x0Cf0Ee63788A0849fE5297F3407f701E122cC023
     - WEB3_REQUIRED_NETWORK_ID=1
-    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io
-    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws
+    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io/v3/17c3985baecb4c4d94a1edc2c4d23206
+    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws/v3/17c3985baecb4c4d94a1edc2c4d23206
     - SENTRY_DSN=https://e012761929d24baa96ca82772f60b395@sentry.io/1203154
     - LOGROCKET_SLUG=et0uhu/streamr-frontend-local
     - secure: H4xOzWwc5rnx8XxEumkrHqYdMhfIYVoqdTp4OwqBNjScn0FuB2Zbud+sU5cQmox/L631Cni2lGyjUa1Z/BwavSo/paYBv8ufeabMI8cnLyKe878Yqstk5hwgYVOHfmbhIBRUVcWNIRZeFZORPFFIZP84Dn3Gg9hCgtbjrmT/yqyyoaftJY1ppwAo1xyxv0yUE/uNUbZGQuYkVY9yEh8gBc5N3SpQ4FyDekAAS425cYXzgaAMmdBjNw5Xp9brqyKGEPLFHDtXi5r1J3xUlzk48AgEq+1B627ckWjCkxP71ko28Kp92vPjYjV3BjPLBsHYtZX0HGZokwwFNZHl/eg2H9uIyUL1DY3+OkuzTanW4aq9NmMbxMmQ4pvfzEokk2LH89VFp09ev832NcSpCLQdSYMcxpm6NedZWWteL2e2Qzc1RZRlJpdAYDZunQYsqnV9812YAiqG9Mud2GGOIn24PO71abGnlTT6FqLP5mdxqQ+A40+Yky5ETQRq86e3vxcwASGaNcp5ICbAALndmwCD/GwDYHZ7LTniZB7kpDX9MBluzwD67mhQ1+lcNSiVTQ0tf0oi65MUPFJchs++iFYiapIt7bnxrnvxiMDdNHLjm0iPWZthKeLWQnm/opU7D9tVvWbc+zGPNfmRBN9ePI98Lts60OELNKwwoIo5PZ9HtS8=
@@ -165,8 +165,8 @@ jobs:
     - MARKETPLACE_CONTRACT_ADDRESS=0xA10151D088f6f2705a05d6c83719e99E079A61C1
     - TOKEN_CONTRACT_ADDRESS=0x0Cf0Ee63788A0849fE5297F3407f701E122cC023
     - WEB3_REQUIRED_NETWORK_ID=1
-    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io
-    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws
+    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io/v3/17c3985baecb4c4d94a1edc2c4d23206
+    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws/v3/17c3985baecb4c4d94a1edc2c4d23206
     - SENTRY_DSN=https://e012761929d24baa96ca82772f60b395@sentry.io/1203154
     script:
     - npm run build
@@ -186,6 +186,7 @@ jobs:
     if: NOT type IN (pull_request)
     env:
     - NODE_ENV=production
+    - VERSION=$TRAVIS_TAG
     - PORT=12345
     - VERSION=$TRAVIS_TAG
     - SENTRY_ENVIRONMENT=production
@@ -198,8 +199,8 @@ jobs:
     - MARKETPLACE_CONTRACT_ADDRESS=0xA10151D088f6f2705a05d6c83719e99E079A61C1
     - TOKEN_CONTRACT_ADDRESS=0x0Cf0Ee63788A0849fE5297F3407f701E122cC023
     - WEB3_REQUIRED_NETWORK_ID=1
-    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io
-    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws
+    - WEB3_PUBLIC_HTTP_PROVIDER=https://mainnet.infura.io/v3/17c3985baecb4c4d94a1edc2c4d23206
+    - WEB3_PUBLIC_WS_PROVIDER=wss://mainnet.infura.io/ws/v3/17c3985baecb4c4d94a1edc2c4d23206
     - SENTRY_DSN=https://e012761929d24baa96ca82772f60b395@sentry.io/1203154
     script: "$TRAVIS_BUILD_DIR/app/travis_scripts/build-app.sh"
     deploy:
@@ -232,61 +233,6 @@ jobs:
         secure: SmtMYr1JhqzneGtg4sx10/Z7e5TsvlwPl05kkpx2dsGUuWX1gb+kWidNDpC8fWvkREg38o3yOtPza/FOyRtLwdIe1N1lZyYFvIhac7lATroMNyCWmTuYAZMbLtVUEsI43LNhQAC+F/N48TwM+0EJEWUIddc0ANbYEH8cReqDcngL7ZPtFEqtx9Qc/ZVY7/a83munHnd9dXga+4m8xVGo/u6UIn0hSVKt/LLHOAYw4chNXvUgyP2hNmmxHn2cdKocqM4dmEochqe8THSK3F37xlPfaHKzLQfEKfWgWdSQ+lDXonGfDz5ZSs8Owwnd8R/OmOmMKdAs6i96Kj3u4amOANMj1tixtrN4BiFuTM89iTPwKy49xOTSiLjS6XGvyZ1+GIYXuwmsLJbEef19qxpPUz41N8Kmue7Vf2ijy3c6Q0jpFJTKOAZe7m0hONyQi+SG6GYDAxRmuvghIrlZ71zydSn6FYLv3R5cI17tbCZAK9kZdzSXkr4K8W4LJbbZzmJk+X2IYT+Y9WLganeWk9RhmSz5GG84Y33AtsJXiNkBRrV32VtkYkwOa+FtqqLkLnJ7czqez1RyoNGXuhM2djY0pibhabsj7Z9o6ZyLKnm+2FTNdRFpJnkfl2Opv9R5ghOmTLjPSY+Dxjw/1PJoBfzzIEe4tnzpEsC9gqDxJ79KW6k=
       bucket: eu-west-1-streamr-vault
       local-dir: "$TRAVIS_BUILD_DIR/app/dist"
-      upload-dir: marketplace/releases/$TRAVIS_TAG
-      acl: private
-      region: eu-west-1
-      skip_cleanup: true
-      on:
-        tags: true
-  - stage: Platform Build Lisboa Production
-    if: NOT type IN (pull_request)
-    env:
-    - NODE_ENV=production
-    - PORT=12345
-    - VERSION=$TRAVIS_TAG
-    - SENTRY_ENVIRONMENT=lisboa
-    - STREAMR_API_URL=https://ee-lisboa.streamr.com/api/v1
-    - STREAMR_WS_URL=wss://ee-lisboa.streamr.com/api/v1/ws
-    - PLATFORM_ORIGIN_URL=https://ee-lisboa.streamr.com
-    - STREAMR_URL=https://ee-lisboa.streamr.com
-    - GOOGLE_ANALYTICS_ID=UA-55331565-5
-    - MARKETPLACE_CONTRACT_ADDRESS=0x62d08a44d6db7821c9556032a437beb4bd050abd
-    - TOKEN_CONTRACT_ADDRESS=0x67a9fda28c4df570d1d5350acfa345194f4d4100
-    - WEB3_REQUIRED_NETWORK_ID=8995
-    - WEB3_PUBLIC_HTTP_PROVIDER=https://ee-lisboa.streamr.com:8540
-    - WEB3_PUBLIC_WS_PROVIDER=wss://ee-lisboa.streamr.com:8540/ws
-    - SENTRY_DSN=https://e012761929d24baa96ca82772f60b395@sentry.io/1203154
-    script: "$TRAVIS_BUILD_DIR/app/travis_scripts/build-app.sh"
-    deploy:
-    - provider: s3
-      access_key_id: AKIAJBAGP3WA5UXQ3AZQ
-      secret_access_key:
-        secure: K0oYY9l2dLEiGnB0ZzRWwlPIgKO0v11usTbrWJD2nWFa4lwgBVw+jHLIjbQMdQcsY4QoUq5BNK25DLsq8yNrQhW0cX0XbmI5L+j5ZFFfgBxFhI7Q0UAtwzJvBzSs6+k4cF/twwsuSt6uOZbtA4E/7hw9rTPkdeWx6bahwuVnU7/tTw9z2mt1pqGFQaCcy2MZh+6pCxcGonBTl1bh8VLCf7g9SXsU8+jz2ec6BjKmonJKdMiMxf2rbCKOudlrBjjjrP/5q/38rzzr9hx0TkkQ0fnZoFIeYhFJvKTxXXBujOqZBMAKh7R1MvVZf3JY+ADKqOD9t3C4XGW98s7D/v2J3HTxoQf2bWCzkGGto8KqbnqEm61YIhzTp6bHKadeLkhh3wTnxjiS6NnSGTNqybUO9ic2YcMtp6zY4nYW2mMPaxgiyZb869EkRWFOtgeECHmXmrZXv+8dnpyzVC4QPp53blxYErPwhAs/cQzcwDaj6v4mcU0Nem8DN0g0lzXCP11pFxLvqa/9TzIGs/1N2+OB8STrxEQi9wPpDUJ7gcC+1ovBXCDWfQX+yn7MDIauTRPOQlQrOSuoSzSZsamAFTOfvL7257myQlo8vdGT6WqFKXwZ+yTh3Lif/hUruQmDzDHAifJeY8tXRu51RNM1UEDtOj26I1yUOmiD4wjMwGJdzng=
-      bucket: eu-west-1-lx-streamr-marketplace
-      local-dir: dist
-      acl: private
-      region: eu-west-1
-      skip_cleanup: true
-      on:
-        tags: true
-    - provider: s3
-      access_key_id: AKIAJBAGP3WA5UXQ3AZQ
-      secret_access_key:
-        secure: K0oYY9l2dLEiGnB0ZzRWwlPIgKO0v11usTbrWJD2nWFa4lwgBVw+jHLIjbQMdQcsY4QoUq5BNK25DLsq8yNrQhW0cX0XbmI5L+j5ZFFfgBxFhI7Q0UAtwzJvBzSs6+k4cF/twwsuSt6uOZbtA4E/7hw9rTPkdeWx6bahwuVnU7/tTw9z2mt1pqGFQaCcy2MZh+6pCxcGonBTl1bh8VLCf7g9SXsU8+jz2ec6BjKmonJKdMiMxf2rbCKOudlrBjjjrP/5q/38rzzr9hx0TkkQ0fnZoFIeYhFJvKTxXXBujOqZBMAKh7R1MvVZf3JY+ADKqOD9t3C4XGW98s7D/v2J3HTxoQf2bWCzkGGto8KqbnqEm61YIhzTp6bHKadeLkhh3wTnxjiS6NnSGTNqybUO9ic2YcMtp6zY4nYW2mMPaxgiyZb869EkRWFOtgeECHmXmrZXv+8dnpyzVC4QPp53blxYErPwhAs/cQzcwDaj6v4mcU0Nem8DN0g0lzXCP11pFxLvqa/9TzIGs/1N2+OB8STrxEQi9wPpDUJ7gcC+1ovBXCDWfQX+yn7MDIauTRPOQlQrOSuoSzSZsamAFTOfvL7257myQlo8vdGT6WqFKXwZ+yTh3Lif/hUruQmDzDHAifJeY8tXRu51RNM1UEDtOj26I1yUOmiD4wjMwGJdzng=
-      bucket: eu-west-1-lx-streamr-vault
-      local-dir: dist
-      upload-dir: marketplace/releases/latest
-      acl: private
-      region: eu-west-1
-      skip_cleanup: true
-      on:
-        tags: true
-    - provider: s3
-      access_key_id: AKIAJBAGP3WA5UXQ3AZQ
-      secret_access_key:
-          secure: K0oYY9l2dLEiGnB0ZzRWwlPIgKO0v11usTbrWJD2nWFa4lwgBVw+jHLIjbQMdQcsY4QoUq5BNK25DLsq8yNrQhW0cX0XbmI5L+j5ZFFfgBxFhI7Q0UAtwzJvBzSs6+k4cF/twwsuSt6uOZbtA4E/7hw9rTPkdeWx6bahwuVnU7/tTw9z2mt1pqGFQaCcy2MZh+6pCxcGonBTl1bh8VLCf7g9SXsU8+jz2ec6BjKmonJKdMiMxf2rbCKOudlrBjjjrP/5q/38rzzr9hx0TkkQ0fnZoFIeYhFJvKTxXXBujOqZBMAKh7R1MvVZf3JY+ADKqOD9t3C4XGW98s7D/v2J3HTxoQf2bWCzkGGto8KqbnqEm61YIhzTp6bHKadeLkhh3wTnxjiS6NnSGTNqybUO9ic2YcMtp6zY4nYW2mMPaxgiyZb869EkRWFOtgeECHmXmrZXv+8dnpyzVC4QPp53blxYErPwhAs/cQzcwDaj6v4mcU0Nem8DN0g0lzXCP11pFxLvqa/9TzIGs/1N2+OB8STrxEQi9wPpDUJ7gcC+1ovBXCDWfQX+yn7MDIauTRPOQlQrOSuoSzSZsamAFTOfvL7257myQlo8vdGT6WqFKXwZ+yTh3Lif/hUruQmDzDHAifJeY8tXRu51RNM1UEDtOj26I1yUOmiD4wjMwGJdzng=
-      bucket: eu-west-1-lx-streamr-vault
-      local-dir: dist
       upload-dir: marketplace/releases/$TRAVIS_TAG
       acl: private
       region: eu-west-1

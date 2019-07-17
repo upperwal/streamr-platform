@@ -1,9 +1,13 @@
 // @flow
 
-import React, { useCallback, useState, useEffect, useContext } from 'react'
+import React, { useCallback, useState, useEffect, useContext, useMemo } from 'react'
 import cx from 'classnames'
 import startCase from 'lodash/startCase'
 import EditableText from '$shared/components/EditableText'
+import useGlobalEventWithin from '$shared/hooks/useGlobalEventWithin'
+import useKeyDown from '$shared/hooks/useKeyDown'
+
+import { isPortInvisible } from '../../../state'
 import { DragDropContext } from '../../DragDropContext'
 import Option from '../Option'
 import Plug from '../Plug'
@@ -48,27 +52,25 @@ const Port = ({
         setContextMenuTarget(null)
     }, [])
 
-    const onWindowMouseDown = useCallback((e: SyntheticMouseEvent<EventTarget>) => {
-        if (contextMenuTarget && e.target instanceof Element) {
-            if (e.target.classList.contains(Menu.styles.noAutoDismiss)) {
-                return
-            }
+    useGlobalEventWithin('mousedown', useMemo(() => ({
+        current: contextMenuTarget,
+    }), [contextMenuTarget]), useCallback((within: boolean) => {
+        if (!within) {
+            dismiss()
+        }
+    }, [dismiss]), Menu.styles.noAutoDismiss)
 
-            if (!contextMenuTarget.contains(e.target)) {
+    useKeyDown(useMemo(() => ({
+        Escape: () => {
+            if (contextMenuTarget) {
                 dismiss()
             }
-        }
-    }, [contextMenuTarget, dismiss])
+        },
+    }), [contextMenuTarget, dismiss]))
 
     const onWindowBlur = useCallback(() => {
         const { activeElement } = document
         if (contextMenuTarget && activeElement && activeElement.tagName.toLowerCase() === 'iframe') {
-            dismiss()
-        }
-    }, [contextMenuTarget, dismiss])
-
-    const onGlobalKeyDown = useCallback(({ key }: SyntheticKeyboardEvent<EventTarget>) => {
-        if (contextMenuTarget && key === 'Escape') {
             dismiss()
         }
     }, [contextMenuTarget, dismiss])
@@ -107,25 +109,25 @@ const Port = ({
     )
 
     useEffect(() => {
-        window.addEventListener('mousedown', onWindowMouseDown)
-        window.addEventListener('keydown', onGlobalKeyDown)
         window.addEventListener('blur', onWindowBlur)
 
         return () => {
-            window.removeEventListener('mousedown', onWindowMouseDown)
-            window.removeEventListener('keydown', onGlobalKeyDown)
             window.removeEventListener('blur', onWindowBlur)
         }
-    }, [onWindowMouseDown, onGlobalKeyDown, onWindowBlur])
+    }, [onWindowBlur])
 
     useEffect(() => {
         onSizeChange()
     }, [port.value, onSizeChange])
 
+    const isInvisible = isPortInvisible(canvas, port.id)
+
     return (
         <div
             className={cx(styles.root, {
                 [styles.dragInProgress]: !!dragInProgress,
+                [styles.dragInProgress]: !!dragInProgress,
+                [styles.isInvisible]: isInvisible,
             })}
         >
             {!!contextMenuTarget && (
@@ -153,7 +155,7 @@ const Port = ({
                 <EditableText
                     disabled={!!isRunning}
                     editing={editingName}
-                    onChange={onNameChange}
+                    onCommit={onNameChange}
                     setEditing={setEditingName}
                 >
                     {port.displayName || startCase(port.name)}
