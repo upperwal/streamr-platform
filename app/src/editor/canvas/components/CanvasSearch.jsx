@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import cx from 'classnames'
-import startCase from 'lodash/startCase'
 
 import links from '../../../links'
 import { getCanvases } from '$userpages/modules/canvas/actions'
@@ -55,7 +54,7 @@ export default connect((state) => ({
                         <SearchRow key={canvas.id} className={styles.CanvasSearchRow}>
                             <Link to={`${links.editor.canvasEditor}/${canvas.id}`}>
                                 <span className={cx(styles.canvasState, styles[canvas.state.toLowerCase()])} />
-                                {startCase(canvas.name)}
+                                {canvas.name}
                             </Link>
                         </SearchRow>
                     ))}

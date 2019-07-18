@@ -2,7 +2,6 @@
 
 import React, { useCallback, useState, useEffect, useContext, useMemo } from 'react'
 import cx from 'classnames'
-import startCase from 'lodash/startCase'
 import EditableText from '$shared/components/EditableText'
 import useGlobalEventWithin from '$shared/hooks/useGlobalEventWithin'
 import useKeyDown from '$shared/hooks/useKeyDown'
@@ -158,7 +157,7 @@ const Port = ({
                     onCommit={onNameChange}
                     setEditing={setEditingName}
                 >
-                    {port.displayName || startCase(port.name)}
+                    {port.displayName || port.name}
                 </EditableText>
             </Cell>
             {!!hasInputField && (

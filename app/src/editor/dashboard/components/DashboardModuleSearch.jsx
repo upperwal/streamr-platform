@@ -3,7 +3,6 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import startCase from 'lodash/startCase'
 import groupBy from 'lodash/groupBy'
 import cx from 'classnames'
 
@@ -58,7 +57,7 @@ function DashboardModuleSearchItem({
                     })}
                 >
                     <div className={styles.Circle} />
-                    {startCase(m.name)}
+                    {m.name}
                 </SearchRow>
             ))}
         </React.Fragment>

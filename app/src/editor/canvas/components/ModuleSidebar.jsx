@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react'
 import cx from 'classnames'
-import startCase from 'lodash/startCase'
 
 import { Header, Content, Section } from '$editor/shared/components/Sidebar'
 
@@ -77,7 +76,7 @@ export default function ModuleSidebar({ canvas, selectedModuleHash, setModuleOpt
                                 const id = `${module.id}.options.${name}`
                                 return (
                                     <React.Fragment key={id}>
-                                        <label htmlFor={id}>{startCase(name)}</label>
+                                        <label htmlFor={id}>{name}</label>
                                         {option.possibleValues ? (
                                             /* Select */
                                             <select

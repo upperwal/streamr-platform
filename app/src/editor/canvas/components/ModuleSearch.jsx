@@ -1,7 +1,6 @@
 // @flow
 
 import React from 'react'
-import startCase from 'lodash/startCase'
 import debounce from 'lodash/debounce'
 import cx from 'classnames'
 
@@ -106,7 +105,7 @@ const ModuleMenuItem = ({ module, addModule }) => (
         onClick={() => addModule(module.id)}
         className={styles.ModuleItem}
     >
-        {startCase(module.name)}
+        {module.name}
     </SearchRow>
 )
 
@@ -348,7 +347,7 @@ export class ModuleSearch extends React.PureComponent<Props, State> {
                         onDragStart={(e) => { onDragStart(e, m.id, m.name) }}
                         onClick={() => this.addModule(m.id)}
                     >
-                        <span className={styles.ModuleName}>{startCase(m.name)}</span>
+                        <span className={styles.ModuleName}>{m.name}</span>
                         <span className={styles.ModuleCategory}>{m.path}</span>
                     </SearchRow>
                 ))}
