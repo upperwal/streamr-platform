@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useContext } from 'react'
 import cx from 'classnames'
 import Highcharts from 'highcharts/highstock'
+import Boost from 'highcharts/modules/boost'
 import HighchartsReact from 'highcharts-react-official'
 import ResizeWatcher from '$editor/canvas/components/Resizable/ResizeWatcher'
 import { Context as UiSizeContext } from '$editor/shared/components/UiSizeConstraint'
@@ -22,6 +23,8 @@ type Props = {
     options: any,
     series: any,
 }
+
+Boost(Highcharts)
 
 const Chart = ({ className, series, datapoints, options }: Props) => {
     const [chart, setChart] = useState(null)
@@ -137,6 +140,11 @@ const Chart = ({ className, series, datapoints, options }: Props) => {
                     groupPixelWidth: 4,
                 },
             },
+        },
+        boost: {
+            enabled: true,
+            useGPUTranslations: true,
+            usePreallocated: true,
         },
         plotOptions: {
             series: {
