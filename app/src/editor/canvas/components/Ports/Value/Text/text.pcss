@@ -1,12 +1,15 @@
 .root {
   border-radius: calc(0.125 * var(--um));
   color: #ADADAD;
-  height: var(--um);
   max-width: calc(10 * var(--um));
   padding: 0 calc(0.5 * var(--um));
   transition: 200ms linear;
   transition-property: background-color, color, box-shadow;
-  line-height: inherit;
+  line-height: normal;
+  height: auto;
+  min-height: 1um;
+  align-items: baseline;
+  padding-top: 1px;
 }
 
 .root:hover,
