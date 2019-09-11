@@ -1,137 +1,123 @@
-import React from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import cx from 'classnames'
 
 import CodeEditor from '$editor/canvas/components/CodeEditor'
 import Spinner from '$shared/components/Spinner'
 import ModuleSubscription from '../ModuleSubscription'
-
+import useIsMounted from '$shared/hooks/useIsMounted'
 import styles from './Solidity.pcss'
 
-export default class SolidityModule extends React.Component {
-    subscription = React.createRef()
+export default function SolidityModule(props) {
+    const {
+        api,
+        moduleHash,
+        module,
+        isActive,
+        className,
+    } = props
 
-    state = {
-        debugMessages: [],
-        deploying: false,
-    }
+    const { pushNewDefinition, updateModule } = api
 
-    componentWillUnmount() {
-        this.unmounted = true
-    }
+    const isMounted = useIsMounted()
+    const [debugMessages, setDebugMessages] = useState([])
+    const [isDeploying, setIsDeploying] = useState(false)
 
-    onApply = async (code) => (
-        this.props.api.pushNewDefinition(this.props.moduleHash, {
+    const onApply = useCallback(async (code) => (
+        pushNewDefinition(moduleHash, {
             code,
             compile: true,
         })
-    )
+    ), [pushNewDefinition, moduleHash])
 
-    onChange = (code) => {
-        this.props.api.updateModule(this.props.moduleHash, { code })
-    }
+    const onChange = useCallback((code) => {
+        updateModule(moduleHash, { code })
+    }, [updateModule, moduleHash])
 
-    onDeploy = () => {
-        if (!this.state.deploying) {
-            this.setState({
-                deploying: true,
-            }, () => {
-                this.props.api.pushNewDefinition(this.props.moduleHash, {
-                    deploy: true,
-                })
-                    .finally(() => {
-                        if (this.unmounted) { return }
-                        this.setState({
-                            deploying: false,
-                        })
-                    })
-            })
-        }
-    }
+    const onDeploy = useCallback(() => {
+        if (isDeploying) { return }
+        setIsDeploying(true)
+    }, [setIsDeploying, isDeploying])
 
-    onMessage = (d) => {
-        if (d.type === 'debug') {
-            this.setState(({ debugMessages }) => ({
-                debugMessages: [
-                    ...debugMessages,
-                    {
-                        msg: d.msg,
-                        t: d.t,
-                    },
-                ],
-            }))
-        }
-    }
-
-    onClearDebug = () => {
-        this.setState({
-            debugMessages: [],
+    useEffect(() => {
+        if (!isDeploying) { return }
+        pushNewDefinition(moduleHash, {
+            deploy: true,
+        }).finally(() => {
+            if (!isMounted()) { return }
+            setIsDeploying(false)
         })
-    }
+    }, [isDeploying, moduleHash, isMounted, pushNewDefinition, setIsDeploying])
 
-    render() {
-        const { module, isActive } = this.props
-        const { debugMessages, deploying } = this.state
-        const { contract } = module
+    const onMessage = useCallback((d) => {
+        if (d.type === 'debug') {
+            setDebugMessages((debugMessages) => (
+                debugMessages.concat(d)
+            ))
+        }
+    }, [setDebugMessages])
 
-        return (
-            <div className={cx(styles.SolidityModule, this.props.className)}>
-                <ModuleSubscription
-                    {...this.props}
-                    ref={this.subscription}
-                    onMessage={this.onMessage}
-                />
-                <CodeEditor
-                    code={module.code || ''}
-                    readOnly={isActive}
-                    onApply={this.onApply}
-                    onChange={this.onChange}
-                    debugMessages={debugMessages}
-                    onClearDebug={this.onClearDebug}
-                >
-                    {(openEditor) => (
-                        <div className={styles.buttonsContainer}>
-                            <button
-                                type="button"
-                                className={styles.button}
-                                onClick={openEditor}
-                            >
-                                Edit code
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.button}
-                                onClick={this.onDeploy}
-                                disabled={contract && (contract.address || deploying)}
-                            >
-                                {(!contract || (contract && !contract.address)) && !deploying && (
-                                    'Deploy'
-                                )}
-                                {(!contract || (contract && !contract.address)) && deploying && (
-                                    <Spinner size="small" className={styles.spinner} />
-                                )}
-                                {contract && contract.address && (
-                                    'Deployed'
-                                )}
-                            </button>
-                        </div>
-                    )}
-                </CodeEditor>
-                {contract && contract.address && (
-                    <div>
-                        <div className={styles.address}>
-                            <div className={styles.addressLabel}>Address</div>
-                            <div
-                                className={styles.addressValue}
-                                data-truncated={contract.address.substring(contract.address.length - 6)}
-                                title={contract.address}
-                            >
-                                <div>{contract.address}</div>
-                            </div>
-                        </div>
+    const onClearDebug = useCallback(() => {
+        setDebugMessages([])
+    }, [setDebugMessages])
+
+    const { contract } = module
+
+    return (
+        <div className={cx(styles.SolidityModule, className)}>
+            <ModuleSubscription
+                {...props}
+                onMessage={onMessage}
+            />
+            <CodeEditor
+                code={module.code || ''}
+                readOnly={isActive}
+                onApply={onApply}
+                onChange={onChange}
+                debugMessages={debugMessages}
+                onClearDebug={onClearDebug}
+            >
+                {(openEditor) => (
+                    <div className={styles.buttonsContainer}>
+                        <button
+                            type="button"
+                            className={styles.button}
+                            onClick={openEditor}
+                        >
+                            Edit code
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.button}
+                            onClick={onDeploy}
+                            disabled={contract && (contract.address || isDeploying)}
+                        >
+                            {(!contract || (contract && !contract.address)) && !isDeploying && (
+                                'Deploy'
+                            )}
+                            {(!contract || (contract && !contract.address)) && isDeploying && (
+                                <Spinner size="small" className={styles.spinner} />
+                            )}
+                            {contract && contract.address && (
+                                'Deployed'
+                            )}
+                        </button>
                     </div>
                 )}
-            </div>
-        )
-    }
+            </CodeEditor>
+            {contract && contract.address && (
+                <div>
+                    <div className={styles.address}>
+                        <div className={styles.addressLabel}>Address</div>
+                        <div
+                            className={styles.addressValue}
+                            data-truncated={contract.address.substring(contract.address.length - 6)}
+                            title={contract.address}
+                        >
+                            <div>{contract.address}</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
 }
-
