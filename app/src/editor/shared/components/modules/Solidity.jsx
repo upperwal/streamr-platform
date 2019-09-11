@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import cx from 'classnames'
 
-import CodeEditor from '$editor/canvas/components/CodeEditor'
 import Spinner from '$shared/components/Spinner'
-import ModuleSubscription from '../ModuleSubscription'
 import useIsMounted from '$shared/hooks/useIsMounted'
+import useCopy from '$shared/hooks/useCopy'
+
+import CodeEditor from '$editor/canvas/components/CodeEditor'
+
+import ModuleSubscription from '../ModuleSubscription'
 import styles from './Solidity.pcss'
 
 export default function SolidityModule(props) {
@@ -60,7 +63,14 @@ export default function SolidityModule(props) {
         setDebugMessages([])
     }, [setDebugMessages])
 
+    const { isCopied, copy } = useCopy()
     const { contract } = module
+    const abi = contract && contract.abi
+
+    const copyABI = useCallback(() => {
+        if (!abi) { return }
+        copy(JSON.stringify(abi))
+    }, [abi, copy])
 
     return (
         <div className={cx(styles.SolidityModule, className)}>
@@ -84,6 +94,14 @@ export default function SolidityModule(props) {
                             onClick={openEditor}
                         >
                             Edit code
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.button}
+                            onClick={copyABI}
+                            disabled={!abi || isCopied}
+                        >
+                            {isCopied ? 'Copied' : 'Copy ABI'}
                         </button>
                         <button
                             type="button"
