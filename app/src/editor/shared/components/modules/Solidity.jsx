@@ -105,7 +105,7 @@ export default function SolidityModule(props) {
                         </button>
                         <button
                             type="button"
-                            className={styles.button}
+                            className={cx(styles.button, styles.primary)}
                             onClick={onDeploy}
                             disabled={contract && (contract.address || isDeploying)}
                         >

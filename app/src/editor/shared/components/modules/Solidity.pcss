@@ -16,6 +16,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 
   &:focus {
     outline: none;
@@ -33,6 +34,10 @@
 
   &:last-child:not(:first-child) {
     margin-left: 4px;
+  }
+
+  &.primary:not([disabled]) {
+    border-color: currentColor;
   }
 }
 
