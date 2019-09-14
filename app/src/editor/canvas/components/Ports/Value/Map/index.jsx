@@ -25,7 +25,7 @@ const Map = ({ disabled, onChange, value: valueProp }: Props) => {
             if (trimmedKeys.includes(k)) {
                 return {
                     ...memo,
-                    [k]: values[k].trim(),
+                    [k]: values[k],
                 }
             }
             return memo
@@ -48,11 +48,13 @@ const Map = ({ disabled, onChange, value: valueProp }: Props) => {
         setKeys(newKeys)
 
         const key = entryKey.trim()
+        let val = (entryValue || sender === 'value') ? entryValue : (value[key] || '')
+        if (typeof val === 'string') {
+            val = val.trim()
+        }
         const newValue = {
             ...value,
-            [key]: (
-                entryValue || sender === 'value' ? entryValue : (value[key] || '')
-            ),
+            [key]: val,
         }
         setValue(newValue)
 

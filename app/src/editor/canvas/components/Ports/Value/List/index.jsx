@@ -19,7 +19,7 @@ const List = ({ disabled, onChange, value: valuesProp }: Props) => {
     const [values, setValues] = useState(valuesProp)
 
     const commit = useCallback((values) => {
-        onChange(values.filter((v) => v != null).map((v) => v.trim()))
+        onChange(values.filter((v) => v != null))
     }, [onChange])
 
     const onRemoveClick = useCallback((index: number) => {
