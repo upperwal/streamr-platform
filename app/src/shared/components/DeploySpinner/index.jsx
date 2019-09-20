@@ -104,7 +104,7 @@ const DeploySpinner2 = ({ isRunning, showCounter }: Props) => {
                             className={styles.circle}
                             clipPath="url(#c)"
                             display="block"
-                            transform="rotate(179.96 250 250)"
+                            transform="rotate(180 250 250)"
                         >
                             <g display="block">
                                 <path d="M250 88.953c-88.944 0-161.048 72.104-161.048 161.047S161.056 411.048 250 411.048c88.943 0 161.047-72.105 161.047-161.048S338.943 88.953 250 88.953z" />
@@ -128,7 +128,7 @@ const DeploySpinner2 = ({ isRunning, showCounter }: Props) => {
                             className={styles.circle}
                             clipPath="url(#d)"
                             display="block"
-                            transform="rotate(.04 249.99 249.994)"
+                            transform="rotate(0 250 250)"
                         >
                             <g display="block">
                                 <path d="M250 131.664c-65.717 0-118.993 53.276-118.993 118.994 0 65.717 53.276 118.993 118.993 118.993 65.718 0 118.994-53.276 118.994-118.993 0-65.718-53.276-118.994-118.994-118.994z" />
@@ -152,7 +152,7 @@ const DeploySpinner2 = ({ isRunning, showCounter }: Props) => {
                             className={styles.circle}
                             clipPath="url(#e)"
                             display="block"
-                            transform="rotate(-90.04 250 250)"
+                            transform="rotate(-90 250 250)"
                         >
                             <g display="block">
                                 <path d="M250 174.128c-41.903 0-75.873 33.97-75.873 75.872 0 41.903 33.97 75.873 75.873 75.873 41.903 0 75.873-33.97 75.873-75.873 0-41.902-33.97-75.872-75.873-75.872z" />
