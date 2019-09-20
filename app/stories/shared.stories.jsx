@@ -747,3 +747,14 @@ story('DeploySpinner')
     .addWithJSX('without counter', () => (
         <DeploySpinner isRunning showCounter={false} />
     ))
+
+story('DeploySpinner2 (svg & css)')
+    .addWithJSX('basic', () => (
+        <DeploySpinner.DeploySpinner2 isRunning showCounter />
+    ))
+    .addWithJSX('stopped', () => (
+        <DeploySpinner.DeploySpinner2 isRunning={false} showCounter />
+    ))
+    .addWithJSX('without counter', () => (
+        <DeploySpinner.DeploySpinner2 isRunning showCounter={false} />
+    ))
