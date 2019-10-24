@@ -141,7 +141,7 @@ const CommunityProductsRouter = () => ([
     <Route exact path={formatPath(marketplace.products, ':id', 'publish2')} component={ProductPublishPage2} key="ProductPublishPage2" />,
     <Route exact path={formatPath(marketplace.products2, ':id')} component={ProductPage2} key="ProductPage2" />,
     <Route exact path={routes.editProduct2()} component={EditProductAuth2} key="EditProduct2" />,
-    <Redirect from={formatPath(marketplace.products, ':id')} to={formatPath(marketplace.products2, ':id')} />,
+    <Redirect exact from={formatPath(marketplace.products, ':id')} to={formatPath(marketplace.products2, ':id')} />,
 ])
 
 const DocsRouter = () => ([
