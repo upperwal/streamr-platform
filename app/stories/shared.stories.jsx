@@ -3,7 +3,7 @@ import React from 'react'
 
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { withKnobs, text, array, number, boolean } from '@storybook/addon-knobs'
+import { withKnobs, text, number, boolean } from '@storybook/addon-knobs'
 import StoryRouter from 'storybook-react-router'
 import styles from '@sambego/storybook-styles'
 import { Row, Col } from 'reactstrap'
@@ -45,7 +45,6 @@ import Spinner from '$shared/components/Spinner'
 import DeploySpinner from '$shared/components/DeploySpinner'
 import Label from '$shared/components/Label'
 import Tile from '$shared/components/Tile'
-import DonutChart from '$shared/components/DonutChart'
 import Button from '$shared/components/Button'
 
 import sharedStyles from './shared.pcss'
@@ -864,30 +863,6 @@ story('Tile')
                 </Tile.Status>
             </Tile>
         </div>
-    ))
-
-story('DonutChart')
-    .addWithJSX('basic', () => (
-        <DonutChart
-            strokeWidth={5}
-            data={[
-                {
-                    title: '1',
-                    value: 50,
-                    color: 'red',
-                },
-                {
-                    title: '2',
-                    value: 25,
-                    color: 'blue',
-                },
-                {
-                    title: '3',
-                    value: 25,
-                    color: 'green',
-                },
-            ]}
-        />
     ))
 
 story('Spinner')
