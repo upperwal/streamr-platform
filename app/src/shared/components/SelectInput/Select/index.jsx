@@ -115,6 +115,7 @@ const DropdownIndicator = (props) => (
 
 const SelectInput = ({ className, controlClassName, ...props }: Props) => (
     <Select
+        {...props}
         className={cx(styles.select, className)}
         styles={customStyles}
         components={{
@@ -124,7 +125,6 @@ const SelectInput = ({ className, controlClassName, ...props }: Props) => (
             DropdownIndicator,
         }}
         controlClassName={controlClassName}
-        {...props}
     />
 )
 

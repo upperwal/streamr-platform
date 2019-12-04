@@ -46,8 +46,8 @@ class DatePicker extends React.Component<Props> {
 
         return (
             <FormControl
-                label={label}
                 {...props}
+                label={label}
                 noUnderline
             >
                 {({ value, onFocusChange, setAutoCompleted, ...rest0 }: InnerProps) => (
@@ -55,6 +55,7 @@ class DatePicker extends React.Component<Props> {
                         {({ date, toggleCalendar, ...rest1 }) => (
                             <React.Fragment>
                                 <TextField
+                                    {...rest1}
                                     type={isMobile ? 'date' : 'text'}
                                     value={value === I18n.t('userpages.streams.edit.history.datePicker.selectDate') ?
                                         I18n.t('userpages.streams.edit.history.datePicker.selectDate') :
@@ -63,7 +64,6 @@ class DatePicker extends React.Component<Props> {
                                     onFocus={onFocusChange}
                                     onAutoComplete={setAutoCompleted}
                                     onChange={this.onChange}
-                                    {...rest1}
                                 />
                                 <CalendarIcon
                                     className={cx(styles.icon, {

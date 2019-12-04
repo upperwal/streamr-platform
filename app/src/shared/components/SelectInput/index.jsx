@@ -22,19 +22,14 @@ class SelectInput extends React.Component<Props> {
                 {...props}
                 label={label}
             >
-                {({ value, onFocusChange, setAutoCompleted, ...rest }: InnerProps) => {
-                    // Make Flow understand that select props are in `rest`
-                    const castProps: SelectProps = ((rest: any): SelectProps)
-
-                    return (
-                        <Select
-                            value={value}
-                            onBlur={onFocusChange}
-                            onFocus={onFocusChange}
-                            {...castProps}
-                        />
-                    )
-                }}
+                {({ value, onFocusChange, setAutoCompleted, ...rest }: InnerProps) => (
+                    <Select
+                        {...((rest: any): SelectProps)}
+                        value={value}
+                        onBlur={onFocusChange}
+                        onFocus={onFocusChange}
+                    />
+                )}
             </FormControl>
         )
     }
