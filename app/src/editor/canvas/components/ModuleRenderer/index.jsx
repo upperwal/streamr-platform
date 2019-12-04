@@ -22,6 +22,7 @@ import { Context as SizeConstraintContext } from '$editor/canvas/components/Resi
 
 type Props = {
     // FIXME: Update types
+    canvas?: any,
     className?: ?string,
     innerRef: Ref<HTMLDivElement>,
     isSelected?: boolean,
@@ -34,10 +35,12 @@ type Props = {
     scale: number,
     interactive?: boolean,
     isLoading?: boolean,
+    badgeLevel?: string,
 }
 
 // $FlowFixMe
 const ModuleRenderer = React.memo(({
+    canvas,
     className,
     isSelected,
     onPort,
@@ -50,6 +53,7 @@ const ModuleRenderer = React.memo(({
     scale,
     interactive,
     isLoading,
+    badgeLevel = 'none',
     ...props
 }: Props) => {
     const isRunning = useIsCanvasRunning()
@@ -58,7 +62,6 @@ const ModuleRenderer = React.memo(({
     const {
         moduleClassNames,
         isResizable,
-        messageLevel,
         module,
         isCanvasEditable: isEditable,
         isCanvasAdjustable: isAdjustable,
@@ -128,10 +131,10 @@ const ModuleRenderer = React.memo(({
         >
             <div className={styles.body} ref={innerRef}>
                 <Probe group="ModuleHeight" height="auto" />
-                {(isEditable && messageLevel !== 'none') && (
+                {(isEditable && badgeLevel !== 'none') && (
                     <MessageIcon
-                        level={messageLevel}
-                        className={cx(styles.ModuleBadge, styles[messageLevel])}
+                        level={badgeLevel}
+                        className={cx(styles.ModuleBadge, styles[badgeLevel])}
                         onClick={() => consoleSidebarOpen()}
                     />
                 )}
