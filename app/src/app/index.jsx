@@ -35,6 +35,7 @@ import TransactionList from '$userpages/components/TransactionPage/List'
 import ProfilePage from '$userpages/components/ProfilePage'
 import PurchasesPage from '$userpages/components/PurchasesPage'
 import ProductsPage from '$userpages/components/ProductsPage'
+import StatsPage from '$userpages/components/ProductsPage/Stats'
 
 // Docs Pages
 import IntroductionDocsPage from '$docs/components/DocsPages/Introduction'
@@ -125,6 +126,7 @@ const StreamLivePreviewAuth = userIsAuthenticated(StreamLivePreview)
 const TransactionListAuth = userIsAuthenticated(TransactionList)
 const PurchasesPageAuth = userIsAuthenticated(PurchasesPage)
 const ProductsPageAuth = userIsAuthenticated(ProductsPage)
+const StatsPageAuth = userIsAuthenticated(StatsPage)
 
 // Editor Auth
 const DashboardEditorAuth = userIsAuthenticated(DashboardEditor)
@@ -160,7 +162,6 @@ const MarketplaceRouter = () => (process.env.COMMUNITY_PRODUCTS ? [
     <Route exact path={links.marketplace.createProduct} component={CreateProductAuth2} key="CreateProduct" />,
     <Route exact path={formatPath(marketplace.products, ':id', 'streamPreview', ':streamId')} component={StreamPreviewPage} key="StreamPreview" />,
     <Route exact path={formatPath(marketplace.products, ':id')} component={ProductPage2} key="ProductPage2" />,
-    <Route exact path={routes.editProduct()} component={EditProductAuth2} key="EditProduct" />,
 ] : [
     <Route exact path={marketplace.main} component={Products} key="Products" />,
     <Route exact path={links.marketplace.createProduct} component={CreateProductAuth} key="CreateProduct" />,
@@ -316,6 +317,10 @@ const UserpagesRouter = () => ([
     <Route exact path={userpages.transactions} component={TransactionListAuth} key="TransactionList" />,
     <Route exact path={userpages.purchases} component={PurchasesPageAuth} key="PurchasesPage" />,
     <Route exact path={userpages.products} component={ProductsPageAuth} key="ProductsPage" />,
+    <Route exact path={routes.editProduct()} component={EditProductAuth2} key="EditProduct" />,
+    ...(process.env.COMMUNITY_PRODUCTS ? [
+        <Route exact path={routes.productStats()} component={StatsPageAuth} key="StatsPage" />,
+    ] : []),
     <Redirect from={userpages.main} to={userpages.streams} component={StreamListViewAuth} key="StreamListViewRedirect" />,
 ])
 
