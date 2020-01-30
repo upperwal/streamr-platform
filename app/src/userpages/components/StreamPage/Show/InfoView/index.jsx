@@ -3,14 +3,14 @@
 import React, { useEffect, useRef, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { I18n, Translate } from 'react-redux-i18n'
+import cx from 'classnames'
 
-import Button from '$shared/components/Button'
 import Notification from '$shared/utils/Notification'
 import TextInput from '$shared/components/TextInput'
+import DropdownActions from '$shared/components/DropdownActions'
 import { updateEditStreamField } from '$userpages/modules/userPageStreams/actions'
 import { selectEditedStream } from '$userpages/modules/userPageStreams/selectors'
 import { NotificationIcon } from '$shared/utils/constants'
-import SplitControl from '$userpages/components/SplitControl'
 import useCopy from '$shared/hooks/useCopy'
 import PartitionsView from '../PartitionsView'
 import type { StreamId } from '$shared/flowtype/stream-types'
@@ -24,7 +24,7 @@ type Props = {
 export const InfoView = ({ disabled }: Props) => {
     const stream = useSelector(selectEditedStream)
     const dispatch = useDispatch()
-    const { isCopied, copy } = useCopy()
+    const { copy } = useCopy()
     const contentChangedRef = useRef(false)
     const streamRef = useRef()
     streamRef.current = stream
@@ -73,7 +73,7 @@ export const InfoView = ({ disabled }: Props) => {
     }, [copy])
 
     return (
-        <div className={styles.infoView}>
+        <div className={cx('constrainInputWidth', styles.infoView)}>
             <div className={styles.textInput}>
                 <TextInput
                     label={I18n.t('userpages.streams.edit.details.name')}
@@ -98,37 +98,24 @@ export const InfoView = ({ disabled }: Props) => {
                     autoComplete="off"
                 />
             </div>
-            {stream && stream.id &&
-                <React.Fragment>
-                    <SplitControl>
-                        <div className={styles.textInput}>
-                            <TextInput
-                                label={I18n.t('userpages.streams.edit.details.streamId')}
-                                type="text"
-                                name="id"
-                                value={(stream && stream.id) || ''}
-                                preserveLabelSpace
-                                readOnly
-                                disabled={disabled}
-                            />
-                        </div>
-                        <Button
-                            kind="secondary"
-                            size="mini"
-                            outline
-                            className={styles.copyStreamIdButton}
-                            onClick={() => onCopy(stream.id)}
-                        >
-                            {isCopied ?
-                                <Translate value="userpages.streams.edit.details.copied" /> :
-                                <Translate value="userpages.streams.edit.details.copyStreamId" />
-                            }
-                        </Button>
-                    </SplitControl>
-                    <h5 className={styles.partitions}>{I18n.t('userpages.streams.edit.details.partitions')}</h5>
-                    <PartitionsView disabled={disabled} />
-                </React.Fragment>
-            }
+            <div className={styles.textInput}>
+                <TextInput
+                    label={I18n.t('userpages.streams.edit.details.streamId')}
+                    type="text"
+                    name="id"
+                    value={(stream && stream.id) || ''}
+                    preserveLabelSpace
+                    readOnly
+                    disabled={disabled}
+                    actions={[
+                        <DropdownActions.Item key="copy" onClick={() => onCopy(stream.id)}>
+                            <Translate value="userpages.keyField.copy" />
+                        </DropdownActions.Item>,
+                    ]}
+                />
+            </div>
+            <h5 className={styles.partitions}>{I18n.t('userpages.streams.edit.details.partitions')}</h5>
+            <PartitionsView disabled={disabled} />
         </div>
     )
 }

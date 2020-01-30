@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Fragment, Component } from 'react'
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
 import TextInput from '$shared/components/TextInput'
@@ -49,14 +49,16 @@ export class ProfileSettings extends Component<Props> {
         const user = this.props.user || {
             email: '',
             name: '',
-            username: null,
+            username: '',
+            imageUrlSmall: '',
+            imageUrlLarge: '',
         }
+
         return (
-            <Fragment>
+            <div className="constrainInputWidth">
                 <Avatar
                     className={styles.avatar}
                     editable
-                    // $FlowFixMe
                     user={user}
                     onImageChange={this.onImageChange}
                 />
@@ -81,7 +83,7 @@ export class ProfileSettings extends Component<Props> {
                 <div className={styles.password}>
                     <ChangePassword.Button />
                 </div>
-            </Fragment>
+            </div>
         )
     }
 }

@@ -16,6 +16,7 @@ import routes from '$routes'
 import useEditableProductActions from '../ProductController/useEditableProductActions'
 import { isEthereumAddress } from '$mp/utils/validate'
 import { areAddressesEqual } from '$mp/utils/smartContract'
+import useEditableProductUpdater from '../ProductController/useEditableProductUpdater'
 
 import * as State from '../EditProductPage/state'
 import useModal from '$shared/hooks/useModal'
@@ -27,6 +28,7 @@ type ContextProps = {
     save: () => void | Promise<void>,
     publish: () => void | Promise<void>,
     deployCommunity: () => void | Promise<void>,
+    lastSectionRef: any,
 }
 
 const EditControllerContext: Context<ContextProps> = React.createContext({})
@@ -35,10 +37,12 @@ function useEditController(product: Product) {
     const { history } = useContext(RouterContext)
     const { isAnyTouched, status } = useContext(ValidationContext)
     const [isPreview, setIsPreview] = useState(false)
+    const lastSectionRef = useRef(undefined)
     const isMounted = useIsMounted()
     const savePending = usePending('product.SAVE')
     const { updateBeneficiaryAddress } = useEditableProductActions()
     const originalProduct = useSelector(selectProduct)
+    const { replaceProduct } = useEditableProductUpdater()
 
     useEffect(() => {
         const handleBeforeunload = (event) => {
@@ -120,6 +124,8 @@ function useEditController(product: Product) {
                     nextProduct.imageUrl = newImageUrl
                     nextProduct.thumbnailUrl = newThumbnailUrl
                     delete nextProduct.newImageToUpload
+
+                    replaceProduct(() => nextProduct)
                 } catch (e) {
                     console.error('Could not upload image', e)
                 }
@@ -142,6 +148,7 @@ function useEditController(product: Product) {
         savePending,
         redirectToProductList,
         originalProduct,
+        replaceProduct,
     ])
 
     const validate = useCallback(() => {
@@ -166,12 +173,13 @@ function useEditController(product: Product) {
             await save({
                 redirect: false,
             })
-            await publishDialog.open({
+            const succeeded = await publishDialog.open({
                 product: productRef.current,
             })
 
-            // TODO: just redirect for now, need to check result for smarter handling
-            redirectToProductList()
+            if (succeeded) {
+                redirectToProductList()
+            }
         }
     }, [validate, save, publishDialog, redirectToProductList, isPublic])
 
@@ -236,6 +244,7 @@ function useEditController(product: Product) {
         save,
         publish,
         deployCommunity,
+        lastSectionRef,
     }), [
         isPreview,
         setIsPreview,
@@ -243,6 +252,7 @@ function useEditController(product: Product) {
         save,
         publish,
         deployCommunity,
+        lastSectionRef,
     ])
 }
 

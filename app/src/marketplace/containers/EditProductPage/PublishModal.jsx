@@ -165,8 +165,12 @@ const PublishOrUnpublishModal = ({ product, api }: Props) => {
 
                     queue.add({
                         id: actionsTypes.UPDATE_CONTRACT_PRODUCT,
-                        handler: (update, done) => (
-                            updateContractProduct({
+                        handler: (update, done) => {
+                            if (!contractProduct) {
+                                return null
+                            }
+
+                            return updateContractProduct({
                                 ...contractProduct,
                                 pricePerSecond: pricePerSecond || p.pricePerSecond,
                                 beneficiaryAddress: beneficiaryAddress || p.beneficiaryAddress,
@@ -184,7 +188,7 @@ const PublishOrUnpublishModal = ({ product, api }: Props) => {
                                     done()
                                     update(transactionStates.FAILED, error)
                                 })
-                        ),
+                        },
                     })
                 }
             }
@@ -244,28 +248,29 @@ const PublishOrUnpublishModal = ({ product, api }: Props) => {
 
             // do republish for products that have been at some point deployed
             if (nextMode === modes.REDEPLOY) {
-                // $FlowFixMe
-                requireOwner = contractProduct.ownerAddress
+                if (contractProduct) {
+                    requireOwner = contractProduct.ownerAddress
 
-                queue.add({
-                    id: actionsTypes.REDEPLOY_PAID,
-                    handler: (update, done) => (
-                        redeployProduct(productId || '')
-                            .onTransactionHash((hash) => {
-                                update(transactionStates.PENDING)
-                                done()
-                                dispatch(addTransaction(hash, transactionTypes.REDEPLOY_PRODUCT))
-                                postSetDeploying(productId || '', hash)
-                            })
-                            .onTransactionComplete(() => {
-                                update(transactionStates.CONFIRMED)
-                            })
-                            .onError((error) => {
-                                update(transactionStates.FAILED, error)
-                                done()
-                            })
-                    ),
-                })
+                    queue.add({
+                        id: actionsTypes.REDEPLOY_PAID,
+                        handler: (update, done) => (
+                            redeployProduct(productId || '')
+                                .onTransactionHash((hash) => {
+                                    update(transactionStates.PENDING)
+                                    done()
+                                    dispatch(addTransaction(hash, transactionTypes.REDEPLOY_PRODUCT))
+                                    postSetDeploying(productId || '', hash)
+                                })
+                                .onTransactionComplete(() => {
+                                    update(transactionStates.CONFIRMED)
+                                })
+                                .onError((error) => {
+                                    update(transactionStates.FAILED, error)
+                                    done()
+                                })
+                        ),
+                    })
+                }
             }
 
             // do unpublish
@@ -362,8 +367,8 @@ const PublishOrUnpublishModal = ({ product, api }: Props) => {
     }, [queueRef, setActionStatus, productId, dispatch, accountRef])
 
     const onClose = useCallback(() => {
-        api.close(false)
-    }, [api])
+        api.close([steps.ACTIONS, steps.COMPLETE].includes(step))
+    }, [api, step])
 
     const currentStatus = useMemo(() => (currentAction && status[currentAction] ? status[currentAction] : undefined), [status, currentAction])
 

@@ -92,14 +92,23 @@ msgstr "Z to A"
 msgid "userpages##filter##published"
 msgstr "Published"
 
-msgid "userpages##filter##draft"
-msgstr "Draft"
+msgid "userpages##filter##drafts"
+msgstr "Drafts"
 
 msgid "userpages##filter##active"
 msgstr "Active"
 
 msgid "userpages##filter##expired"
 msgstr "Expired"
+
+msgid "userpages##filter##approve"
+msgstr "Approve"
+
+msgid "userpages##filter##remove"
+msgstr "Remove"
+
+msgid "userpages##filter##rejected"
+msgstr "Rejected"
 
 msgid "userpages##header##canvases"
 msgstr "Canvases"
@@ -127,6 +136,12 @@ msgstr "Transactions"
 
 msgid "userpages##title##profile"
 msgstr "Profile"
+
+msgid "userpages##title##stats"
+msgstr "Overview"
+
+msgid "userpages##title##members"
+msgstr "Members"
 
 msgid "userpages##header##products"
 msgstr "Products"
@@ -173,6 +188,89 @@ msgstr "Published"
 msgid "userpages##products##createProduct"
 msgstr "Create product"
 
+msgid "userpages##products##viewProduct"
+msgstr "View Product"
+
+msgid "userpages##products##settings"
+msgstr "Settings"
+
+msgid "userpages##members##noCommunityMembers##approve##title"
+msgstr "No one has applied to join yet."
+
+msgid "userpages##members##noCommunityMembers##approve##message"
+msgstr "Get out there and promote it 🚀"
+
+msgid "userpages##members##noCommunityMembers##remove##title"
+msgstr "No one has joined yet."
+
+msgid "userpages##members##noCommunityMembers##remove##message"
+msgstr "Get out there and promote it 🚀"
+
+msgid "userpages##members##noCommunityMembers##rejected##title"
+msgstr "You haven't rejected any approvals yet."
+
+msgid "userpages##members##noCommunityMembers##rejected##message"
+msgstr "Keep up the good work 👍"
+
+msgid "userpages##members##noCommunityMembersResult##title"
+msgstr "Nope, sorry!"
+
+msgid "userpages##members##noCommunityMembersResult##message"
+msgstr "We couldn't find any members that match your search."
+
+msgid "userpages##members##noCommunityMembersResult##clearFilters"
+msgstr "Clear filters"
+
+msgid "userpages##members##table##ethereumAddress"
+msgstr "Ethereum address"
+
+msgid "userpages##members##table##joinedRequested"
+msgstr "Joined / requested"
+
+msgid "userpages##members##table##lastUpdated"
+msgstr "Last updated"
+
+msgid "userpages##members##table##status"
+msgstr "Status"
+
+msgid "userpages##members##status##accepted"
+msgstr "Accepted"
+
+msgid "userpages##members##status##rejected"
+msgstr "Rejected"
+
+msgid "userpages##members##status##pending"
+msgstr "Pending"
+
+msgid "userpages##members##applicantsSelected"
+msgid_plural "userpages##members##applicantsSelected"
+msgstr[1] "%{count} applicant selected"
+msgstr[2] "%{count} applicants selected"
+
+msgid "userpages##members##actions##cancel"
+msgstr "Cancel"
+
+msgid "userpages##members##actions##selectAll"
+msgstr "Select all"
+
+msgid "userpages##members##actions##deselectAll"
+msgstr "Deselect all"
+
+msgid "userpages##members##actions##approve"
+msgstr "Approve"
+
+msgid "userpages##members##actions##remove"
+msgstr "Remove"
+
+msgid "userpages##members##confirmTitle"
+msgstr "Are you sure?"
+
+msgid "userpages##members##confirmMessage"
+msgstr "This is an unrecoverable action. It will permanently<br/>remove the selected members from your community."
+
+msgid "userpages##members##confirmButton"
+msgstr "Yes, remove"
+
 msgid "userpages##purchases##filterPurchases"
 msgstr "Filter purchases"
 
@@ -201,7 +299,7 @@ msgid "userpages##purchases##expired"
 msgstr "Expired"
 
 msgid "userpages##streams##createStream"
-msgstr "Create Stream"
+msgstr "Create stream"
 
 msgid "userpages##streams##filterStreams"
 msgstr "Filter streams"
@@ -330,7 +428,7 @@ msgid "userpages##streams##edit##configure##addField"
 msgstr "Add field"
 
 msgid "userpages##streams##edit##configure##help"
-msgstr "You can configure your stream’s fields and data types here. This affects how this stream appears on canvases. You can choose to have Streamr try to autoconfigure fields, or you can edit them yourself."
+msgstr "You can configure your stream’s fields and data types here. If you’re planning to add historical data, you can choose to have Streamr try to autoconfigure fields or you can edit them yourself."
 
 msgid "userpages##streams##edit##configure##autoConfigure"
 msgstr "Always try to autoconfigure field names and types"
@@ -344,17 +442,20 @@ msgstr "Waiting..."
 msgid "userpages##streams##edit##configure##requireSignedData"
 msgstr "Require all messages in this stream to be signed"
 
-msgid "userpages##streams##edit##configure##historicalStoragePeriod##description"
-msgstr "Please select how long your historical data is retained before it is automatically removed from the system."
-
 msgid "userpages##streams##edit##configure##historicalStoragePeriod##label"
-msgstr "Historical data storage period (days)"
+msgstr "Period to retain historical data until auto-removal"
 
 msgid "userpages##streams##edit##preview##description"
-msgstr "This stream's most recent data is shown here live. Use the Inspector to view the full details of the messages."
+msgstr "You can preview the stream's live data here. Use the Inspector to view details and use the transport controls to check the data is flowing correctly."
 
 msgid "userpages##streams##edit##preview##inspect"
-msgstr "Inspect"
+msgstr "Inspect data"
+
+msgid "userpages##streams##edit##preview##start"
+msgstr "Start"
+
+msgid "userpages##streams##edit##preview##stop"
+msgstr "Stop"
 
 msgid "userpages##streams##edit##preview##noDataPre"
 msgstr "This Stream has no data yet. Check out the "
@@ -403,6 +504,9 @@ msgstr "Drop your .CSV file here to upload"
 
 msgid "userpages##streams##edit##history##saveFirst"
 msgstr "Cannot add historical data to a stream that has not been saved yet. Please save your changes and try again."
+
+msgid "userpages##streams##edit##history##parseError"
+msgstr "Could not parse timestamp column"
 
 msgid "userpages##streams##edit##history##confirmCsv##title"
 msgstr "Clarify the CSV file fields"
@@ -519,6 +623,9 @@ msgstr "Account not linked."
 
 msgid "userpages##transactions##currentAccountNotLinked##message"
 msgstr "You need to link the current Ethereum account to see your transaction history."
+
+msgid "userpages##members##filterMembers"
+msgstr "Filter members"
 
 msgid "userpages##dashboards##createDashboard"
 msgstr "Create dashboard"
@@ -637,14 +744,14 @@ msgid "userpages##profilePage##apiCredentials##addAPIKey"
 msgstr "Add new key"
 
 msgid "userpages##profilePage##ethereumAddress##title"
-msgstr "Ethereum Address"
+msgstr "Ethereum identities"
 
 msgid "userpages##profilePage##ethereumAddress##linkTitle"
-msgstr "Ethereum accounts"
+msgstr "Eth Identities"
 
 msgid "userpages##profilePage##ethereumAddress##description"
 msgstr ""
-"You can connect any number of Ethereum accounts to your Streamr identity. "
+"You can connect any number of Ethereum identities to your Streamr account. "
 "You might use them for the Ethereum one-click login feature or for buying and selling products on the Marketplace."
 
 msgid "userpages##profilePage##ethereumAddress##addAddress"
@@ -660,40 +767,53 @@ msgstr ""
 "the <a href=\"https://github.com/ethereum/mist/releases\">Mist browser</a>."
 
 msgid "userpages##profilePage##ethereumPrivateKeys##title"
-msgstr "Ethereum Private Keys"
+msgstr "Ethereum keys for canvases"
 
 msgid "userpages##profilePage##ethereumPrivateKeys##description"
 msgstr ""
-"These Ethereum accounts can be used on Canvases to build data-driven interactions with Ethereum. "
-"Even though the private keys are securely stored server-side, we do not recommend having significant "
-"amounts of value on these accounts."
+"These Ethereum accounts can be used on canvases to build data-driven interactions "
+"with Ethereum. Even though the private keys are securely stored server-side, "
+"we do not recommend having significant amounts of value on these accounts."
 
 msgid "userpages##profilePage##ethereumPrivateKeys##linkTitle"
-msgstr "Private keys"
+msgstr "Eth Dev Accounts"
+
+msgid "userpages##profilePage##ethereumPrivateKeys##addAddress"
+msgstr "Add account"
+
+msgid "userpages##profilePage##ethereumPrivateKeys##addNewAddress"
+msgstr "Add new account"
 
 msgid "userpages##profilePage##deleteAccount##title"
-msgstr "Disable Streamr Account"
+msgstr "Delete Streamr Account"
 
 msgid "userpages##profilePage##deleteAccount##linkTitle"
-msgstr "Disable account"
+msgstr "Delete account"
 
 msgid "userpages##profilePage##deleteAccount##description"
 msgstr ""
-"This action will disable your account but may still retain your data. Please contact us directly to "
-"manually delete your data entirely."
+"Unlike other companies that deactivate your account but retain your data, "
+"if you delete your Streamr account, all your data is deleted from our servers and will be unrecoverable. "
+"Please proceed with caution."
 
 msgid "userpages##profilePage##deleteAccount##button"
-msgstr "Disable account"
+msgstr "Delete account"
 
 msgid "modal##deleteAccount##defaultTitle"
-msgstr "Do you really want to disable your account?"
+msgstr "Are you sure?"
 
 msgid "modal##deleteAccount##save"
-msgstr "Yes, disable"
+msgstr "Delete account"
 
 msgid "modal##deleteAccount##content"
 msgstr ""
-"Please make sure this is what you want before you proceed."
+"This is an unrecoverable action. Please check the box to confirm you want to delete your account."
+
+msgid "modal##deleteAccount##confirmCheckbox##title"
+msgstr "I’m sure, go ahead and delete my account"
+
+msgid "modal##deleteAccount##confirmCheckbox##subtitle"
+msgstr "Streamr cannot recover it once deleted"
 
 msgid "userpages##profile##settings##update"
 msgstr "Update"
@@ -749,8 +869,14 @@ msgstr "Delete"
 msgid "userpages##keyFieldEditor##keyName"
 msgstr "Key name"
 
-msgid "userpages##keyFieldEditor##apiKey"
+msgid "userpages##keyFieldEditor##keyValue##apiKey"
 msgstr "API key"
+
+msgid "userpages##keyFieldEditor##keyValue##privateKey"
+msgstr "Private key"
+
+msgid "userpages##keyFieldEditor##keyValue##address"
+msgstr "Address"
 
 msgid "userpages##keyFieldEditor##add"
 msgstr "Add"
@@ -786,6 +912,9 @@ msgstr "Please sign the challenge in Metamask window"
 
 msgid "modal##newIdentity##defaultTitle"
 msgstr "Add a name to this Ethereum address"
+
+msgid "modal##newIdentity##label"
+msgstr "Account name"
 
 msgid "modal##newIdentity##placeholder"
 msgstr "eg. Mainnet Eth Address"

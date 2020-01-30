@@ -1,6 +1,6 @@
 // @flow
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useRef } from 'react'
 import cx from 'classnames'
 
 import SvgIcon from '$shared/components/SvgIcon'
@@ -15,6 +15,7 @@ type Props = {
     max?: number,
     step?: number,
     hideButtons?: boolean,
+    onChange?: (SyntheticInputEvent<EventTarget>) => void,
 }
 
 const NumberField = ({
@@ -25,15 +26,21 @@ const NumberField = ({
     max,
     step,
     hideButtons,
+    onChange: onChangeProp,
     ...props
 }: Props) => {
     const [internalValue, setInternalValue] = useState(value)
+    const inputRef = useRef()
 
     const onChange = useCallback((event: SyntheticInputEvent<EventTarget>) => {
         setInternalValue(event.target.value)
-    }, [])
 
-    const addValue = useCallback((val) => {
+        if (onChangeProp) {
+            onChangeProp(event)
+        }
+    }, [onChangeProp])
+
+    const addValue = useCallback((event: SyntheticInputEvent<EventTarget>, val) => {
         let parsedValue = Number.parseFloat(internalValue != null ? internalValue : '')
         let parsedStep = Number.parseFloat(val.toString())
 
@@ -53,15 +60,24 @@ const NumberField = ({
             newValue = max
         }
 
-        setInternalValue(newValue.toString())
-    }, [min, max, internalValue])
+        if (inputRef.current) {
+            inputRef.current.focus()
+        }
 
-    const onIncrease = useCallback(() => {
-        addValue(step != null ? step : 1)
+        // eslint-disable-next-line no-param-reassign
+        event.target.value = newValue.toString()
+
+        onChange(event)
+    }, [min, max, internalValue, onChange])
+
+    const onIncrease = useCallback((event: SyntheticInputEvent<EventTarget>) => {
+        event.preventDefault()
+        addValue(event, step != null ? step : 1)
     }, [addValue, step])
 
-    const onDecrease = useCallback(() => {
-        addValue(-(step != null ? step : 1))
+    const onDecrease = useCallback((event: SyntheticInputEvent<EventTarget>) => {
+        event.preventDefault()
+        addValue(event, -(step != null ? step : 1))
     }, [addValue, step])
 
     return (
@@ -75,6 +91,7 @@ const NumberField = ({
                 value={internalValue != null ? internalValue : ''}
                 onChange={onChange}
                 className={cx(className, styles.root)}
+                ref={inputRef}
             />
             {!hideButtons && type === 'number' && (
                 <div className={styles.buttonContainer}>

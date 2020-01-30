@@ -101,6 +101,7 @@ export class StreamShowView extends Component<Props, State> {
     }
 
     onSave = (editedStream: Stream) => {
+        // $FlowFixMe `save` missing in  `StateProps` or in `RouterProps`
         const { save, redirectToUserPages } = this.props
 
         this.setState({
@@ -150,6 +151,7 @@ export class StreamShowView extends Component<Props, State> {
             isFetching,
         } = this.props
         const hasWritePermission = (permissions && permissions.some((p) => p === 'write')) || false
+        const hasSharePermission = (permissions && permissions.some((p) => p === 'share')) || false
         const isLoading = !!(!editedStream || isFetching)
         const disabled = !!(isLoading || !hasWritePermission)
 
@@ -218,17 +220,17 @@ export class StreamShowView extends Component<Props, State> {
                         </TOCPage.Section>
                         <TOCPage.Section
                             id="configure"
-                            title="Configure"
+                            title="Fields"
                             customStyled
                         >
                             <ConfigureView disabled={disabled} />
                         </TOCPage.Section>
                         <TOCPage.Section
                             id="status"
-                            linkTitle="Stream Status"
+                            linkTitle="Status"
                             title={(
                                 <div className={styles.statusTitle}>
-                                    Status <StatusIcon showTooltip status={editedStream ? editedStream.streamStatus : undefined} />
+                                    Status <StatusIcon tooltip status={editedStream ? editedStream.streamStatus : undefined} />
                                 </div>
                             )}
                             customStyled
@@ -249,7 +251,7 @@ export class StreamShowView extends Component<Props, State> {
                             title="API Access"
                             customStyled
                         >
-                            <KeyView disabled={disabled} />
+                            <KeyView disabled={disabled || !hasSharePermission} />
                         </TOCPage.Section>
                         <TOCPage.Section
                             id="historical-data"
@@ -322,7 +324,7 @@ function StreamLoader(props: Props) {
         }
     }, [isCurrent, propsRef])
 
-    return <StreamShowView key={streamId} {...props} editedStream={isCurrent ? props.editedStream : null} />
+    return <StreamShowView {...props} key={streamId} editedStream={isCurrent ? props.editedStream : null} />
 }
 
 const mapStateToProps = (state: StoreState): StateProps => ({

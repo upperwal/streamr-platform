@@ -3,7 +3,7 @@
 import { deploy, getContract, call, send } from '$mp/utils/smartContract'
 import getConfig from '$shared/web3/config'
 
-import type { SmartContractDeployTransaction, SmartContractTransaction } from '$shared/flowtype/web3-types'
+import type { SmartContractDeployTransaction, SmartContractTransaction, Address } from '$shared/flowtype/web3-types'
 import type {
     StreamId,
     Stream,
@@ -17,7 +17,6 @@ import { gasLimits } from '$shared/utils/constants'
 import { post, del, get, put } from '$shared/utils/api'
 import { formatApiUrl } from '$shared/utils/url'
 import { postStream, getMyStreamPermissions } from '$userpages/modules/userPageStreams/services'
-import { addStreamResourceKey } from '$shared/modules/resourceKey/services'
 import { getWeb3, getPublicWeb3 } from '$shared/web3/web3Provider'
 
 import type { Secret } from './types'
@@ -33,7 +32,7 @@ export const addPermission = (id: StreamId, permission: Permission): ApiResult<A
     data: permission,
 })
 
-export const deletePermission = (id: StreamId, permissionId: string): ApiResult<Array<Permission>> => del({
+export const deletePermission = (id: StreamId, permissionId: $PropertyType<Permission, 'id'>): ApiResult<Array<Permission>> => del({
     url: formatApiUrl('streams', id, 'permissions', permissionId),
 })
 
@@ -66,11 +65,19 @@ export const createJoinPartStream = async (productId: ?ProductId = undefined): P
     // Add write permissions for all Streamr Engine nodes
     try {
         const addEngineKeyPromises = [
+            // share permission is not strictly necessary but needed to an avoid error when
+            // removing user's share permission (must have at least one share permission)
             ...getStreamrEngineAddresses().map((address) => (
-                addStreamResourceKey(stream.id, address, 'share')
+                addPermission(stream.id, {
+                    operation: 'share',
+                    user: address,
+                })
             )),
             ...getStreamrEngineAddresses().map((address) => (
-                addStreamResourceKey(stream.id, address, 'write')
+                addPermission(stream.id, {
+                    operation: 'write',
+                    user: address,
+                })
             )),
         ]
         await Promise.all(addEngineKeyPromises)
@@ -81,7 +88,6 @@ export const createJoinPartStream = async (productId: ?ProductId = undefined): P
 
     // Remove share permission to prevent deleting the stream
     try {
-        // $FlowFixMe
         const myPermissions = await getMyStreamPermissions(stream.id)
         const sharePermission = myPermissions.find((p) => p.operation === 'share')
         if (sharePermission) {
@@ -105,7 +111,7 @@ export const getAdminFeeInEther = (adminFee: number) => {
 
 export const deployContract = (joinPartStreamId: string, adminFee: number): SmartContractDeployTransaction => {
     const operatorAddress = process.env.COMMUNITY_PRODUCT_OPERATOR_ADDRESS
-    const tokenAddress = process.env.TOKEN_CONTRACT_ADDRESS
+    const tokenAddress = process.env.DATA_TOKEN_CONTRACT_ADDRESS
     const blockFreezePeriodSeconds = process.env.COMMUNITY_PRODUCT_BLOCK_FREEZE_PERIOD_SECONDS || 1
     return deploy(getConfig().communityProduct, [
         operatorAddress,
@@ -155,13 +161,20 @@ export const getJoinPartStreamId = (address: CommunityId, usePublicNode: boolean
 
 export const getCommunityStats = (id: CommunityId): ApiResult<Object> => get({
     url: formatApiUrl('communities', id, 'stats'),
+    useAuthorization: false,
 })
 
-export const getStreamData = (id: CommunityId, fromTimestamp: number): ApiResult<Object> => get({
-    url: formatApiUrl('streams', id, 'data', 'partitions', 0, 'from', {
-        fromTimestamp,
-    }),
-})
+export const getCommunities = async (): ApiResult<Array<Object>> => {
+    const { communities } = await get({
+        url: formatApiUrl('communities'),
+        useAuthorization: false,
+    })
+
+    return Object.keys(communities || {}).map((id) => ({
+        id: id.toLowerCase(),
+        ...communities[id],
+    }))
+}
 
 export const getCommunityData = async (id: CommunityId, usePublicNode: boolean = true): ApiResult<Object> => {
     const adminFee = await getAdminFee(id, usePublicNode)
@@ -176,12 +189,12 @@ export const getCommunityData = async (id: CommunityId, usePublicNode: boolean =
     }
 }
 
-export const getSecrets = (communityId: string): ApiResult<Array<Secret>> =>
+export const getSecrets = (communityId: CommunityId): ApiResult<Array<Secret>> =>
     get({
         url: formatApiUrl('communities', communityId, 'secrets'),
     })
 
-export const postSecret = (communityId: string, name: string, secret: string): ApiResult<Secret> =>
+export const postSecret = (communityId: CommunityId, name: string, secret: string): ApiResult<Secret> =>
     post({
         url: formatApiUrl('communities', communityId, 'secrets'),
         data: {
@@ -190,7 +203,7 @@ export const postSecret = (communityId: string, name: string, secret: string): A
         },
     })
 
-export const putSecret = (communityId: string, secretId: string, name: string): ApiResult<Secret> =>
+export const putSecret = (communityId: CommunityId, secretId: string, name: string): ApiResult<Secret> =>
     put({
         url: formatApiUrl('communities', communityId, 'secrets', secretId),
         data: {
@@ -198,7 +211,53 @@ export const putSecret = (communityId: string, secretId: string, name: string): 
         },
     })
 
-export const deleteSecret = (communityId: string, secretId: string): ApiResult<void> =>
+export const deleteSecret = (communityId: CommunityId, secretId: string): ApiResult<void> =>
     del({
         url: formatApiUrl('communities', communityId, 'secrets', secretId),
     })
+
+type GetJoinRequests = {
+    communityId: CommunityId,
+    params?: any,
+}
+
+export const getJoinRequests = ({ communityId, params }: GetJoinRequests): ApiResult<any> => get({
+    url: formatApiUrl('communities', communityId, 'joinRequests'),
+    options: {
+        params,
+    },
+})
+
+type PutJoinRequest = {
+    communityId: CommunityId,
+    joinRequestId: string,
+    state: 'ACCEPTED' | 'REJECTED' | 'PENDING',
+}
+
+export const updateJoinRequest = async ({ communityId, joinRequestId, state }: PutJoinRequest): ApiResult<any> => put({
+    url: formatApiUrl('communities', communityId, 'joinRequests', joinRequestId),
+    data: {
+        state,
+    },
+})
+
+type PostJoinRequest = {
+    communityId: CommunityId,
+    memberAddress: Address,
+}
+
+export const addJoinRequest = async ({ communityId, memberAddress }: PostJoinRequest): ApiResult<any> => post({
+    url: formatApiUrl('communities', communityId, 'joinRequests'),
+    data: {
+        memberAddress,
+    },
+})
+
+type DeleteJoinRequest = {
+    communityId: CommunityId,
+    joinRequestId: string,
+}
+
+export const removeJoinRequest = async ({ communityId, joinRequestId }: DeleteJoinRequest): ApiResult<void> => del({
+    url: formatApiUrl('communities', communityId, 'joinRequests', joinRequestId),
+})
