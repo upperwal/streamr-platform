@@ -5,8 +5,7 @@ import { replace } from 'connected-react-router'
 
 import { productSchema, streamsSchema } from '$shared/modules/entities/schema'
 import { handleEntities } from '$shared/utils/entities'
-import { formatPath } from '$shared/utils/url'
-import links from '../../../links'
+import routes from '$routes'
 import { addFreeProduct } from '../purchase/actions'
 import { isPaidProduct } from '../../utils/product'
 import { getMyPurchases } from '../myPurchaseList/actions'
@@ -117,9 +116,10 @@ const getUserProductPermissionsRequest: ProductIdActionCreator = createAction(
 
 const getUserProductPermissionsSuccess = createAction(
     GET_USER_PRODUCT_PERMISSIONS_SUCCESS,
-    (read: boolean, write: boolean, share: boolean) => ({
-        read,
-        write,
+    ({ get, edit, del, share }) => ({
+        get,
+        edit,
+        del,
         share,
     }),
 )
@@ -190,7 +190,9 @@ export const purchaseProduct = () => (dispatch: Function, getState: () => StoreS
     if (product) {
         if (isPaidProduct(product)) {
             // Paid product has to be bought with Metamask
-            dispatch(replace(formatPath(links.marketplace.products, product.id || '', 'purchase')))
+            dispatch(replace(routes.marketplace.purchase({
+                id: product.id,
+            })))
         } else {
             // Free product can be bought directly
             dispatch(addFreeProduct(product.id || ''))
@@ -198,15 +200,16 @@ export const purchaseProduct = () => (dispatch: Function, getState: () => StoreS
     }
 }
 
-export const getUserProductPermissions = (id: ProductId) => (dispatch: Function) => {
+export const getUserProductPermissions = (id: ProductId) => async (dispatch: Function) => {
     dispatch(getUserProductPermissionsRequest(id))
-    return services
-        .getUserProductPermissions(id)
-        .then(({ read, write, share }) => {
-            dispatch(getUserProductPermissionsSuccess(read, write, share))
-        }, (error) => {
-            dispatch(getUserProductPermissionsFailure(id, {
-                message: error.message,
-            }))
-        })
+    let permissions
+    try {
+        permissions = await services.getUserProductPermissions(id)
+    } catch (error) {
+        dispatch(getUserProductPermissionsFailure(id, {
+            message: error.message,
+        }))
+        return
+    }
+    dispatch(getUserProductPermissionsSuccess(permissions))
 }

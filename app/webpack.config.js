@@ -99,6 +99,15 @@ module.exports = {
                     publicPath,
                 },
             },
+            // Videos are put to <BASE_URL>/videos
+            {
+                test: /\.(mp4)$/,
+                loader: 'file-loader',
+                options: {
+                    name: 'videos/[name]_[hash:8].[ext]',
+                    publicPath,
+                },
+            },
             // Fonts are put to <BASE_URL>/fonts
             {
                 test: /\.(woff|woff2|eot|ttf)$/,
@@ -179,7 +188,7 @@ module.exports = {
             TRAVIS_BRANCH: process.env.TRAVIS_BRANCH || '',
             TRAVIS_COMMIT: process.env.TRAVIS_COMMIT || '',
             TRAVIS_PULL_REQUEST_SHA: process.env.TRAVIS_PULL_REQUEST_SHA || '',
-            COMMUNITY_PRODUCTS: process.env.COMMUNITY_PRODUCTS,
+            DATA_UNIONS: process.env.DATA_UNIONS,
         }),
         new webpack.EnvironmentPlugin(loadedDotenv),
         ...(analyze ? [
@@ -222,6 +231,7 @@ module.exports = {
                 'src/userpages/**/*.*',
                 'src/editor/**/*.*',
                 'src/docs/**/*.*',
+                'src/*.*',
             ].filter(Boolean),
             globOptions: {
                 ignore: [
@@ -240,8 +250,7 @@ module.exports = {
                     // skip conditional stubs
                     '**/stub.jsx',
                     // skip stories
-                    '**/*.stories.js',
-                    '**/*.stories.jsx',
+                    '**/*.stories.*',
                     // and files used by stories
                     'src/editor/canvas/components/ModuleRenderer/modules.js',
                     // skip MD documentation
@@ -249,11 +258,6 @@ module.exports = {
                     // skip sketch files
                     '**/*.sketch',
                     'src/docs/scripts/*.*',
-                    // upcoming docs
-                    'src/docs/components/DocsPages/RunningNode/index.jsx',
-                    'src/docs/components/DocsPages/Marketplace/CommunityProducts/index.jsx',
-                    // deprecated components
-                    'src/marketplace/components/deprecated/**/*.*',
                 ],
             },
         }),
@@ -327,6 +331,9 @@ module.exports = {
             'strict-uri-encode': path.resolve(__dirname, 'node_modules/strict-uri-encode'),
             warning: path.resolve(__dirname, 'node_modules/warning'),
             underscore: path.resolve(__dirname, 'node_modules/underscore'),
+            react: path.resolve(__dirname, 'node_modules/react'),
+            'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+            'styled-components': path.resolve(__dirname, 'node_modules/styled-components'),
         },
     },
 }

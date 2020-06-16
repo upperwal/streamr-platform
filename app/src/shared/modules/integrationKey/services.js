@@ -1,26 +1,37 @@
 // @flow
 
-import getWeb3 from '$shared/web3/web3Provider'
+import { getPublicWeb3 } from '$shared/web3/web3Provider'
 import { get, post, del, put } from '$shared/utils/api'
-import { formatApiUrl } from '$shared/utils/url'
+import routes from '$routes'
 import type { ApiResult } from '$shared/flowtype/common-types'
-import type { IntegrationKeyId, IntegrationKey, Challenge } from '$shared/flowtype/integration-key-types'
+import {
+    BalanceType,
+    type IntegrationKeyId,
+    type IntegrationKey,
+    type Challenge,
+    type CreateIdentity,
+} from '$shared/flowtype/integration-key-types'
 import type { Address, Hash } from '$shared/flowtype/web3-types'
 import { integrationKeyServices } from '$shared/utils/constants'
+import { getDataTokenBalance, getEthBalance } from '$mp/utils/web3'
+
 import {
-    Web3NotEnabledError,
     ChallengeFailedError,
     CreateIdentityFailedError,
     IdentityExistsError,
 } from '$shared/errors/Web3'
 
 export const getIntegrationKeys = (): ApiResult<Array<IntegrationKey>> => get({
-    url: formatApiUrl('integration_keys'),
+    url: routes.api.integrationKeys.index(),
 })
 
-export const createPrivateKey = (name: string, privateKey: Address): ApiResult<IntegrationKey> =>
-    post({
-        url: formatApiUrl('integration_keys'),
+export const createPrivateKey = (name: string): ApiResult<IntegrationKey> => {
+    const web3 = getPublicWeb3()
+
+    const { privateKey } = web3.eth.accounts.create()
+
+    return post({
+        url: routes.api.integrationKeys.index(),
         data: {
             name,
             service: integrationKeyServices.PRIVATE_KEY,
@@ -29,17 +40,22 @@ export const createPrivateKey = (name: string, privateKey: Address): ApiResult<I
             },
         },
     })
+}
 
-export const editIntegrationKey = (keyId: IntegrationKeyId, name: string): ApiResult<IntegrationKey> =>
+export const editIntegrationKey = (id: IntegrationKeyId, name: string): ApiResult<IntegrationKey> =>
     put({
-        url: formatApiUrl('integration_keys', keyId),
+        url: routes.api.integrationKeys.show({
+            id,
+        }),
         data: {
             name,
         },
     })
 
 export const createChallenge = (account: Address): ApiResult<Challenge> => post({
-    url: formatApiUrl('login', 'challenge', account),
+    url: routes.api.loginChallenge({
+        account,
+    }),
 })
 
 export const createEthereumIdentity = (
@@ -48,7 +64,7 @@ export const createEthereumIdentity = (
     challenge: Challenge,
     signature: Hash,
 ): ApiResult<IntegrationKey> => post({
-    url: formatApiUrl('integration_keys'),
+    url: routes.api.integrationKeys.index(),
     data: {
         name,
         service: integrationKeyServices.ETHEREREUM_IDENTITY,
@@ -58,34 +74,22 @@ export const createEthereumIdentity = (
     },
 })
 
-export const createIdentity = async (name: string): ApiResult<IntegrationKey> => {
-    const ownWeb3 = getWeb3()
-
-    if (!ownWeb3.isEnabled()) {
-        throw new Web3NotEnabledError()
-    }
-
-    let account
+export const createIdentity = async ({ name, address, signChallenge }: CreateIdentity) => {
     let response
     let challenge
     let signature
 
     try {
-        account = await ownWeb3.getDefaultAccount()
-        response = await createChallenge(account)
+        response = await createChallenge(address)
         challenge = response && response.challenge
-        signature = await ownWeb3.eth.personal.sign(
-            challenge,
-            account,
-            '', // required, but MetaMask will ignore the password argument here
-        )
+        signature = await signChallenge(challenge)
     } catch (error) {
         console.warn(error)
         throw new ChallengeFailedError()
     }
 
     try {
-        return await createEthereumIdentity(name, account, response, signature)
+        return await createEthereumIdentity(name, address, response, signature)
     } catch (error) {
         if (error.code === 'DUPLICATE_NOT_ALLOWED') {
             throw new IdentityExistsError()
@@ -97,5 +101,27 @@ export const createIdentity = async (name: string): ApiResult<IntegrationKey> =>
 }
 
 export const deleteIntegrationKey = (id: IntegrationKeyId): ApiResult<null> => del({
-    url: formatApiUrl('integration_keys', id),
+    url: routes.api.integrationKeys.show({
+        id,
+    }),
 })
+
+type GetBalance = {
+    address: Address,
+    type: $Values<typeof BalanceType>,
+    usePublicNode?: boolean,
+}
+
+export async function getBalance({ address, type, usePublicNode = false }: GetBalance) {
+    let balance
+
+    if (type === BalanceType.ETH) {
+        balance = await getEthBalance(address, usePublicNode)
+    } else if (type === BalanceType.DATA) {
+        balance = await getDataTokenBalance(address, usePublicNode)
+    } else {
+        throw new Error('Unknown balance type!')
+    }
+
+    return balance
+}

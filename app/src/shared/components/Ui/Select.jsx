@@ -19,7 +19,7 @@ export type Props = {
     onChange?: Function,
     required?: boolean,
     clearable?: boolean,
-    isDisabled?: boolean,
+    disabled?: boolean,
     controlClassName?: string,
 }
 
@@ -32,19 +32,24 @@ const customStyles = {
                 stroke: '#A3A3A3',
             },
         },
+        backgroundColor: state.isDisabled ? '#EFEFEF' : provided.backgroundColor,
+        opacity: state.isDisabled ? 0.5 : 1,
+        backfaceVisibility: 'hidden',
+        color: state.isDisabled ? '#32323280' : '#323232',
         border: state.isFocused ? '1px solid #0324FF' : '1px solid #EFEFEF',
         borderRadius: '4px',
         height: '40px',
         boxShadow: 'none',
-        cursor: 'pointer',
+        cursor: state.isDisabled ? 'not-allowed' : 'pointer',
+        pointerEvents: 'auto',
         fontSize: '1rem',
         letterSpacing: '0',
         lineHeight: '2rem',
         width: '100%',
     }),
-    dropdownIndicator: (provided) => ({
+    dropdownIndicator: (provided, state) => ({
         ...provided,
-        color: '#323232',
+        color: state.isDisabled ? '#32323280' : '#323232',
         marginRight: '8px',
     }),
     indicatorSeparator: () => ({}),
@@ -61,8 +66,9 @@ const customStyles = {
     }),
     option: (provided, state) => ({
         ...provided,
+        textAlign: 'left',
         padding: '0 1rem',
-        paddingLeft: '2rem',
+        paddingLeft: '1rem',
         color: '#323232',
         position: 'relative',
         backgroundColor: state.isSelected || state.isFocused ? '#f8f8f8' : null,
@@ -83,6 +89,7 @@ const customStyles = {
     }),
     singleValue: (provided) => ({
         ...provided,
+        margin: 0,
         overflow: 'visible',
     }),
 }
@@ -101,7 +108,7 @@ const UnstyledTick = (props: any) => (
 
 const Tick = styled(UnstyledTick)`
     height: 8px;
-    left: 1.1rem;
+    right: 12px;
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -136,7 +143,13 @@ const DropdownIndicator = (props) => (
     )
 )
 
-const UnstyledSelect = ({ controlClassName, required = false, clearable = true, ...props }: Props) => (
+const UnstyledSelect = ({
+    controlClassName,
+    required = false,
+    clearable = true,
+    disabled,
+    ...props
+}: Props) => (
     <ReactSelect
         styles={customStyles}
         components={{
@@ -148,6 +161,8 @@ const UnstyledSelect = ({ controlClassName, required = false, clearable = true, 
         controlClassName={controlClassName}
         required={required}
         clearable={clearable}
+        isDisabled={disabled}
+        isSearchable={false}
         // $FlowFixMe potential override necessary.
         {...props}
     />

@@ -6,7 +6,7 @@ import { Translate, I18n } from 'react-redux-i18n'
 import { paymentCurrencies } from '$shared/utils/constants'
 import ModalPortal from '$shared/components/ModalPortal'
 import Dialog from '$shared/components/Dialog'
-import links from '../../../../links'
+import routes from '$routes'
 import type { PaymentCurrency } from '$shared/flowtype/common-types'
 
 import style from './setAllowanceDialog.pcss'
@@ -21,7 +21,7 @@ export type Props = {
 
 const HelpText = () => (
     <p className={style.helpText}>
-        <Translate value="modal.setAllowance.helpText" allowanceLink={links.allowanceInfo} dangerousHTML />
+        <Translate value="modal.setAllowance.helpText" allowanceLink={routes.allowanceInfo()} dangerousHTML />
     </p>
 )
 
@@ -44,9 +44,9 @@ const SetAllowanceDialog = ({
                             onClick: onCancel,
                             kind: 'link',
                         },
-                        publish: {
+                        next: {
                             title: I18n.t('modal.common.waiting'),
-                            kind: 'primary',
+                            outline: true,
                             disabled: true,
                             spinner: true,
                         },
@@ -75,7 +75,6 @@ const SetAllowanceDialog = ({
                     },
                     next: {
                         title: I18n.t('modal.common.next'),
-                        kind: 'primary',
                         outline: true,
                         onClick: () => onSet(),
                     },

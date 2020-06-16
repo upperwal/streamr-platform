@@ -33,13 +33,10 @@ import { Provider as ModalPortalProvider } from '$shared/contexts/ModalPortal'
 import ErrorDialog from '$mp/components/Modal/ErrorDialog'
 import Notifications from '$shared/components/Notifications'
 import Notification from '$shared/utils/Notification'
-import CodeSnippet from '$shared/components/CodeSnippet'
 import Tooltip from '$shared/components/Tooltip'
 import ContextMenu from '$shared/components/ContextMenu'
 import { NotificationIcon } from '$shared/utils/constants'
-import Toolbar from '$shared/components/Toolbar'
 import Spinner from '$shared/components/Spinner'
-import Button from '$shared/components/Button'
 import Text from '$ui/Text'
 
 import sharedStyles from './shared.pcss'
@@ -551,31 +548,6 @@ story('Notifications')
         )
     })
 
-story('CodeSnippet')
-    .addWithJSX('basic', () => (
-        <CodeSnippet
-            language={text('Language', 'javascript')}
-            showLineNumbers={boolean('Show line numbers', true)}
-            wrapLines={boolean('wrapLines')}
-        >{String.raw`const StreamrClient = require('streamr-client')
-
-const streamr = new StreamrClient({
-    auth: {
-        apiKey: 'YOUR-API-KEY',
-    },
-})
-
-// Subscribe to a stream
-streamr.subscribe({
-    stream: 'stream-id'
-},
-(message, metadata) => {
-    // Do something with the message here!
-    console.log(message)
-}`}
-        </CodeSnippet>
-    ))
-
 class ContextMenuContainer extends React.Component {
     state = {
         isOpen: false,
@@ -615,95 +587,8 @@ story('Tooltip')
         </Tooltip>
     ))
 
-const toolbarActions = {
-    cancel: {
-        title: 'Cancel',
-        kind: 'link',
-        onClick: action('cancel'),
-    },
-    ok: {
-        title: 'Ok',
-        kind: 'primary',
-        onClick: action('ok'),
-        disabled: boolean('disabled'),
-        spinner: boolean('spinner'),
-    },
-}
-
-story('Toolbar')
-    .addDecorator(styles({
-        backgroundColor: '#323232',
-        padding: '15px',
-    }))
-    .addWithJSX('basic', () => (
-        <Toolbar actions={toolbarActions} />
-    ))
-    .addWithJSX('left status text', () => (
-        <Toolbar
-            left={text('status text', 'status')}
-            actions={toolbarActions}
-        />
-    ))
-    .addWithJSX('middle icon', () => (
-        <Toolbar
-            left={text('status text', 'status')}
-            middle={<SvgIcon
-                name="user"
-                style={{
-                    width: '40px',
-                    height: '40px',
-                }}
-            />}
-            actions={toolbarActions}
-        />
-    ))
-
 story('Spinner')
     .addWithJSX('Small', () => (<Spinner size="small" />))
     .addWithJSX('Large', () => (<Spinner size="large" />))
     .addWithJSX('Green', () => (<Spinner color="green" />))
     .addWithJSX('White', () => (<Spinner color="white" />))
-
-story('Button')
-    .addWithJSX('all', () => (
-        <div>
-            <Button kind="primary" size="mini" onClick={action('Clicked')}>Primary mini</Button>
-            <br />
-            <Button kind="primary" size="normal" onClick={action('Clicked')}>Primary normal</Button>
-            <br />
-            <Button kind="primary" size="big" onClick={action('Clicked')}>Primary big</Button>
-            <br />
-            <Button kind="primary" size="normal" disabled onClick={action('Clicked')}>Primary normal disabled</Button>
-            <br />
-            <Button kind="primary" size="normal" outline onClick={action('Clicked')}>Primary normal outline</Button>
-            <br />
-            <Button kind="secondary" size="mini" onClick={action('Clicked')}>Secondary mini</Button>
-            <br />
-            <Button kind="secondary" size="normal" onClick={action('Clicked')}>Secondary normal</Button>
-            <br />
-            <Button kind="secondary" size="big" onClick={action('Clicked')}>Secondary big</Button>
-            <br />
-            <Button kind="secondary" size="normal" disabled onClick={action('Clicked')}>Secondary normal disabled</Button>
-            <br />
-            <Button kind="secondary" size="normal" outline onClick={action('Clicked')}>Secondary normal outline</Button>
-            <br />
-            <Button kind="destructive" onClick={action('Clicked')}>Destructive</Button>
-            <br />
-            <Button kind="destructive" disabled onClick={action('Clicked')}>Destructive disabled</Button>
-            <br />
-            <Button kind="link" variant="dark" onClick={action('Clicked')}>Link (dark)</Button>
-            <br />
-            <Button kind="link" variant="light" onClick={action('Clicked')}>Link (light)</Button>
-            <br />
-            <Button kind="special" variant="dark" onClick={action('Clicked')}>Special (dark)</Button>
-            <br />
-            <Button kind="special" variant="light" onClick={action('Clicked')}>Special (light)</Button>
-            <br />
-            <Button tag="a" href="#" onClick={action('Clicked')}>With link tag</Button>
-            <br />
-            <Button kind="primary" waiting onClick={action('Clicked')}>Waiting primary</Button>
-            <br />
-            <Button kind="secondary" waiting onClick={action('Clicked')}>Waiting secondary</Button>
-        </div>
-    ))
-

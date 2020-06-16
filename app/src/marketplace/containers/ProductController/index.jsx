@@ -16,9 +16,11 @@ import useProductValidationEffect from './useProductValidationEffect'
 import useContractProductSubscriptionLoadCallback from './useContractProductSubscriptionLoadCallback'
 import useLoadCategoriesCallback from './useLoadCategoriesCallback'
 import useLoadProductStreamsCallback from './useLoadProductStreamsCallback'
-import useCommunityProductLoadCallback from './useCommunityProductLoadCallback'
+import useDataUnionLoadCallback from './useDataUnionLoadCallback'
+import useDataUnionStatsLoadCallback from './useDataUnionStatsLoadCallback'
 import useRelatedProductsLoadCallback from './useRelatedProductsLoadCallback'
 import useLoadStreamsCallback from './useLoadStreamsCallback'
+import useClearStreamsCallback from './useClearStreamsCallback'
 
 type ContextProps = {
     loadProduct: Function,
@@ -26,9 +28,11 @@ type ContextProps = {
     loadContractProductSubscription: Function,
     loadCategories: Function,
     loadProductStreams: Function,
-    loadCommunityProduct: Function,
+    loadDataUnion: Function,
+    loadDataUnionStats: Function,
     loadRelatedProducts: Function,
     loadStreams: Function,
+    clearStreams: Function,
 }
 
 const ProductControllerContext: Context<ContextProps> = React.createContext({})
@@ -73,9 +77,11 @@ function useProductController() {
     const loadContractProductSubscription = useContractProductSubscriptionLoadCallback()
     const loadCategories = useLoadCategoriesCallback()
     const loadProductStreams = useLoadProductStreamsCallback()
-    const loadCommunityProduct = useCommunityProductLoadCallback()
+    const loadDataUnion = useDataUnionLoadCallback()
+    const loadDataUnionStats = useDataUnionStatsLoadCallback()
     const loadRelatedProducts = useRelatedProductsLoadCallback()
     const loadStreams = useLoadStreamsCallback()
+    const clearStreams = useClearStreamsCallback()
 
     return useMemo(() => ({
         loadProduct,
@@ -83,18 +89,22 @@ function useProductController() {
         loadContractProductSubscription,
         loadCategories,
         loadProductStreams,
-        loadCommunityProduct,
+        loadDataUnion,
+        loadDataUnionStats,
         loadRelatedProducts,
         loadStreams,
+        clearStreams,
     }), [
         loadProduct,
         loadContractProduct,
         loadContractProductSubscription,
         loadCategories,
         loadProductStreams,
-        loadCommunityProduct,
+        loadDataUnion,
+        loadDataUnionStats,
         loadRelatedProducts,
         loadStreams,
+        clearStreams,
     ])
 }
 

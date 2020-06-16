@@ -9,6 +9,7 @@ import type { Operation } from '$userpages/flowtype/permission-types'
 import type { Filter } from '$userpages/flowtype/common-types'
 
 import Notification from '$shared/utils/Notification'
+import Activity, { actionTypes, resourceTypes } from '$shared/utils/Activity'
 import { NotificationIcon } from '$shared/utils/constants'
 import { streamsSchema, streamSchema } from '$shared/modules/entities/schema'
 import { handleEntities } from '$shared/utils/entities'
@@ -17,7 +18,7 @@ import { getError } from '$shared/utils/request'
 import { selectUserData } from '$shared/modules/user/selectors'
 import { getParamsForFilter } from '$userpages/utils/filters'
 import CsvSchemaError from '$shared/errors/CsvSchemaError'
-import { formatApiUrl } from '$shared/utils/url'
+import routes from '$routes'
 
 import * as services from './services'
 import { selectOpenStream, selectPageSize, selectOffset } from './selectors'
@@ -260,10 +261,6 @@ export const getStream = (id: StreamId) => (dispatch: Function) => {
         .then((id) => dispatch(getStreamSuccess(id)))
         .catch((e) => {
             dispatch(getStreamFailure(e))
-            Notification.push({
-                title: e.message,
-                icon: NotificationIcon.ERROR,
-            })
             throw e
         })
 }
@@ -290,8 +287,12 @@ export const updateStreamStatuses = (ids: StreamIdList) => (dispatch: Function) 
 
     const fetchStatuses = async () => {
         for (let index = 0; index < ids.length && !cancelled; index += 1) {
-            // eslint-disable-next-line no-await-in-loop
-            await dispatch(updateStreamStatus(ids[index]))
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await dispatch(updateStreamStatus(ids[index]))
+            } catch (e) {
+                // ignore error and continue, updateStreamStatus() already logs the issue
+            }
         }
     }
 
@@ -311,9 +312,11 @@ export const cancelStreamStatusFetch = () => {
 type GetStreamParams = {
     replace?: boolean,
     filter?: Filter,
+    updateStatus?: boolean,
 }
 
-export const getStreams = ({ replace = false, filter = {} }: GetStreamParams = {}) => (dispatch: Function, getState: Function) => {
+// eslint-disable-next-line max-len
+export const getStreams = ({ replace = false, filter = {}, updateStatus = true }: GetStreamParams = {}) => (dispatch: Function, getState: Function) => {
     dispatch(getStreamsRequest())
 
     const state = getState()
@@ -341,7 +344,10 @@ export const getStreams = ({ replace = false, filter = {} }: GetStreamParams = {
                 dispatch(clearStreamsListAction())
             }
             dispatch(getStreamsSuccess(ids, hasMoreResults))
-            streamStatusCancel = dispatch(updateStreamStatuses(ids))
+
+            if (updateStatus) {
+                streamStatusCancel = dispatch(updateStreamStatuses(ids))
+            }
         })
         .catch((e) => {
             dispatch(getStreamsFailure(e))
@@ -376,10 +382,6 @@ export const getMyStreamPermissions = (id: StreamId) => (dispatch: Function, get
         })
         .catch((e) => {
             dispatch(getMyStreamPermissionsFailure(e))
-            Notification.push({
-                title: e.message,
-                icon: NotificationIcon.ERROR,
-            })
             throw e
         })
 }
@@ -390,8 +392,13 @@ export const createStream = (options: { name: string, description: ?string }) =>
         services.postStream(options)
             .then((data: Stream) => {
                 Notification.push({
-                    title: `Stream ${data.name} created successfully!`,
+                    title: 'Stream created successfully!',
                     icon: NotificationIcon.CHECKMARK,
+                })
+                Activity.push({
+                    action: actionTypes.CREATE,
+                    resourceId: data.id,
+                    resourceType: resourceTypes.STREAM,
                 })
                 return data
             })
@@ -436,7 +443,9 @@ export const deleteStream = (id: StreamId) => async (dispatch: Function): Promis
     dispatch(deleteStreamRequest())
     try {
         const deleteStream = await api.del({
-            url: formatApiUrl('streams', id),
+            url: routes.api.streams.show({
+                id,
+            }),
         })
         dispatch(deleteStreamSuccess(id))
         Notification.push({

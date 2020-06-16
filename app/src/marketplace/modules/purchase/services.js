@@ -6,15 +6,15 @@ import { getWeb3 } from '$shared/web3/web3Provider'
 import { getContract, send } from '$mp/utils/smartContract'
 import getConfig from '$shared/web3/config'
 import { post } from '$shared/utils/api'
-import { formatApiUrl } from '$shared/utils/url'
 import type { NumberString, ApiResult, PaymentCurrency } from '$shared/flowtype/common-types'
 import type { ProductId } from '../../flowtype/product-types'
 import type { SmartContractTransaction } from '$shared/flowtype/web3-types'
 import { gasLimits, paymentCurrencies } from '$shared/utils/constants'
 import { getValidId } from '$mp/utils/product'
+import routes from '$routes'
 
 export const addFreeProduct = async (id: ProductId, endsAt: number): ApiResult<null> => post({
-    url: formatApiUrl('subscriptions'),
+    url: routes.api.subscriptions(),
     data: {
         product: getValidId(id, false),
         endsAt,
@@ -37,13 +37,22 @@ export const buyProduct = (
 
     switch (paymentCurrency) {
         case paymentCurrencies.ETH:
-            return send(uniswapAdaptorContractMethods().buyWithETH(getValidId(id), subscriptionInSeconds.toString(), ONE_DAY), {
+            return send(uniswapAdaptorContractMethods().buyWithETH(
+                getValidId(id),
+                subscriptionInSeconds.toString(),
+                ONE_DAY,
+            ), {
                 gas: gasLimits.BUY_PRODUCT_WITH_ETH,
                 value: web3.utils.toWei(ethPrice.toString()).toString(),
             })
         case paymentCurrencies.DAI:
-            return send(uniswapAdaptorContractMethods()
-                .buyWithERC20(getValidId(id), subscriptionInSeconds.toString(), ONE_DAY, DAI, web3.utils.toWei(daiPrice.toString()).toString()), {
+            return send(uniswapAdaptorContractMethods().buyWithERC20(
+                getValidId(id),
+                subscriptionInSeconds.toString(),
+                ONE_DAY,
+                DAI,
+                web3.utils.toWei(daiPrice.toString()).toString(),
+            ), {
                 gas: gasLimits.BUY_PRODUCT_WITH_ERC20,
             })
 

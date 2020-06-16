@@ -1,24 +1,29 @@
 // @flow
 
-import React, { useContext, useMemo, useEffect } from 'react'
+import React, { useContext, useMemo, useEffect, useCallback, useState, useRef } from 'react'
 import { withRouter } from 'react-router-dom'
-import { I18n } from 'react-redux-i18n'
+import { useSelector } from 'react-redux'
+import { I18n, Translate } from 'react-redux-i18n'
 import cx from 'classnames'
 
 import CoreLayout from '$shared/components/Layout/Core'
+import coreLayoutStyles from '$shared/components/Layout/core.pcss'
 import * as UndoContext from '$shared/contexts/Undo'
 import Toolbar from '$shared/components/Toolbar'
 import type { Product } from '$mp/flowtype/product-types'
-import { isCommunityProduct } from '$mp/utils/product'
+import { isDataUnionProduct } from '$mp/utils/product'
 
 import ProductController, { useController } from '../ProductController'
 import useEditableProduct from '../ProductController/useEditableProduct'
 import usePending from '$shared/hooks/usePending'
 import { productStates } from '$shared/utils/constants'
-import { Context as ValidationContext } from '../ProductController/ValidationContextProvider'
 import { isEthereumAddress } from '$mp/utils/validate'
-import { notFoundRedirect } from '$auth/utils/loginInterceptor'
 import useProductPermissions from '../ProductController/useProductPermissions'
+import useProduct from '$mp/containers/ProductController/useProduct'
+import useEthereumIdentities from '$shared/modules/integrationKey/hooks/useEthereumIdentities'
+import ResourceNotFoundError, { ResourceType } from '$shared/errors/ResourceNotFoundError'
+import { selectFetchingStreams, selectHasMoreResults } from '$mp/modules/streams/selectors'
+import useModal from '$shared/hooks/useModal'
 
 import { Provider as EditControllerProvider, Context as EditControllerContext } from './EditControllerProvider'
 import BackButton from '$shared/components/BackButton'
@@ -26,11 +31,13 @@ import Editor from './Editor'
 import Preview from './Preview'
 import ProductEditorDebug from './ProductEditorDebug'
 import ConfirmSaveModal from './ConfirmSaveModal'
-import DeployCommunityModal from './DeployCommunityModal'
+import DeployDataUnionModal from './DeployDataUnionModal'
 import PublishModal from './PublishModal'
 import CropImageModal from './CropImageModal'
 
 import styles from './editProductPage.pcss'
+
+const STREAMS_PAGE_SIZE = 999
 
 const EditProductPage = ({ product }: { product: Product }) => {
     const {
@@ -38,81 +45,129 @@ const EditProductPage = ({ product }: { product: Product }) => {
         setIsPreview,
         save,
         publish,
-        deployCommunity,
+        deployDataUnion,
         back,
     } = useContext(EditControllerContext)
     const { isPending: savePending } = usePending('product.SAVE')
-    const { isAnyChangePending } = useContext(ValidationContext)
-    const { loadCategories, loadStreams } = useController()
+    const { isPending: publishDialogLoading } = usePending('product.PUBLISH_DIALOG_LOAD')
+    const {
+        loadCategories,
+        loadProductStreams,
+        loadDataUnion,
+        loadDataUnionStats,
+        clearStreams,
+        loadStreams,
+    } = useController()
+    const fetchingAllStreams = useSelector(selectFetchingStreams)
+    const hasMoreResults = useSelector(selectHasMoreResults)
+    const [nextPage, setNextPage] = useState(0)
+    const loadedPageRef = useRef(0)
+    const { isOpen: isDataUnionDeployDialogOpen } = useModal('dataUnion.DEPLOY')
+    const { isOpen: isConfirmSaveDialogOpen } = useModal('confirmSave')
+    const { isOpen: isPublishDialogOpen } = useModal('publish')
 
+    const doLoadStreams = useCallback((page = 0) => {
+        loadedPageRef.current = page
+        loadStreams({
+            max: STREAMS_PAGE_SIZE,
+            offset: page * STREAMS_PAGE_SIZE,
+        }).then(() => {
+            setNextPage(page + 1)
+        })
+    }, [loadStreams])
+
+    const productId = product.id
     // Load categories and streams
     useEffect(() => {
+        clearStreams()
         loadCategories()
-        loadStreams()
-    }, [loadCategories, loadStreams])
+        loadProductStreams(productId)
+        doLoadStreams()
+    }, [loadCategories, loadProductStreams, productId, clearStreams, doLoadStreams])
 
-    const isSaving = savePending
-    const isCommunity = isCommunityProduct(product)
+    // Load more streams if we didn't get all in the initial load
+    useEffect(() => {
+        if (!fetchingAllStreams && hasMoreResults && nextPage > loadedPageRef.current) {
+            doLoadStreams(nextPage)
+        }
+    }, [nextPage, fetchingAllStreams, hasMoreResults, doLoadStreams])
+
+    // Load eth identities & data union (used to determine if owner account is linked)
+    const { load: loadEthIdentities } = useEthereumIdentities()
+    const originalProduct = useProduct()
+    const { beneficiaryAddress } = originalProduct
+
+    useEffect(() => {
+        loadEthIdentities()
+        loadDataUnion(beneficiaryAddress)
+        loadDataUnionStats(beneficiaryAddress)
+    }, [beneficiaryAddress, loadDataUnion, loadDataUnionStats, loadEthIdentities])
+
+    const isLoading = savePending || publishDialogLoading
+    const modalsOpen = !!(isDataUnionDeployDialogOpen || isConfirmSaveDialogOpen || isPublishDialogOpen)
+    const isDisabled = isLoading || modalsOpen
+    const isDataUnion = isDataUnionProduct(product)
     // TODO: should really check for the contract existance here
-    const isDeployed = isCommunity && isEthereumAddress(product.beneficiaryAddress)
+    const isDeployed = isDataUnion && isEthereumAddress(product.beneficiaryAddress)
 
     const saveAndExitButton = useMemo(() => ({
-        title: 'Save & Exit',
+        title: I18n.t('editProductPage.actionBar.save'),
         kind: 'link',
         onClick: () => save(),
-        disabled: isSaving,
-    }), [save, isSaving])
+        disabled: isDisabled,
+    }), [save, isDisabled])
 
     const previewButton = useMemo(() => {
         if (isPreview) {
             return {
-                title: 'Edit',
+                title: I18n.t('editProductPage.actionBar.edit'),
                 outline: true,
                 onClick: () => setIsPreview(false),
-                disabled: isSaving,
+                disabled: isDisabled,
             }
         }
 
         return {
-            title: 'Preview',
+            title: I18n.t('editProductPage.actionBar.preview'),
             outline: true,
             onClick: () => setIsPreview(true),
-            disabled: isSaving,
+            disabled: isDisabled,
         }
-    }, [isPreview, setIsPreview, isSaving])
+    }, [isPreview, setIsPreview, isDisabled])
 
     const productState = product.state
     const publishButton = useMemo(() => {
         const titles = {
             [productStates.DEPLOYING]: 'publishing',
             [productStates.UNDEPLOYING]: 'unpublishing',
-            [productStates.NOT_DEPLOYED]: 'publish',
-            [productStates.DEPLOYED]: 'unpublish',
-            republish: 'republish',
+            continue: 'continue',
         }
 
-        const tmpState: any = (productState === productStates.DEPLOYED && isAnyChangePending()) ? 'republish' : productState
+        const tmpState: any = [
+            productStates.DEPLOYING,
+            productStates.UNDEPLOYING,
+        ].includes(productState) ? productState : 'continue'
 
         return {
-            title: (productState && I18n.t(`editProductPage.${titles[tmpState]}`)) || '',
+            title: (productState && I18n.t(`editProductPage.actionBar.${titles[tmpState]}`)) || '',
             kind: 'primary',
             onClick: publish,
-            disabled: !(productState === productStates.NOT_DEPLOYED || productState === productStates.DEPLOYED) || isSaving,
+            disabled: !(productState === productStates.NOT_DEPLOYED || productState === productStates.DEPLOYED) || isDisabled,
         }
-    }, [isAnyChangePending, productState, publish, isSaving])
+    }, [productState, publish, isDisabled])
 
     const deployButton = useMemo(() => {
-        if (isCommunity && !isDeployed) {
+        if (isDataUnion && !isDeployed) {
             return {
-                title: 'Continue',
+                title: I18n.t('editProductPage.actionBar.continue'),
                 kind: 'primary',
-                onClick: deployCommunity,
-                disabled: isSaving,
+                onClick: deployDataUnion,
+                disabled: isDisabled,
             }
         }
 
         return publishButton
-    }, [isCommunity, isDeployed, deployCommunity, isSaving, publishButton])
+    }, [isDataUnion, isDeployed, deployDataUnion, isDisabled, publishButton])
 
     const actions = {
         saveAndExit: saveAndExitButton,
@@ -123,9 +178,10 @@ const EditProductPage = ({ product }: { product: Product }) => {
     const toolbarMiddle = useMemo(() => {
         if (isPreview) {
             return (
-                <span className={styles.toolbarMiddle}>
-                    This is a preview of how your product will appear when published
-                </span>
+                <Translate
+                    value="editProductPage.preview"
+                    className={styles.toolbarMiddle}
+                />
             )
         }
 
@@ -138,7 +194,6 @@ const EditProductPage = ({ product }: { product: Product }) => {
             hideNavOnDesktop
             navComponent={(
                 <Toolbar
-                    className={Toolbar.styles.shadow}
                     left={<BackButton onBack={back} />}
                     middle={toolbarMiddle}
                     actions={actions}
@@ -146,21 +201,23 @@ const EditProductPage = ({ product }: { product: Product }) => {
                 />
             )}
             loadingClassname={styles.loadingIndicator}
-            contentClassname={cx({
+            contentClassname={cx(coreLayoutStyles.pad, {
                 [styles.editorContent]: !isPreview,
                 [styles.previewContent]: !!isPreview,
             })}
-            loading={isSaving}
+            loading={isLoading || (isPreview && fetchingAllStreams)}
         >
-            <ProductEditorDebug />
+            {process.env.DATA_UNIONS && (
+                <ProductEditorDebug />
+            )}
             {isPreview && (
                 <Preview />
             )}
             {!isPreview && (
-                <Editor />
+                <Editor disabled={isDisabled} />
             )}
             <ConfirmSaveModal />
-            <DeployCommunityModal />
+            <DeployDataUnionModal />
             <PublishModal />
             <CropImageModal />
         </CoreLayout>
@@ -174,7 +231,6 @@ const LoadingView = () => (
         loading
         navComponent={(
             <Toolbar
-                className={Toolbar.styles.shadow}
                 actions={{}}
                 altMobileLayout
             />
@@ -186,11 +242,11 @@ const EditWrap = () => {
     const product = useEditableProduct()
     const { isPending: isLoadPending } = usePending('product.LOAD')
     const { isPending: isPermissionsPending } = usePending('product.PERMISSIONS')
-    const { hasPermissions, write, share } = useProductPermissions()
-    const canEdit = !!(write || share)
+    const { hasPermissions, edit } = useProductPermissions()
+    const canEdit = !!edit
 
     if (hasPermissions && !isPermissionsPending && !canEdit) {
-        notFoundRedirect()
+        throw new ResourceNotFoundError(ResourceType.PRODUCT, product.id)
     }
 
     if (!product || isLoadPending || isPermissionsPending || !hasPermissions || !canEdit) {

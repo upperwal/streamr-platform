@@ -1,25 +1,29 @@
 // @flow
 
-import { get } from '$shared/utils/api'
-import { formatApiUrl } from '$shared/utils/url'
+import { get, put, post } from '$shared/utils/api'
 import { getContract, call } from '../../utils/smartContract'
 import getConfig from '$shared/web3/config'
 
 import type { ApiResult } from '$shared/flowtype/common-types'
-import type { Product, ProductId, Subscription } from '$mp/flowtype/product-types'
-import type { SmartContractCall } from '$shared/flowtype/web3-types'
+import type { Product, ProductId, Subscription, ProductType } from '$mp/flowtype/product-types'
+import type { SmartContractCall, Hash } from '$shared/flowtype/web3-types'
 import type { StreamList } from '$shared/flowtype/stream-types'
-import { getValidId, mapProductFromApi } from '$mp/utils/product'
+import { getValidId, mapProductFromApi, mapProductToPostApi, mapProductToPutApi } from '$mp/utils/product'
 import { getProductFromContract } from '$mp/modules/contractProduct/services'
 import getWeb3 from '$shared/web3/web3Provider'
+import routes from '$routes'
 
 export const getProductById = async (id: ProductId): ApiResult<Product> => get({
-    url: formatApiUrl('products', getValidId(id, false)),
+    url: routes.api.products.show({
+        id: getValidId(id, false),
+    }),
 })
     .then(mapProductFromApi)
 
 export const getStreamsByProductId = async (id: ProductId, useAuthorization: boolean = true): ApiResult<StreamList> => get({
-    url: formatApiUrl('products', getValidId(id, false), 'streams'),
+    url: routes.api.products.streams({
+        id: getValidId(id, false),
+    }),
     useAuthorization,
 })
 
@@ -43,14 +47,16 @@ export const getMyProductSubscription = (id: ProductId): SmartContractCall<Subsc
   */
 export const getUserProductPermissions = async (id: ProductId): ApiResult<Object> => {
     const result = await get({
-        url: formatApiUrl('products', getValidId(id, false), 'permissions', 'me'),
+        url: routes.api.products.myPermissions({
+            id: getValidId(id, false),
+        }),
     })
 
     const p = result.reduce((permissions, permission) => {
         if (permission.anonymous) {
             return {
                 ...permissions,
-                read: true,
+                product_get: true,
             }
         }
         if (!permission.operation) {
@@ -63,8 +69,88 @@ export const getUserProductPermissions = async (id: ProductId): ApiResult<Object
     }, {})
 
     return {
-        read: !!p.read || false,
-        write: !!p.write || false,
-        share: !!p.share || false,
+        get: !!p.product_get || false,
+        edit: !!p.product_edit || false,
+        del: !!p.product_delete || false,
+        share: !!p.product_share || false,
     }
 }
+
+export const putProduct = (data: Product, id: ProductId): ApiResult<Product> => put({
+    url: routes.api.products.show({
+        id,
+    }),
+    data: mapProductToPutApi(data),
+})
+    .then(mapProductFromApi)
+
+export const postProduct = (product: Product): ApiResult<Product> => post({
+    url: routes.api.products.index(),
+    data: mapProductToPostApi(product),
+})
+    .then(mapProductFromApi)
+
+export const postEmptyProduct = (type: ProductType): ApiResult<Product> => {
+    const product = {
+        type,
+    }
+
+    return post({
+        url: routes.api.products.index(),
+        data: product,
+    })
+        .then(mapProductFromApi)
+}
+
+export const postImage = (id: ProductId, image: File): ApiResult<Product> => {
+    const options = {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }
+
+    const data = new FormData()
+    data.append('file', image, image.name)
+
+    return post({
+        url: routes.api.products.images({
+            id,
+        }),
+        data,
+        options,
+    }).then(mapProductFromApi)
+}
+
+export const postUndeployFree = async (id: ProductId): ApiResult<Product> => post({
+    url: routes.api.products.undeployFree({
+        id: getValidId(id, false),
+    }),
+})
+    .then(mapProductFromApi)
+
+export const postSetUndeploying = async (id: ProductId, txHash: Hash): ApiResult<Product> => post({
+    url: routes.api.products.setUndeploying({
+        id: getValidId(id, false),
+    }),
+    data: {
+        transactionHash: txHash,
+    },
+}).then(mapProductFromApi)
+
+export const postDeployFree = async (id: ProductId): ApiResult<Product> => post({
+    url: routes.api.products.deployFree({
+        id: getValidId(id, false),
+    }),
+})
+    .then(mapProductFromApi)
+
+export const postSetDeploying = async (id: ProductId, txHash: Hash): ApiResult<Product> => (
+    post({
+        url: routes.api.products.setDeploying({
+            id: getValidId(id, false),
+        }),
+        data: {
+            transactionHash: txHash,
+        },
+    }).then(mapProductFromApi)
+)

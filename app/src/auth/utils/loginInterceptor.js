@@ -4,30 +4,43 @@
 
 import axios from 'axios'
 import routes from '$routes'
-import { formatApiUrl } from '$shared/utils/url'
 import { matchPath } from 'react-router-dom'
+import ResourceNotFoundError, { ResourceType } from '$shared/errors/ResourceNotFoundError'
+import InvalidHexStringError from '$shared/errors/InvalidHexStringError'
 
 function shouldRedirect(error) {
     // ignore redirect to login logic for login route
-    if (window.location.pathname === routes.login()) { return false }
+    if (window.location.pathname === routes.auth.login()) { return false }
     // no redirects for embeds
     if (matchPath(window.location.pathname, {
-        path: routes.canvasEmbed(),
+        path: routes.canvases.embed(),
     })) {
         return false
     }
 
     // no redirects for canvases
     if (matchPath(window.location.pathname, {
-        path: routes.canvasEditor(),
+        path: routes.canvases.edit(),
     })) {
         return false
     }
 
     if (error.response && error.response.status === 401) {
+        const { ignoreUnauthorized } = error.config
+
+        if (ignoreUnauthorized) {
+            return false
+        }
+
         const url = new window.URL(error.config.url)
-        const me = new window.URL(formatApiUrl('users', 'me'))
-        const keys = new window.URL(formatApiUrl('users', 'me', 'keys'))
+        const me = new window.URL(routes.api.me.index())
+        const keys = new window.URL(routes.api.me.keys.index())
+        const changePassword = new window.URL(routes.api.me.changePassword())
+
+        // shouldn't redirect if current password is wrong when changing password
+        if (changePassword.pathname === url.pathname && me.origin === url.origin && error.config.method === 'post') {
+            return false
+        }
 
         // shouldn't redirect if hitting /users/me api, 401 normal, signals logged out
         if ([me.pathname, keys.pathname].includes(url.pathname) && me.origin === url.origin && error.config.method === 'get') {
@@ -45,8 +58,8 @@ function getRedirect() {
 
     switch (redirectPath) {
         // never redirect back to login/logout/error/404 after logging in
-        case routes.login():
-        case routes.logout():
+        case routes.auth.login():
+        case routes.auth.logout():
         case routes.error():
         case routes.notFound():
             return undefined
@@ -61,20 +74,15 @@ function wait(delay) {
 
 async function loginRedirect() {
     const redirectPath = window.location.pathname
-    if (redirectPath === routes.logout()) {
+    if (redirectPath === routes.auth.logout()) {
         // if user is on logout route, just redirect to root
         window.location = routes.root()
     } else {
         const redirect = getRedirect()
-        window.location = routes.login(redirect ? {
+        window.location = routes.auth.login(redirect ? {
             redirect,
         } : {})
     }
-    await wait(3000) // stall a moment to let redirect happen
-}
-
-export async function notFoundRedirect() {
-    window.location = routes.notFound()
     await wait(3000) // stall a moment to let redirect happen
 }
 
@@ -92,23 +100,23 @@ export function canHandleLoadError(err) {
 }
 
 export async function handleLoadError(err) {
-    if (!err.response) { throw err } // unexpected error
-    // server issues
-    if (err.response.status >= 500) {
+    if (err instanceof InvalidHexStringError) {
+        throw new ResourceNotFoundError(ResourceType.PRODUCT, err.id)
+    }
+
+    const { status } = err.response || {}
+
+    if (!status || status >= 500) {
         throw err
     }
 
-    if (err.response.status === 404) {
-        await notFoundRedirect()
+    if (status === 404 || ([401, 403].includes(status) && isLoggedInError(err))) {
+        const data = err.response.data || {}
+        throw new ResourceNotFoundError(data.type, data.id)
     }
 
-    if (err.response.status === 403 || err.response.status === 401) {
-        // if already logged in and no access, do not redirect to login
-        if (isLoggedInError(err)) {
-            await notFoundRedirect() // redirect to not found
-        } else {
-            await loginRedirect()
-        }
+    if ([401, 403].includes(status)) {
+        await loginRedirect()
     }
 
     throw err

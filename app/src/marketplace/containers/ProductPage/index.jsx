@@ -7,17 +7,18 @@ import { Helmet } from 'react-helmet'
 import { withRouter } from 'react-router-dom'
 
 import Layout from '$shared/components/Layout'
-import type { ProductId, CommunityId } from '$mp/flowtype/product-types'
+import type { ProductId } from '$mp/flowtype/product-types'
 import * as RouterContext from '$shared/contexts/Router'
 import ProductController, { useController } from '../ProductController'
 import usePending from '$shared/hooks/usePending'
 
 import { getProductSubscription } from '$mp/modules/product/actions'
-import LoadingIndicator from '$userpages/components/LoadingIndicator'
+import LoadingIndicator from '$shared/components/LoadingIndicator'
 
 import PurchaseModal from './PurchaseModal'
 import useProduct from '$mp/containers/ProductController/useProduct'
 import { selectUserData } from '$shared/modules/user/selectors'
+import { getToken } from '$shared/utils/sessionToken'
 
 import Page from './Page'
 import styles from './page.pcss'
@@ -28,12 +29,12 @@ const ProductPage = () => {
         loadContractProductSubscription,
         loadCategories,
         loadProductStreams,
-        loadCommunityProduct,
+        loadDataUnion,
         loadRelatedProducts,
     } = useController()
     const product = useProduct()
     const userData = useSelector(selectUserData)
-    const isLoggedIn = userData !== null
+    const isLoggedIn = userData !== null && !!getToken()
 
     const { match } = useContext(RouterContext.Context)
 
@@ -54,21 +55,17 @@ const ProductPage = () => {
         loadRelatedProducts,
     ])
 
-    const loadCommunity = useCallback(async (id: CommunityId) => {
-        loadCommunityProduct(id)
-    }, [loadCommunityProduct])
-
     useEffect(() => {
         loadProduct(match.params.id)
     }, [loadProduct, match.params.id])
 
-    const { communityDeployed, beneficiaryAddress } = product
+    const { dataUnionDeployed, beneficiaryAddress } = product
 
     useEffect(() => {
-        if (communityDeployed && beneficiaryAddress) {
-            loadCommunity(beneficiaryAddress)
+        if (dataUnionDeployed && beneficiaryAddress) {
+            loadDataUnion(beneficiaryAddress)
         }
-    }, [communityDeployed, beneficiaryAddress, loadCommunity])
+    }, [dataUnionDeployed, beneficiaryAddress, loadDataUnion])
 
     return (
         <Layout navShadow>

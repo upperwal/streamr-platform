@@ -8,9 +8,9 @@ import { Translate } from 'react-redux-i18n'
 import type { User } from '$shared/flowtype/user-types'
 import type { StoreState } from '$shared/flowtype/store-state'
 import { selectUserData } from '$shared/modules/user/selectors'
-import { userpages } from '../../../links'
+import routes from '$routes'
 import Tab from './Tab'
-import { formatPath } from '$shared/utils/url'
+import AccountsBalance from './AccountsBalance'
 import Avatar from '$userpages/components/Avatar'
 import ListContainer from '$shared/components/Container/List'
 import styles from './header.pcss'
@@ -44,7 +44,9 @@ const Header = ({
                     className={styles.avatar}
                     user={user}
                     linkToProfile
-                />
+                >
+                    <AccountsBalance />
+                </Avatar>
                 <div className={styles.additionalComponent}>
                     {additionalComponent}
                 </div>
@@ -57,22 +59,22 @@ const Header = ({
                         {searchComponent}
                     </div>
                     <div className={styles.tabs}>
-                        <Tab to={formatPath(userpages.streams)}>
+                        <Tab to={routes.streams.index()}>
                             <Translate value="userpages.header.streams" />
                         </Tab>
-                        <Tab to={formatPath(userpages.canvases)}>
+                        <Tab to={routes.canvases.index()}>
                             <Translate value="userpages.header.canvases" />
                         </Tab>
-                        <Tab to={formatPath(userpages.dashboards)}>
+                        <Tab to={routes.dashboards.index()}>
                             <Translate value="userpages.header.dashboards" />
                         </Tab>
-                        <Tab to={formatPath(userpages.products)}>
+                        <Tab to={routes.products.index()}>
                             <Translate value="userpages.header.products" />
                         </Tab>
-                        <Tab to={formatPath(userpages.purchases)}>
+                        <Tab to={routes.purchases()}>
                             <Translate value="userpages.header.purchases" />
                         </Tab>
-                        <Tab to={formatPath(userpages.transactions)}>
+                        <Tab to={routes.transactions()}>
                             <Translate value="userpages.header.transactions" />
                         </Tab>
                     </div>

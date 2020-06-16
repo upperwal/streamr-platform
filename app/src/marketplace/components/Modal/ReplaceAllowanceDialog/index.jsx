@@ -5,7 +5,7 @@ import { Translate, I18n } from 'react-redux-i18n'
 
 import ModalPortal from '$shared/components/ModalPortal'
 import Dialog from '$shared/components/Dialog'
-import links from '../../../../links'
+import routes from '$routes'
 
 import style from '../SetAllowanceDialog/setAllowanceDialog.pcss'
 
@@ -18,7 +18,7 @@ export type Props = {
 
 const HelpText = () => (
     <p className={style.helpText}>
-        <Translate value="modal.replaceAllowance.helpText" resetAllowanceLink={links.resetAllowanceInfo} dangerousHTML />
+        <Translate value="modal.replaceAllowance.helpText" resetAllowanceLink={routes.resetAllowanceInfo()} dangerousHTML />
     </p>
 )
 
@@ -35,9 +35,9 @@ const ReplaceAllowanceDialog = ({ gettingAllowance, settingAllowance, onCancel, 
                             onClick: onCancel,
                             kind: 'link',
                         },
-                        publish: {
+                        next: {
                             title: I18n.t('modal.common.waiting'),
-                            kind: 'primary',
+                            outline: true,
                             disabled: true,
                             spinner: true,
                         },
@@ -66,7 +66,6 @@ const ReplaceAllowanceDialog = ({ gettingAllowance, settingAllowance, onCancel, 
                     },
                     next: {
                         title: I18n.t('modal.common.next'),
-                        kind: 'primary',
                         outline: true,
                         onClick: () => onSet(),
                     },

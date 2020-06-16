@@ -1,77 +1,132 @@
 // @flow
 
-import React, { Component, Fragment } from 'react'
-import { connect } from 'react-redux'
-import { Translate } from 'react-redux-i18n'
+import React, { useEffect, useCallback } from 'react'
+import { Translate, I18n } from 'react-redux-i18n'
+import styled from 'styled-components'
 
 import IntegrationKeyList from '../IntegrationKeyHandler/IntegrationKeyList'
-import type { IntegrationKeyId, IntegrationKeyList as IntegrationKeyListType } from '$shared/flowtype/integration-key-types'
-import type { StoreState } from '$shared/flowtype/store-state'
-import { deleteIntegrationKey, fetchIntegrationKeys, createIdentity, editIntegrationKey } from '$shared/modules/integrationKey/actions'
-import { selectEthereumIdentities, selectIntegrationKeysError } from '$shared/modules/integrationKey/selectors'
+import useEthereumIdentities from '$shared/modules/integrationKey/hooks/useEthereumIdentities'
+import useModal from '$shared/hooks/useModal'
+import useIsMounted from '$shared/hooks/useIsMounted'
+import Button from '$shared/components/Button'
+import Notification from '$shared/utils/Notification'
+import { NotificationIcon } from '$shared/utils/constants'
+import { usePending } from '$shared/hooks/usePending'
 
 import profileStyles from '../profilePage.pcss'
 
-import AddIdentityButton from './AddIdentityButton'
+import AddIdentityDialog from './AddIdentityDialog'
 
-type StateProps = {
-    integrationKeys: ?IntegrationKeyListType,
-}
-
-type DispatchProps = {
-    createIdentity: (keyName: string) => Promise<void>,
-    deleteIntegrationKey: (keyId: IntegrationKeyId) => Promise<void>,
-    getIntegrationKeys: () => void,
-    editIntegrationKey: (keyId: IntegrationKeyId, keyName: string) => Promise<void>,
-}
-
-type Props = StateProps & DispatchProps
-
-export class IdentityHandler extends Component<Props> {
-    componentDidMount() {
-        // TODO: Move to (yet non-existent) router
-        this.props.getIntegrationKeys()
+const Wrapper = styled.div`
+    > button + button {
+        margin-left: 1rem;
     }
+`
 
-    onNew = (keyName: string): Promise<void> => this.props.createIdentity(keyName)
+const IdentityHandler = () => {
+    const {
+        load,
+        ethereumIdentities,
+        remove,
+        edit,
+        fetching,
+    } = useEthereumIdentities()
+    const { api: addIdentityDialog, isOpen } = useModal('userpages.addIdentity')
+    const isMounted = useIsMounted()
+    const { isPending: isSavePending } = usePending('user.SAVE')
+    const { wrap: wrapConnectWalletDialog, isPending: isConnectWalletDialogPending } = usePending('user.CONNECT_WALLET_DIALOG')
+    const { wrap: wrapCreateAccountDialog, isPending: isCreateAccountDialogPending } = usePending('user.CREATE_ACCOUNT_DIALOG')
+    const { wrap: wrapIdentityAction } = usePending('user.ADD_IDENTITY')
 
-    onDelete = (keyId: IntegrationKeyId): Promise<void> => this.props.deleteIntegrationKey(keyId)
+    const wrappedEdit = useCallback(async (...args) => (
+        wrapIdentityAction(async () => {
+            await edit(...args)
+        })
+    ), [wrapIdentityAction, edit])
 
-    onEdit = (keyId: IntegrationKeyId, keyName: string) => this.props.editIntegrationKey(keyId, keyName)
+    const wrappedRemove = useCallback(async (...args) => (
+        wrapIdentityAction(async () => {
+            await remove(...args)
+        })
+    ), [wrapIdentityAction, remove])
 
-    render() {
-        return (
-            <Fragment>
-                <Translate
-                    tag="p"
-                    value="userpages.profilePage.ethereumAddress.description"
-                    className={profileStyles.longText}
-                />
-                <IntegrationKeyList
-                    onDelete={this.onDelete}
-                    onEdit={this.onEdit}
-                    integrationKeys={this.props.integrationKeys || []}
-                    truncateValues
-                    className={profileStyles.keyList}
-                />
-                <AddIdentityButton />
-            </Fragment>
-        )
-    }
+    const addIdentity = useCallback(async (createAccount: boolean = false) => {
+        const { added, error } = await addIdentityDialog.open({
+            createAccount,
+        })
+
+        if (isMounted()) {
+            if (error) {
+                Notification.push({
+                    title: I18n.t('modal.newIdentity.errorNotification'),
+                    icon: NotificationIcon.ERROR,
+                    error,
+                })
+            } else if (added) {
+                Notification.push({
+                    title: I18n.t('modal.newIdentity.successNotification'),
+                    icon: NotificationIcon.CHECKMARK,
+                })
+            }
+        }
+    }, [addIdentityDialog, isMounted])
+
+    const connectWallet = useCallback(async () => (
+        wrapConnectWalletDialog(async () => addIdentity())
+    ), [wrapConnectWalletDialog, addIdentity])
+
+    const createAccount = useCallback(async () => (
+        wrapCreateAccountDialog(async () => addIdentity(true))
+    ), [wrapCreateAccountDialog, addIdentity])
+
+    useEffect(() => {
+        load()
+    }, [load])
+
+    const isDisabled = !!(
+        fetching ||
+        isSavePending ||
+        isConnectWalletDialogPending ||
+        isConnectWalletDialogPending
+    )
+
+    return (
+        <Wrapper>
+            <Translate
+                tag="p"
+                value="userpages.profilePage.ethereumAddress.description"
+                className={profileStyles.longText}
+                dangerousHTML
+            />
+            <IntegrationKeyList
+                onDelete={wrappedRemove}
+                onEdit={wrappedEdit}
+                integrationKeys={ethereumIdentities || []}
+                truncateValues
+                className={profileStyles.keyList}
+                disabled={isDisabled}
+            />
+            <Button
+                type="button"
+                kind="secondary"
+                disabled={isOpen || isDisabled}
+                onClick={connectWallet}
+                waiting={isConnectWalletDialogPending}
+            >
+                <Translate value="userpages.profilePage.ethereumAddress.connectWallet" />
+            </Button>
+            <Button
+                type="button"
+                kind="secondary"
+                disabled={isOpen || isDisabled}
+                onClick={createAccount}
+                waiting={isCreateAccountDialogPending}
+            >
+                <Translate value="userpages.profilePage.ethereumAddress.createAccount" />
+            </Button>
+            <AddIdentityDialog />
+        </Wrapper>
+    )
 }
 
-export const mapStateToProps = (state: StoreState): StateProps => ({
-    integrationKeys: selectEthereumIdentities(state),
-    error: selectIntegrationKeysError(state),
-})
-
-export const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
-    deleteIntegrationKey: (keyId: IntegrationKeyId): Promise<void> => dispatch(deleteIntegrationKey(keyId)),
-    createIdentity: (keyName: string) => dispatch(createIdentity(keyName)),
-    getIntegrationKeys() {
-        dispatch(fetchIntegrationKeys())
-    },
-    editIntegrationKey: (keyId: IntegrationKeyId, keyName: string): Promise<void> => dispatch(editIntegrationKey(keyId, keyName)),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(IdentityHandler)
+export default IdentityHandler

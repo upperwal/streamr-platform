@@ -1,30 +1,30 @@
 // @flow
 
 import { get, post, put, del } from '$shared/utils/api'
-import { formatApiUrl } from '$shared/utils/url'
+import routes from '$routes'
 import type { ApiResult } from '$shared/flowtype/common-types'
 import type { User, PasswordUpdate } from '$shared/flowtype/user-types'
 
 export const getUserData = (): ApiResult<User> => get({
-    url: formatApiUrl('users', 'me', {
+    url: routes.api.me.index({
         noCache: Date.now(),
     }),
 })
 
 export const putUser = (user: User): ApiResult<User> => put({
-    url: formatApiUrl('users', 'me'),
+    url: routes.api.me.index(),
     data: user,
 })
 
-export const postPasswordUpdate = (passwordUpdate: PasswordUpdate, userInputs?: Array<string> = []): ApiResult<null> => {
+export const postPasswordUpdate = (passwordUpdate: PasswordUpdate, username: string): ApiResult<null> => {
     const form = new FormData()
-    form.append('username', userInputs[0])
+    form.append('username', username)
     form.append('currentpassword', passwordUpdate.currentPassword)
     form.append('password', passwordUpdate.newPassword)
     form.append('password2', passwordUpdate.confirmNewPassword)
 
     return post({
-        url: formatApiUrl('users', 'me', 'changePassword'),
+        url: routes.api.me.changePassword(),
         data: form,
         options: {
             headers: {
@@ -46,12 +46,12 @@ export const uploadProfileAvatar = (image: File): Promise<void> => {
     data.append('file', image, image.name)
 
     return post({
-        url: formatApiUrl('users', 'me', 'image'),
+        url: routes.api.me.image(),
         data,
         options,
     })
 }
 
 export const deleteUserAccount = (): ApiResult<null> => del({
-    url: formatApiUrl('users/me'),
+    url: routes.api.me.index(),
 })

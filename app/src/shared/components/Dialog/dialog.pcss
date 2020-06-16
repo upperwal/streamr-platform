@@ -10,6 +10,10 @@
   overflow-x: hidden;
 }
 
+.buttons {
+  border-top: 1px solid #F2F1F1;
+}
+
 .dialog {
   position: fixed;
   top: 50%;
@@ -17,15 +21,31 @@
   transform: translate(-50%, -50%);
   text-align: center;
   color: #323232;
+  line-height: 24px;
 
   p {
-    line-height: 24px;
     margin-bottom: 0;
   }
 
   .buttons {
     padding: 1.5rem;
   }
+}
+
+.container { }
+
+.title { }
+
+.content { }
+
+.disabledModal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  opacity: 0.5;
+  background-color: white;
 }
 
 @media (--xs) {

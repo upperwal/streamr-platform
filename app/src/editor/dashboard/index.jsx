@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet'
 
 import Layout from '$shared/components/Layout'
 import withErrorBoundary from '$shared/utils/withErrorBoundary'
-import LoadingIndicator from '$userpages/components/LoadingIndicator'
+import LoadingIndicator from '$shared/components/LoadingIndicator'
 import ErrorComponentView from '$shared/components/ErrorComponentView'
 import UndoControls from '$editor/shared/components/UndoControls'
 import { Context as UndoContext, Provider as UndoContextProvider } from '$shared/contexts/Undo'
@@ -14,10 +14,15 @@ import { SelectionProvider } from '$shared/hooks/useSelection'
 import { Provider as PendingProvider } from '$shared/contexts/Pending'
 import { useAnyPending } from '$shared/hooks/usePending'
 import CanvasStyles from '$editor/canvas/index.pcss'
-import Sidebar from '$editor/shared/components/Sidebar'
+import Sidebar from '$shared/components/Sidebar'
+import SidebarProvider, { SidebarContext } from '$shared/components/Sidebar/SidebarProvider'
 import { handleLoadError } from '$auth/utils/loginInterceptor'
+import BodyClass from '$shared/components/BodyClass'
+import DashboardStatus from '$editor/shared/components/Status'
+import ResourceNotFoundError from '$shared/errors/ResourceNotFoundError'
+import ShareSidebar from '$userpages/components/ShareSidebar'
 
-import links from '../../links'
+import routes from '$routes'
 
 import Dashboard from './components/Dashboard'
 import DashboardToolbar from './components/Toolbar'
@@ -32,7 +37,6 @@ import styles from './index.pcss'
 const DashboardEdit = withRouter(class DashboardEdit extends Component {
     state = {
         moduleSearchIsOpen: false,
-        keyboardShortcutIsOpen: false,
     }
 
     setDashboard = (action, fn, done) => {
@@ -105,7 +109,9 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
         const { dashboard } = this.props
         const newDashboard = await services.duplicateDashboard(dashboard)
         if (this.unmounted) { return }
-        this.props.history.push(`${links.editor.dashboardEditor}/${newDashboard.id}`)
+        this.props.history.push(routes.dashboards.edit({
+            id: newDashboard.id,
+        }))
     }
 
     deleteDashboard = async () => {
@@ -113,13 +119,15 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
         this.isDeleted = true
         await services.deleteDashboard(dashboard)
         if (this.unmounted) { return }
-        this.props.history.push(links.userpages.dashboards)
+        this.props.history.push(routes.dashboards.index())
     }
 
     newDashboard = async () => {
         const newDashboard = await services.create()
         if (this.unmounted) { return }
-        this.props.history.push(`${links.editor.dashboardEditor}/${newDashboard.id}`)
+        this.props.history.push(routes.dashboards.edit({
+            id: newDashboard.id,
+        }))
     }
 
     renameDashboard = (name) => {
@@ -150,18 +158,8 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
         })
     }
 
-    keyboardShortcutOpen = (show = true) => {
-        this.setState({
-            keyboardShortcutIsOpen: !!show,
-        })
-    }
-
-    keyboardShortcutClose = () => {
-        this.keyboardShortcutOpen(false)
-    }
-
     render() {
-        const { dashboard } = this.props
+        const { dashboard, sidebar } = this.props
         return (
             <div className={styles.DashboardEdit}>
                 <Helmet title={`${dashboard.name} | Streamr Core`} />
@@ -170,8 +168,11 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
                     dashboard={dashboard}
                     setDashboard={this.setDashboard}
                     replaceDashboard={this.replaceDashboard}
-                />
+                >
+                    <DashboardStatus updated={dashboard.updated} />
+                </Dashboard>
                 <DashboardToolbar
+                    sidebar={sidebar}
                     className={styles.DashboardToolbar}
                     dashboard={dashboard}
                     setDashboard={this.setDashboard}
@@ -183,16 +184,25 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
                     removeModule={this.removeModule}
                     moduleSearchIsOpen={this.state.moduleSearchIsOpen}
                     moduleSearchOpen={this.moduleSearchOpen}
-                    keyboardShortcutOpen={this.keyboardShortcutOpen}
                 />
                 <Sidebar
                     className={CanvasStyles.ModuleSidebar}
-                    isOpen={this.state.keyboardShortcutIsOpen}
-                    onClose={this.keyboardShortcutClose}
+                    isOpen={sidebar.isOpen()}
+                    onClose={sidebar.close}
                 >
-                    <KeyboardShortcutsSidebar
-                        onClose={this.keyboardShortcutClose}
-                    />
+                    {sidebar.isOpen('keyboardShortcuts') && (
+                        <KeyboardShortcutsSidebar
+                            onClose={() => sidebar.close('keyboardShortcuts')}
+                        />
+                    )}
+                    {sidebar.isOpen('share') && (
+                        <ShareSidebar
+                            sidebarName="share"
+                            resourceTitle={dashboard.name}
+                            resourceType="DASHBOARD"
+                            resourceId={dashboard.id}
+                        />
+                    )}
                 </Sidebar>
                 <DashboardModuleSearch
                     isOpen={this.state.moduleSearchIsOpen}
@@ -206,16 +216,36 @@ const DashboardEdit = withRouter(class DashboardEdit extends Component {
     }
 })
 
-const DashboardLoader = withRouter(withErrorBoundary(ErrorComponentView)(class DashboardLoader extends React.PureComponent {
+const ErrorComponent = ({ error, ...props }) => {
+    if (error instanceof ResourceNotFoundError) {
+        throw error
+    }
+    return <ErrorComponentView {...props} error={error} />
+}
+
+const DashboardLoader = withRouter(withErrorBoundary(ErrorComponent)(class DashboardLoader extends React.PureComponent {
     static contextType = UndoContext
-    state = { isLoading: false }
+    state = {
+        isLoading: false,
+        error: null,
+    }
 
     componentDidMount() {
         this.init()
     }
 
-    componentDidUpdate() {
-        this.init()
+    componentDidUpdate(prevProps) {
+        const { match } = this.props
+        const { match: prevMatch } = prevProps
+        const { error } = this.state
+
+        if (error) {
+            throw error
+        }
+
+        if (match.params.id !== prevMatch.params.id) {
+            this.init()
+        }
     }
 
     componentWillUnmount() {
@@ -228,7 +258,9 @@ const DashboardLoader = withRouter(withErrorBoundary(ErrorComponentView)(class D
             // if no id, create new
             const newDashboard = await services.create()
             if (this.unmounted) { return }
-            history.replace(`${links.editor.dashboardEditor}/${newDashboard.id}`)
+            history.replace(routes.dashboards.edit({
+                id: newDashboard.id,
+            }))
             return
         }
 
@@ -237,7 +269,17 @@ const DashboardLoader = withRouter(withErrorBoundary(ErrorComponentView)(class D
         const dashboardId = currentId || match.params.id
         if (dashboardId && currentId !== dashboardId && this.state.isLoading !== dashboardId) {
             // load dashboard if needed and not already loading
-            this.load(dashboardId)
+            try {
+                await this.load(dashboardId)
+            } catch (error) {
+                if (!this.unmounted && error instanceof ResourceNotFoundError) {
+                    this.setState({
+                        error,
+                    })
+                    return
+                }
+                throw error
+            }
         }
     }
 
@@ -272,18 +314,20 @@ const DashboardLoader = withRouter(withErrorBoundary(ErrorComponentView)(class D
     }
 }))
 
-const DashboardEditWrap = () => (
-    <UndoContext.Consumer>
-        {({ state: dashboard, push, replace }) => (
-            <DashboardEdit
-                key={dashboard.id}
-                push={push}
-                replace={replace}
-                dashboard={dashboard}
-            />
-        )}
-    </UndoContext.Consumer>
-)
+const DashboardEditWrap = () => {
+    const sidebar = useContext(SidebarContext)
+    const { undo, push, replace, state: dashboard } = useContext(UndoContext)
+    return (
+        <DashboardEdit
+            key={dashboard.id}
+            push={push}
+            undo={undo}
+            replace={replace}
+            dashboard={dashboard}
+            sidebar={sidebar}
+        />
+    )
+}
 
 function DashboardLoadingIndicator() {
     const { state } = useContext(UndoContext)
@@ -295,14 +339,17 @@ function DashboardLoadingIndicator() {
 
 export default withRouter((props) => (
     <Layout className={styles.layout} footer={false}>
+        <BodyClass className="dashboard" />
         <UndoContextProvider key={props.match.params.id} enableBreadcrumbs>
             <PendingProvider name="dashboard">
                 <ClientProvider>
                     <DashboardLoadingIndicator />
                     <DashboardLoader>
                         <SelectionProvider>
-                            <UndoControls />
-                            <DashboardEditWrap />
+                            <SidebarProvider>
+                                <UndoControls />
+                                <DashboardEditWrap />
+                            </SidebarProvider>
                         </SelectionProvider>
                     </DashboardLoader>
                 </ClientProvider>

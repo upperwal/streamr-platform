@@ -1,12 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { mount } from 'enzyme'
 import { setupAuthorizationHeader } from '$editor/shared/tests/utils'
+import { act } from 'react-dom/test-utils'
 import uniqueId from 'lodash/uniqueId'
 
-import api from '../utils/api'
-import * as Services from '../services'
 import { ClientProviderComponent, createClient } from '$shared/contexts/StreamrClient'
 import Subscription from '$shared/components/Subscription'
+import { getToken } from '$shared/utils/sessionToken'
 
 function throwError(err) {
     throw err
@@ -18,7 +18,7 @@ function wait(delay) {
 
 describe('Subscription', () => {
     let teardown
-    let apiKey
+    let sessionToken
 
     beforeAll(async () => {
         teardown = await setupAuthorizationHeader()
@@ -29,8 +29,7 @@ describe('Subscription', () => {
     })
 
     beforeAll(async () => {
-        const [key] = await api().get(`${process.env.STREAMR_API_URL}/users/me/keys`).then(Services.getData)
-        apiKey = key.id
+        sessionToken = getToken()
     })
 
     describe('create subscription', () => {
@@ -38,7 +37,7 @@ describe('Subscription', () => {
         let stream
 
         async function setup() {
-            client = await createClient(apiKey)
+            client = await createClient(sessionToken)
             client.on('error', throwError)
             stream = await client.getOrCreateStream({
                 name: uniqueId(),
@@ -62,10 +61,34 @@ describe('Subscription', () => {
             await teardown()
         })
 
+        it('unsubscribes on isActive false', async (done) => {
+            const Test = () => {
+                const [isActive, setIsActive] = useState(true)
+                return (
+                    <ClientProviderComponent sessionToken={sessionToken}>
+                        <Subscription
+                            uiChannel={stream}
+                            onSubscribed={() => {
+                                act(() => {
+                                    setIsActive(false)
+                                })
+                            }}
+                            onUnsubscribed={() => {
+                                done()
+                            }}
+                            isActive={isActive}
+                        />
+                    </ClientProviderComponent>
+                )
+            }
+
+            mount(<Test />)
+        }, 15000)
+
         it('can create subscription', async (done) => {
             const msg = { test: uniqueId() }
             const result = mount((
-                <ClientProviderComponent apiKey={apiKey}>
+                <ClientProviderComponent sessionToken={sessionToken}>
                     <Subscription
                         uiChannel={stream}
                         onSubscribed={() => {
@@ -85,7 +108,7 @@ describe('Subscription', () => {
         it('unsubscribes on unmount', async (done) => {
             const sub = React.createRef()
             const result = mount((
-                <ClientProviderComponent apiKey={apiKey}>
+                <ClientProviderComponent sessionToken={sessionToken}>
                     <Subscription
                         ref={sub}
                         uiChannel={stream}
@@ -112,7 +135,7 @@ describe('Subscription', () => {
             const messages = []
             const onResending = jest.fn()
             const result = mount((
-                <ClientProviderComponent apiKey={apiKey}>
+                <ClientProviderComponent sessionToken={sessionToken}>
                     <Subscription
                         uiChannel={stream}
                         resendLast={2}
@@ -145,7 +168,7 @@ describe('Subscription', () => {
             await wait(10000) // wait for above messages to flush
 
             const result = mount((
-                <ClientProviderComponent apiKey={apiKey}>
+                <ClientProviderComponent sessionToken={sessionToken}>
                     <Subscription
                         uiChannel={stream}
                         resendLast={2}
@@ -184,13 +207,13 @@ describe('Subscription', () => {
             await wait(10000) // wait for above messages to flush
 
             const result = mount((
-                <ClientProviderComponent apiKey={apiKey}>
+                <ClientProviderComponent sessionToken={sessionToken}>
                     <Subscription
                         uiChannel={stream}
                         resendLast={0}
                         onSubscribed={async () => {
                             await stream.publish(msg3)
-                            await wait(500)
+                            await wait(15000)
                             expect(onResending).not.toHaveBeenCalled()
                             expect(messages).toEqual([msg3])
                             result.unmount()
@@ -205,6 +228,6 @@ describe('Subscription', () => {
                     />
                 </ClientProviderComponent>
             ))
-        }, 15000)
+        }, 30000)
     })
 })

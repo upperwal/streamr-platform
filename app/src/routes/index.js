@@ -7,7 +7,7 @@ import p2r from 'path-to-regexp'
 import definitions from './definitions'
 
 type Routes = {
-    [string]: (?Object, ?string) => string,
+    [string]: any,
 }
 
 type Paths = {
@@ -26,8 +26,9 @@ type Variables = {
  */
 export const define = (pathstr: string, getVariables: () => Variables) => (params: ?Object, hash?: ?string): string => {
     const route = Object.entries(getVariables()).reduce((acc, [name, value]) => {
-        const val: any = value
-        return pathstr.replace(new RegExp(`<${name}>`, 'g'), val)
+        const val: any = value || ''
+        const strippedValue: string = val.length > 1 ? val.replace(/\/$/, '') : val
+        return acc.replace(new RegExp(`<${name}>`, 'g'), strippedValue)
     }, pathstr)
 
     const unsetVariableNames = (route.match(/<[^>]+>/g) || []).map((s) => s.replace(/[<>]/g, ''))
@@ -55,7 +56,11 @@ export const buildRoutes = (paths: Paths, getVariables: () => Variables): Routes
 
         return {
             ...acc,
-            [name]: define(value, getVariables),
+            [name]: typeof value === 'string' ? (
+                define(value, getVariables)
+            ) : (
+                buildRoutes(value, getVariables)
+            ),
         }
     }, {})
 )
@@ -63,4 +68,6 @@ export const buildRoutes = (paths: Paths, getVariables: () => Variables): Routes
 export default buildRoutes(definitions, () => ({
     landingPage: 'https://streamr.network',
     streamr: process.env.STREAMR_URL,
+    platform: process.env.PLATFORM_ORIGIN_URL,
+    api: process.env.STREAMR_API_URL,
 }))

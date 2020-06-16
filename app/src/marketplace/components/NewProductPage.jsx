@@ -1,17 +1,19 @@
 // @flow
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { type Location } from 'react-router-dom'
 import styled from 'styled-components'
 import qs from 'query-string'
 import { useDispatch } from 'react-redux'
 import { replace } from 'connected-react-router'
-import { postEmptyProduct } from '$mp/modules/deprecated/editProduct/services'
-import LoadingIndicator from '$userpages/components/LoadingIndicator'
+import { postEmptyProduct } from '$mp/modules/product/services'
+import LoadingIndicator from '$shared/components/LoadingIndicator'
 import routes from '$routes'
 import { type ProductType } from '$mp/flowtype/product-types'
 import useIsMounted from '$shared/hooks/useIsMounted'
 import { productTypes } from '$mp/utils/constants'
+import useFailure from '$shared/hooks/useFailure'
+import Activity, { actionTypes, resourceTypes } from '$shared/utils/Activity'
 
 type Props = {
     className?: ?string,
@@ -27,7 +29,7 @@ const UnstyledNewProductPage = ({ className, location: { search } }: Props) => {
 
     const isMounted = useIsMounted()
 
-    const [error, setError] = useState()
+    const fail = useFailure()
 
     useEffect(() => {
         const { type } = qs.parse(search)
@@ -35,18 +37,18 @@ const UnstyledNewProductPage = ({ className, location: { search } }: Props) => {
         postEmptyProduct(sanitizedType(type))
             .then(({ id }) => {
                 if (isMounted()) {
-                    dispatch(replace(routes.editProduct({
+                    dispatch(replace(routes.products.edit({
                         id,
+                        newProduct: true,
                     })))
+                    Activity.push({
+                        action: actionTypes.CREATE,
+                        resourceId: id,
+                        resourceType: resourceTypes.PRODUCT,
+                    })
                 }
-            }, setError)
-    }, [dispatch, isMounted, search])
-
-    useEffect(() => {
-        if (error) {
-            throw error
-        }
-    }, [error])
+            }, fail)
+    }, [dispatch, isMounted, search, fail])
 
     return (
         <LoadingIndicator className={className} loading />

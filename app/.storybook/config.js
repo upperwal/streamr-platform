@@ -1,5 +1,6 @@
 import '@babel/polyfill'
 import 'storybook-chromatic'
+import '$utils/setupSnippets'
 import { setAddon, configure, addDecorator } from '@storybook/react'
 import { setOptions } from '@storybook/addon-options'
 import JSXAddon from 'storybook-addon-jsx'
@@ -13,6 +14,14 @@ import '@ibm/plex/css/ibm-plex.css'
 setAddon(JSXAddon)
 
 const viewports = {
+    iPhone: {
+        name: 'iPhone',
+        styles: {
+            width: `375px`,
+            height: '100%',
+        },
+        type: 'mobile',
+    },
     xs: {
         name: 'Mobile (xs)',
         styles: {
@@ -48,6 +57,10 @@ const viewports = {
 }
 
 addParameters({
+    options: {
+        storySort: (a, b) =>
+        a[1].kind === b[1].kind ? 0 : a[1].id.localeCompare(b[1].id, undefined, { numeric: true }),
+    },
     viewport: {
         defaultViewport: 'responsive',
         viewports,

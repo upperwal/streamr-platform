@@ -1,47 +1,45 @@
 // @flow
 
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect } from 'react'
 import Helmet from 'react-helmet'
 import { I18n } from 'react-redux-i18n'
 import { withRouter } from 'react-router-dom'
+import cx from 'classnames'
 
 import CoreLayout from '$shared/components/Layout/Core'
+import coreLayoutStyles from '$shared/components/Layout/core.pcss'
 import Header from '../Header'
 import ListContainer from '$shared/components/Container/List'
-import LoadingIndicator from '$userpages/components/LoadingIndicator'
+import LoadingIndicator from '$shared/components/LoadingIndicator'
 import Layout from '$shared/components/Layout'
-import type { CommunityId } from '$mp/flowtype/product-types'
 import { isEthereumAddress } from '$mp/utils/validate'
 import ProductController, { useController } from '$mp/containers/ProductController'
 import usePending from '$shared/hooks/usePending'
 import useProduct from '$mp/containers/ProductController/useProduct'
-import useCommunityProduct from '$mp/containers/ProductController/useCommunityProduct'
-import useCommunityStats from '$mp/containers/ProductPage/useCommunityStats'
-import CommunityPending from '$mp/components/ProductPage/CommunityPending'
-import StatsValues from '$shared/components/CommunityStats/Values'
+import useDataUnion from '$mp/containers/ProductController/useDataUnion'
+import useDataUnionStats from '$mp/containers/ProductPage/useDataUnionStats'
+import DataUnionPending from '$mp/components/ProductPage/DataUnionPending'
+import StatsValues from '$shared/components/DataUnionStats/Values'
 import MembersGraph from '$mp/containers/ProductPage/MembersGraph'
+import SubscriberGraph from '$mp/containers/ProductPage/SubscriberGraph'
 
 import styles from './stats.pcss'
 
 const Stats = () => {
-    const { loadCommunityProduct } = useController()
+    const { loadDataUnion } = useController()
     const product = useProduct()
-    const { statsArray, memberCount } = useCommunityStats()
-    const community = useCommunityProduct()
+    const { statsArray, memberCount } = useDataUnionStats()
+    const dataUnion = useDataUnion()
 
-    const { joinPartStreamId } = community || {}
+    const { joinPartStreamId } = dataUnion || {}
 
-    const loadCommunity = useCallback(async (id: CommunityId) => {
-        loadCommunityProduct(id)
-    }, [loadCommunityProduct])
-
-    const { communityDeployed, beneficiaryAddress } = product
+    const { dataUnionDeployed, beneficiaryAddress } = product
 
     useEffect(() => {
-        if (communityDeployed && beneficiaryAddress) {
-            loadCommunity(beneficiaryAddress)
+        if (dataUnionDeployed && beneficiaryAddress) {
+            loadDataUnion(beneficiaryAddress)
         }
-    }, [communityDeployed, beneficiaryAddress, loadCommunity])
+    }, [dataUnionDeployed, beneficiaryAddress, loadDataUnion])
 
     return (
         <CoreLayout
@@ -50,25 +48,25 @@ const Stats = () => {
             navComponent={(
                 <Header />
             )}
-            contentClassname={styles.contentArea}
+            contentClassname={cx(styles.contentArea, coreLayoutStyles.pad)}
         >
             <Helmet title={`Streamr Core | ${I18n.t('userpages.title.stats')}`} />
             <ListContainer>
                 <div className={styles.statBox}>
-                    {!communityDeployed && isEthereumAddress(beneficiaryAddress) && (
-                        <CommunityPending />
+                    {!dataUnionDeployed && isEthereumAddress(beneficiaryAddress) && (
+                        <DataUnionPending />
                     )}
-                    {!!communityDeployed && statsArray && (
+                    {!!dataUnionDeployed && statsArray && (
                         <StatsValues
                             className={styles.stats}
                             stats={statsArray}
                         />
                     )}
                 </div>
-                {!!communityDeployed && (
+                {!!dataUnionDeployed && (
                     <div className={styles.graphs}>
                         <div className={styles.graphBox}>
-                            {!!communityDeployed && memberCount && (
+                            {!!dataUnionDeployed && memberCount && (
                                 <MembersGraph
                                     joinPartStreamId={joinPartStreamId}
                                     memberCount={memberCount.total}
@@ -76,7 +74,11 @@ const Stats = () => {
                             )}
                         </div>
                         <div className={styles.graphBox}>
-                            TODO: subscribers graph missing
+                            {!!dataUnionDeployed && product && (
+                                <SubscriberGraph
+                                    productId={product.id}
+                                />
+                            )}
                         </div>
                     </div>
                 )}

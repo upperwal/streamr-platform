@@ -12,7 +12,7 @@ import type { ProductId } from '../../flowtype/product-types'
 import Button from '$shared/components/Button'
 import routes from '$routes'
 import BodyClass from '$shared/components/BodyClass'
-import LoadingIndicator from '$userpages/components/LoadingIndicator'
+import LoadingIndicator from '$shared/components/LoadingIndicator'
 
 import StreamLivePreviewTable, { type DataPoint } from './StreamLivePreview'
 import styles from './streamPreviewPage.pcss'
@@ -22,6 +22,8 @@ import Notification from '$shared/utils/Notification'
 import { NotificationIcon } from '$shared/utils/constants'
 import { Context as ClientContext, Provider as ClientProvider } from '$shared/contexts/StreamrClient'
 import useIsMounted from '$shared/hooks/useIsMounted'
+import useStreamPermissions from '$shared/hooks/useStreamPermissions'
+import ResourceNotFoundError, { ResourceType } from '$shared/errors/ResourceNotFoundError'
 
 type Props = {
     match: {
@@ -43,7 +45,7 @@ const addStreamIdCopiedNotification = () => {
     })
 }
 
-const getStreamTabUrl = (productId: ProductId, streamId: ?StreamId) => (streamId ? routes.streamPreview({
+const getStreamTabUrl = (productId: ProductId, streamId: ?StreamId) => (streamId ? routes.marketplace.streamPreview({
     id: productId,
     streamId,
 }) : '#')
@@ -104,6 +106,16 @@ const StreamPreviewPage = ({
         setHasData(true)
     }, [isMounted])
 
+    const permissions = useStreamPermissions(urlId)
+
+    if (!permissions && !productId) {
+        return null
+    }
+
+    if (!productId && !(permissions || []).includes('read')) {
+        throw new ResourceNotFoundError(ResourceType.STREAM, urlId)
+    }
+
     return (
         <div className={styles.streamLiveDataDialog}>
             <BodyClass className="overflow-hidden" />
@@ -113,7 +125,7 @@ const StreamPreviewPage = ({
             />
             <div className={styles.closeRow}>
                 <Button
-                    className={classnames(styles.closeButton)}
+                    className={styles.closeButton}
                     onClick={onClose}
                 >
                     <span className={styles.icon}>

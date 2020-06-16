@@ -1,37 +1,46 @@
 // @flow
 
-import React, { useContext } from 'react'
+import React, { useContext, useCallback } from 'react'
 import cx from 'classnames'
-import { Context as ValidationContext } from '../ProductController/ValidationContextProvider'
+import { Translate } from 'react-redux-i18n'
 
-import usePending from '$shared/hooks/usePending'
 import useEditableProduct from '../ProductController/useEditableProduct'
 import useValidation from '../ProductController/useValidation'
 import useEditableProductActions from '../ProductController/useEditableProductActions'
+import { Context as EditControllerContext } from './EditControllerProvider'
 import Text, { SpaciousTheme } from '$ui/Text'
 import Errors, { MarketplaceTheme } from '$ui/Errors'
 
 import styles from './productName.pcss'
 
-const ProductName = () => {
+type Props = {
+    disabled?: boolean,
+}
+
+const ProductName = ({ disabled }: Props) => {
     const product = useEditableProduct()
     const { isValid, message } = useValidation('name')
     const { updateName } = useEditableProductActions()
-    const { isTouched } = useContext(ValidationContext)
-    const { isPending } = usePending('product.SAVE')
-    const invalid = isTouched('name') && !isValid
+    const { publishAttempted } = useContext(EditControllerContext)
+    const invalid = publishAttempted && !isValid
+
+    const onChange = useCallback((e: SyntheticInputEvent<EventTarget>) => {
+        updateName(e.target.value)
+    }, [updateName])
 
     return (
         <section id="product-name" className={cx(styles.root, styles.ProductName)}>
             <div>
-                <h1>Name your product</h1>
+                <Translate
+                    tag="h1"
+                    value="editProductPage.productName.title"
+                />
                 <Text
                     defaultValue={product.name}
-                    onCommit={updateName}
+                    onChange={onChange}
                     placeholder="Product Name"
-                    disabled={isPending}
+                    disabled={!!disabled}
                     selectAllOnFocus
-                    smartCommit
                     invalid={invalid}
                     className={styles.input}
                     theme={SpaciousTheme}

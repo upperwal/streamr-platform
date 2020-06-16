@@ -1,11 +1,11 @@
-.profilePage {
-  padding-bottom: 3rem;
-}
-
 .longText {
   line-height: 24px;
   letter-spacing: 0;
   display: none;
+
+  strong {
+    font-weight: var(--medium);
+  }
 }
 
 .removeAccountButton {}
@@ -18,6 +18,13 @@
 .keyList:empty {
   margin-top: 2.5rem;
   height: 1rem;
+}
+
+.loadingIndicator {
+  top: 82px;
+  position: sticky;
+  width: 100%;
+  z-index: 1;
 }
 
 @media (--sm-down) {

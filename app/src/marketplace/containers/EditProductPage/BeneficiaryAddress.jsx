@@ -8,7 +8,6 @@ import styled from 'styled-components'
 
 import useValidation from '../ProductController/useValidation'
 import Text from '$ui/Text'
-import { Context as ValidationContext } from '../ProductController/ValidationContextProvider'
 import Errors, { MarketplaceTheme } from '$ui/Errors'
 import ActionsDropdown from '$shared/components/ActionsDropdown'
 import DropdownActions from '$shared/components/DropdownActions'
@@ -19,6 +18,8 @@ import { selectEthereumIdentities } from '$shared/modules/integrationKey/selecto
 import { fetchIntegrationKeys } from '$shared/modules/integrationKey/actions'
 import { truncate } from '$shared/utils/text'
 import useAccountAddress from '$shared/hooks/useAccountAddress'
+import Label from '$ui/Label'
+import { Context as EditControllerContext } from './EditControllerProvider'
 
 import styles from './beneficiaryAddress.pcss'
 
@@ -67,9 +68,8 @@ const BeneficiaryAddress = ({
     onBlur: onBlurProp,
 }: Props) => {
     const { isValid, message } = useValidation('beneficiaryAddress')
-    const { isTouched } = useContext(ValidationContext)
-    const priceTouched = isTouched('pricePerSecond') || isTouched('beneficiaryAddress')
-    const invalid = priceTouched && !isValid
+    const { publishAttempted } = useContext(EditControllerContext)
+    const invalid = publishAttempted && !isValid
 
     const { copy } = useCopy()
 
@@ -144,11 +144,13 @@ const BeneficiaryAddress = ({
         <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
             <label
                 htmlFor="beneficiaryAddress"
-                className={cx(styles.root, styles.BeneficiaryAddress, className)}
+                className={cx(styles.root, className)}
             >
-                <strong>
-                    <Translate value="editProductPage.setPrice.setRecipientEthAddress" />
-                </strong>
+                <Label
+                    as={Translate}
+                    value="editProductPage.setPrice.setRecipientEthAddress"
+                    tag="div"
+                />
                 <ActionsDropdown
                     disabled={disabled}
                     actions={[

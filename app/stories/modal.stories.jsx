@@ -3,60 +3,59 @@
 import React from 'react'
 import StoryRouter from 'storybook-react-router'
 import { storiesOf } from '@storybook/react'
-import { withKnobs, select, text, number } from '@storybook/addon-knobs'
+import { withKnobs, select, text, number, boolean } from '@storybook/addon-knobs'
 import { action } from '@storybook/addon-actions'
 import styles from '@sambego/storybook-styles'
 import BN from 'bignumber.js'
+import { Translate } from 'react-redux-i18n'
 
-import { transactionStates, ProgrammingLanguages } from '$shared/utils/constants'
+import { transactionStates } from '$shared/utils/constants'
+import { subscribeSnippets } from '$utils/streamSnippets'
 import { actionsTypes } from '$mp/containers/EditProductPage/publishQueue'
+import PngIcon from '$shared/components/PngIcon'
 
 import croppedImage from '$mp/assets/product_standard.png'
+import { publishModes } from '$mp/containers/EditProductPage/usePublish'
 
 // marketplace
-import CompleteContractProductPublishDialog from '$mp/components/Modal/CompleteContractProductPublishDialog'
-import CompleteContractProductUnpublishDialog from '$mp/components/Modal/CompleteContractProductUnpublishDialog'
-import CompletePublishTransaction from '$mp/components/Modal/CompletePublishTransaction'
-import CompleteUnpublishDialog from '$mp/components/Modal/CompleteUnpublishDialog'
-import ConfirmPublishTransaction from '$mp/components/Modal/ConfirmPublishTransaction'
+import PublishTransactionProgress from '$mp/components/Modal/PublishTransactionProgress'
 import ConfirmSaveDialog from '$mp/components/Modal/ConfirmSaveDialog'
-import GuidedDeployCommunityDialog from '$mp/components/Modal/GuidedDeployCommunityDialog'
-import ConfirmDeployCommunityDialog from '$mp/components/Modal/ConfirmDeployCommunityDialog'
-import DeployingCommunityDialog from '$mp/components/Modal/DeployingCommunityDialog'
+import PublishComplete from '$mp/components/Modal/PublishComplete'
+import PublishError from '$mp/components/Modal/PublishError'
+import GuidedDeployDataUnionDialog from '$mp/components/Modal/GuidedDeployDataUnionDialog'
+import ConfirmDeployDataUnionDialog from '$mp/components/Modal/ConfirmDeployDataUnionDialog'
+import DeployingDataUnionDialog from '$mp/components/Modal/DeployingDataUnionDialog'
 import GetDataTokensDialog from '$mp/components/Modal/GetDataTokensDialog'
 import GetCryptoDialog from '$mp/components/Modal/GetCryptoDialog'
 import InsufficientDataDialog from '$mp/components/Modal/InsufficientDataDialog'
 import InsufficientDaiDialog from '$mp/components/Modal/InsufficientDaiDialog'
+import InsufficientEthDialog from '$mp/components/Modal/InsufficientEthDialog'
 import NoBalanceDialog from '$mp/components/Modal/NoBalanceDialog'
 import ChooseAccessPeriodDialog from '$mp/components/Modal/ChooseAccessPeriodDialog'
 import PurchaseSummaryDialog from '$mp/components/Modal/PurchaseSummaryDialog'
 import ReplaceAllowanceDialog from '$mp/components/Modal/ReplaceAllowanceDialog'
 import CompletePurchaseDialog from '$mp/components/Modal/CompletePurchaseDialog'
 import ReadyToPublishDialog from '$mp/components/Modal/ReadyToPublishDialog'
-import ReadyToUnpublishDialog from '$mp/components/Modal/ReadyToUnpublishDialog'
-import SaveContractProductDialog from '$mp/components/Modal/SaveContractProductDialog'
+import ConnectEthereumAddressDialog from '$mp/components/Modal/ConnectEthereumAddressDialog'
 import SetAllowanceDialog from '$mp/components/Modal/SetAllowanceDialog'
-import MpUnlockWalletDialog from '$mp/components/Modal/UnlockWalletDialog'
 import ErrorDialog from '$mp/components/Modal/ErrorDialog'
 import CropImageModal from '$mp/components/Modal/CropImageModal'
 
 // userpages
 import ConfirmCsvImportDialog from '$userpages/components/StreamPage/ConfirmCsvImportDialog'
 import SnippetDialog from '$userpages/components/SnippetDialog'
-import AvatarUploadDialog from '$userpages/components/Avatar/AvatarUploadDialog'
-import CropAvatarDialog from '$userpages/components/Avatar/CropAvatarDialog'
-import { ChangePasswordDialog } from '$userpages/components/ProfilePage/ChangePassword'
-import {
-    SignatureRequestDialog,
-    ErrorDialog as SignatureRequestErrorDialog,
-    SuccessDialog as SignatureRequestSuccessDialog,
-} from '$userpages/components/ProfilePage/IdentityHandler/IdentityChallengeDialog'
-import DuplicateIdentityDialog from '$userpages/components/ProfilePage/IdentityHandler/IdentityChallengeDialog/DuplicateIdentityDialog'
+import AvatarUploadDialog from '$userpages/components/ProfilePage/ProfileSettings/EditAvatarDialog/AvatarUploadDialog'
+import CropAvatarDialog from '$userpages/components/ProfilePage/ProfileSettings/EditAvatarDialog/CropAvatarDialog'
+import { ChangePasswordDialogComponent } from '$userpages/components/ProfilePage/ProfileSettings/ChangePasswordDialog'
+import { SignatureRequestDialog, DuplicateIdentityDialog } from '$userpages/components/ProfilePage/IdentityHandler/IdentityChallengeDialog'
 import IdentityNameDialog from '$userpages/components/ProfilePage/IdentityHandler/IdentityNameDialog'
+import EthereumAccountCreatedDialog from '$userpages/components/ProfilePage/IdentityHandler/EthereumAccountCreatedDialog'
+import CopyPrivateKeyDialog from '$userpages/components/ProfilePage/IdentityHandler/CopyPrivateKeyDialog'
+import { DeleteAccountDialogComponent } from '$userpages/components/ProfilePage/DeleteAccount/DeleteAccountDialog'
 
 // shared
 import ConfirmDialog from '$shared/components/ConfirmDialog'
-import SharedUnlockWalletDialog from '$shared/components/Web3ErrorDialog/UnlockWalletDialog'
+import UnlockWalletDialog from '$shared/components/Web3ErrorDialog/UnlockWalletDialog'
 import InstallMetaMaskDialog from '$shared/components/Web3ErrorDialog/Web3NotDetectedDialog/InstallMetaMaskDialog'
 import InstallMobileApplicationDialog from '$shared/components/Web3ErrorDialog/Web3NotDetectedDialog/InstallMobileApplicationDialog'
 import InstallSupportedBrowserDialog from '$shared/components/Web3ErrorDialog/Web3NotDetectedDialog/InstallSupportedBrowserDialog'
@@ -68,6 +67,7 @@ const story = (name) => storiesOf(`Modal/${name}`, module)
         color: '#323232',
         padding: '5rem',
         background: '#F8F8F8',
+        fontSize: '16px',
     }))
     .addDecorator((storyFn) => (
         <div>
@@ -76,219 +76,265 @@ const story = (name) => storiesOf(`Modal/${name}`, module)
         </div>
     ))
 
-story('Product Editor/CompleteContractProductPublishDialog')
-    .add('started', () => (
-        <CompleteContractProductPublishDialog
-            publishState={transactionStates.STARTED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('pending', () => (
-        <CompleteContractProductPublishDialog
-            publishState={transactionStates.PENDING}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('confirmed', () => (
-        <CompleteContractProductPublishDialog
-            publishState={transactionStates.CONFIRMED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('error', () => (
-        <CompleteContractProductPublishDialog
-            publishState={transactionStates.FAILED}
-            onCancel={action('onCancel')}
-        />
-    ))
+const options = [
+    transactionStates.STARTED,
+    transactionStates.PENDING,
+    transactionStates.CONFIRMED,
+    transactionStates.FAILED,
+]
 
-story('Product Editor/CompleteContractProductUnpublishDialog')
-    .add('started', () => (
-        <CompleteContractProductUnpublishDialog
-            publishState={transactionStates.STARTED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('pending', () => (
-        <CompleteContractProductUnpublishDialog
-            publishState={transactionStates.PENDING}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('confirmed', () => (
-        <CompleteContractProductUnpublishDialog
-            publishState={transactionStates.CONFIRMED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('error', () => (
-        <CompleteContractProductUnpublishDialog
-            publishState={transactionStates.FAILED}
-            onCancel={action('onCancel')}
-        />
-    ))
+story('Product Editor/PublishTransactionProgress')
+    .add('Publish', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
 
-type CompletePublishControllerProps = {
-    isUnpublish?: boolean,
-}
-
-const CompletePublishController = ({ isUnpublish = false }: CompletePublishControllerProps) => {
-    const options = [
-        transactionStates.PENDING,
-        transactionStates.CONFIRMED,
-        transactionStates.FAILED,
-    ]
-
-    let statuses = {}
-
-    if (isUnpublish) {
-        const unpublishFreeStatus = select('Unpublish free', options, transactionStates.PENDING)
-        const undeployPaidStatus = select('Undeploy paid', options, transactionStates.PENDING)
-
-        statuses = {
-            [actionsTypes.UNPUBLISH_FREE]: unpublishFreeStatus,
-            [actionsTypes.UNDEPLOY_CONTRACT_PRODUCT]: undeployPaidStatus,
-        }
-    } else {
-        const adminFeeStatus = select('Admin Fee', options, transactionStates.PENDING)
-        const updateContractStatus = select('Edit product price', options, transactionStates.PENDING)
-        const createContractStatus = select('Create contract product', options, transactionStates.PENDING)
-        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.PENDING)
-        const publishFreeStatus = select('Publish free', options, transactionStates.PENDING)
-
-        statuses = {
+        const statuses = {
             [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
             [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
             [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
             [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
             [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
         }
-    }
 
-    return (
-        <CompletePublishTransaction
-            isUnpublish={isUnpublish}
-            onCancel={action('cancel')}
-            status={statuses}
-        />
-    )
-}
+        return (
+            <PublishTransactionProgress
+                publishMode={publishModes.PUBLISH}
+                onCancel={action('cancel')}
+                status={statuses}
+                isPrompted={boolean('Prompted', false)}
+            />
+        )
+    })
+    .add('Republish', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
 
-story('Product Editor/CompletePublishTransaction')
+        const statuses = {
+            [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
+            [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
+            [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
+            [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
+            [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
+        }
+
+        return (
+            <PublishTransactionProgress
+                publishMode={publishModes.REPUBLISH}
+                onCancel={action('cancel')}
+                status={statuses}
+                isPrompted={boolean('Prompted', false)}
+            />
+        )
+    })
+    .add('Redeploy', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
+
+        const statuses = {
+            [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
+            [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
+            [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
+            [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
+            [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
+        }
+
+        return (
+            <PublishTransactionProgress
+                publishMode={publishModes.REDEPLOY}
+                onCancel={action('cancel')}
+                status={statuses}
+                isPrompted={boolean('Prompted', false)}
+            />
+        )
+    })
+    .add('Unpublish', () => {
+        const unpublishFreeStatus = select('Unpublish free', options, transactionStates.STARTED)
+        const undeployPaidStatus = select('Undeploy paid', options, transactionStates.STARTED)
+
+        const statuses = {
+            [actionsTypes.UNPUBLISH_FREE]: unpublishFreeStatus,
+            [actionsTypes.UNDEPLOY_CONTRACT_PRODUCT]: undeployPaidStatus,
+        }
+
+        return (
+            <PublishTransactionProgress
+                publishMode={publishModes.UNPUBLISH}
+                onCancel={action('cancel')}
+                status={statuses}
+            />
+        )
+    })
+
+story('Product Editor/PublishComplete')
     .add('Publish', () => (
-        <CompletePublishController />
+        <PublishComplete
+            onClose={action('onClose')}
+            onContinue={action('onContinue')}
+            productId={text('Product id', '1ff644fdb6ba40a287af2e607b131f32aaad9872ddd54e79b1106ff916e12890')}
+            publishMode={publishModes.PUBLISH}
+        />
+    ))
+    .add('Redeploy', () => (
+        <PublishComplete
+            onClose={action('onClose')}
+            onContinue={action('onContinue')}
+            productId={text('Product id', '1ff644fdb6ba40a287af2e607b131f32aaad9872ddd54e79b1106ff916e12890')}
+            publishMode={publishModes.REDEPLOY}
+        />
+    ))
+    .add('Republish', () => (
+        <PublishComplete
+            onClose={action('onClose')}
+            onContinue={action('onContinue')}
+            productId={text('Product id', '1ff644fdb6ba40a287af2e607b131f32aaad9872ddd54e79b1106ff916e12890')}
+            publishMode={publishModes.REPUBLISH}
+        />
     ))
     .add('Unpublish', () => (
-        <CompletePublishController isUnpublish />
-    ))
-
-story('Product Editor/CompleteUnpublishDialog')
-    .add('started', () => (
-        <CompleteUnpublishDialog
-            publishState={transactionStates.STARTED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('confirmed', () => (
-        <CompleteUnpublishDialog
-            publishState={transactionStates.CONFIRMED}
-            onCancel={action('onCancel')}
-        />
-    ))
-    .add('error', () => (
-        <CompleteUnpublishDialog
-            publishState={transactionStates.FAILED}
-            onCancel={action('onCancel')}
+        <PublishComplete
+            onClose={action('onClose')}
+            onContinue={action('onContinue')}
+            productId={text('Product id', '1ff644fdb6ba40a287af2e607b131f32aaad9872ddd54e79b1106ff916e12890')}
+            publishMode={publishModes.UNPUBLISH}
         />
     ))
 
-const publishStory = story('Product Editor/ConfirmPublishTransaction')
+story('Product Editor/PublishError')
+    .add('Publish', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
 
-Object.keys(actionsTypes).forEach((actionType) => {
-    publishStory.add(`publish, started, ${actionsTypes[actionType]}`, () => (
-        <ConfirmPublishTransaction
-            action={actionsTypes[actionType]}
-            isUnpublish={false}
-            publishState={transactionStates.STARTED}
-            onCancel={action('onCancel')}
-        />
-    ))
-})
-Object.keys(actionsTypes).forEach((actionType) => {
-    publishStory.add(`unpublish, started, ${actionsTypes[actionType]}`, () => (
-        <ConfirmPublishTransaction
-            action={actionsTypes[actionType]}
-            isUnpublish
-            publishState={transactionStates.STARTED}
-            onCancel={action('onCancel')}
-        />
-    ))
-})
+        const statuses = {
+            [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
+            [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
+            [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
+            [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
+            [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
+        }
 
-publishStory.add('publish, pending', () => (
-    <ConfirmPublishTransaction
-        action={null}
-        isUnpublish={false}
-        publishState={transactionStates.PENDING}
-        onCancel={action('onCancel')}
-    />
-))
+        return (
+            <PublishError
+                onClose={action('onClose')}
+                status={statuses}
+                publishMode={publishModes.PUBLISH}
+            />
+        )
+    })
+    .add('Republish', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
 
-publishStory.add('unpublish, pending', () => (
-    <ConfirmPublishTransaction
-        action={null}
-        isUnpublish
-        publishState={transactionStates.PENDING}
-        onCancel={action('onCancel')}
-    />
-))
+        const statuses = {
+            [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
+            [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
+            [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
+            [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
+            [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
+        }
+
+        return (
+            <PublishError
+                onClose={action('onClose')}
+                status={statuses}
+                publishMode={publishModes.REPUBLISH}
+            />
+        )
+    })
+    .add('Redeploy', () => {
+        const adminFeeStatus = select('Admin Fee', options, transactionStates.STARTED)
+        const updateContractStatus = select('Edit product price', options, transactionStates.STARTED)
+        const createContractStatus = select('Create contract product', options, transactionStates.STARTED)
+        const redeployPaidStatus = select('Redeploy paid', options, transactionStates.STARTED)
+        const publishFreeStatus = select('Publish free', options, transactionStates.STARTED)
+        const publishPendingStatus = select('Publish penging changes', options, transactionStates.STARTED)
+
+        const statuses = {
+            [actionsTypes.UPDATE_ADMIN_FEE]: adminFeeStatus,
+            [actionsTypes.UPDATE_CONTRACT_PRODUCT]: updateContractStatus,
+            [actionsTypes.CREATE_CONTRACT_PRODUCT]: createContractStatus,
+            [actionsTypes.REDEPLOY_PAID]: redeployPaidStatus,
+            [actionsTypes.PUBLISH_FREE]: publishFreeStatus,
+            [actionsTypes.PUBLISH_PENDING_CHANGES]: publishPendingStatus,
+        }
+
+        return (
+            <PublishError
+                onClose={action('onClose')}
+                status={statuses}
+                publishMode={publishModes.REDEPLOY}
+            />
+        )
+    })
+    .add('Unpublish', () => {
+        const unpublishFreeStatus = select('Unpublish free', options, transactionStates.STARTED)
+        const undeployPaidStatus = select('Undeploy paid', options, transactionStates.STARTED)
+
+        const statuses = {
+            [actionsTypes.UNPUBLISH_FREE]: unpublishFreeStatus,
+            [actionsTypes.UNDEPLOY_CONTRACT_PRODUCT]: undeployPaidStatus,
+        }
+
+        return (
+            <PublishError
+                onClose={action('onClose')}
+                status={statuses}
+                publishMode={publishModes.UNPUBLISH}
+            />
+        )
+    })
 
 story('Product Editor/ReadyToPublishDialog')
-    .add('default', () => (
+    .add('Publish', () => (
         <ReadyToPublishDialog
             onCancel={action('onCancel')}
             onContinue={action('onContinue')}
+            publishMode={publishModes.PUBLISH}
         />
     ))
-    .add('waiting', () => (
+    .add('Republish', () => (
         <ReadyToPublishDialog
-            waiting
             onCancel={action('onCancel')}
             onContinue={action('onContinue')}
+            publishMode={publishModes.REPUBLISH}
         />
     ))
-
-story('Product Editor/ReadyToUnpublishDialog')
-    .add('default', () => (
-        <ReadyToUnpublishDialog
+    .add('Redeploy', () => (
+        <ReadyToPublishDialog
             onCancel={action('onCancel')}
             onContinue={action('onContinue')}
+            publishMode={publishModes.REDEPLOY}
         />
     ))
-
-story('Product Editor/SaveContractProductDialog')
-    .add('started', () => (
-        <SaveContractProductDialog
-            transactionState={transactionStates.STARTED}
-            onClose={action('onClose')}
-        />
-    ))
-    .add('pending', () => (
-        <SaveContractProductDialog
-            transactionState={transactionStates.PENDING}
-            onClose={action('onClose')}
-        />
-    ))
-    .add('complete', () => (
-        <SaveContractProductDialog
-            transactionState={transactionStates.CONFIRMED}
-            onClose={action('onClose')}
-        />
-    ))
-    .add('error', () => (
-        <SaveContractProductDialog
-            transactionState={transactionStates.FAILED}
-            onClose={action('onClose')}
+    .add('Unpublish', () => (
+        <ReadyToPublishDialog
+            onCancel={action('onCancel')}
+            onContinue={action('onContinue')}
+            publishMode={publishModes.UNPUBLISH}
         />
     ))
 
@@ -301,28 +347,28 @@ story('Product Editor/ConfirmSaveDialog')
         />
     ))
 
-story('Product Editor/GuidedDeployCommunityDialog')
+story('Product Editor/GuidedDeployDataUnionDialog')
     .add('default', () => (
-        <GuidedDeployCommunityDialog
+        <GuidedDeployDataUnionDialog
             // $FlowFixMe
             product={{
                 id: '1',
                 name: 'Example product',
-                type: 'COMMUNITY',
+                type: 'DATAUNION',
             }}
             onClose={action('onClose')}
             onContinue={action('onContinue')}
         />
     ))
 
-story('Product Editor/ConfirmDeployCommunityDialog')
+story('Product Editor/ConfirmDeployDataUnionDialog')
     .add('default', () => (
-        <ConfirmDeployCommunityDialog
+        <ConfirmDeployDataUnionDialog
             // $FlowFixMe
             product={{
                 id: '1',
                 name: 'Example product',
-                type: 'COMMUNITY',
+                type: 'DATAUNION',
             }}
             onClose={action('onClose')}
             onContinue={action('onContinue')}
@@ -332,16 +378,30 @@ story('Product Editor/ConfirmDeployCommunityDialog')
 
 story('Product Editor/DeployingCommunityDialog')
     .add('default', () => (
-        <DeployingCommunityDialog
+        <DeployingDataUnionDialog
             // $FlowFixMe
             product={{
                 id: '1',
                 name: 'Example product',
-                type: 'COMMUNITY',
+                type: 'DATAUNION',
             }}
             estimate={number('Estimate', 360)}
             onClose={action('onClose')}
             onContinue={action('onContinue')}
+        />
+    ))
+    .add('minimized', () => (
+        <DeployingDataUnionDialog
+            // $FlowFixMe
+            product={{
+                id: '1',
+                name: 'Example product',
+                type: 'DATAUNION',
+            }}
+            estimate={number('Estimate', 360)}
+            onClose={action('onClose')}
+            onContinue={action('onContinue')}
+            minimized
         />
     ))
 
@@ -351,6 +411,15 @@ story('Marketplace/GetDataTokensDialog')
             onCancel={action('onCancel')}
         />
     ))
+    .add('default iPhone', () => (
+        <GetDataTokensDialog
+            onCancel={action('onCancel')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
 
 story('Marketplace/GetCryptoDialog')
     .add('default', () => (
@@ -358,6 +427,15 @@ story('Marketplace/GetCryptoDialog')
             onCancel={action('onCancel')}
         />
     ))
+    .add('default (iPhone)', () => (
+        <GetCryptoDialog
+            onCancel={action('onCancel')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
 
 story('Marketplace/InsufficientDataDialog')
     .add('default', () => (
@@ -365,6 +443,15 @@ story('Marketplace/InsufficientDataDialog')
             onCancel={action('onCancel')}
         />
     ))
+    .add('default (iPhone)', () => (
+        <InsufficientDataDialog
+            onCancel={action('onCancel')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
 
 story('Marketplace/InsufficientDaiDialog')
     .add('default', () => (
@@ -372,6 +459,31 @@ story('Marketplace/InsufficientDaiDialog')
             onCancel={action('onCancel')}
         />
     ))
+    .add('default (iPhone)', () => (
+        <InsufficientDaiDialog
+            onCancel={action('onCancel')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
+
+story('Marketplace/InsufficientEthDialog')
+    .add('default', () => (
+        <InsufficientEthDialog
+            onCancel={action('onCancel')}
+        />
+    ))
+    .add('default (iPhone)', () => (
+        <InsufficientEthDialog
+            onCancel={action('onCancel')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
 
 story('Marketplace/NoBalanceDialog')
     .add('eth balance 0', () => (
@@ -446,6 +558,7 @@ story('Marketplace/PurchaseSummaryDialog')
             ethPrice={BN(124)}
             daiPrice={BN(125)}
             dataPerUsd="0.1"
+            ethPriceInUsd="1"
             paymentCurrency="DATA"
             time="24"
             timeUnit="hour"
@@ -460,12 +573,38 @@ story('Marketplace/PurchaseSummaryDialog')
             ethPrice={BN(124)}
             daiPrice={BN(125)}
             dataPerUsd="0.1"
+            ethPriceInUsd="1"
             paymentCurrency="DATA"
             time="24"
             timeUnit="hour"
             onCancel={action('onCancel')}
             onPay={action('onPay')}
             purchaseStarted
+        />
+    ))
+
+story('Marketplace/ConnectEthereumAddressDialog')
+    .add('default', () => (
+        <ConnectEthereumAddressDialog
+            onCancel={action('close')}
+            onSet={action('onSet')}
+        />
+    ))
+    .add('default (iPhone)', () => (
+        <ConnectEthereumAddressDialog
+            onCancel={action('close')}
+            onSet={action('onSet')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
+    .add('waiting', () => (
+        <ConnectEthereumAddressDialog
+            onCancel={action('close')}
+            onSet={action('onSet')}
+            waiting
         />
     ))
 
@@ -543,14 +682,6 @@ story('Marketplace/CompletePurchaseDialog')
         />
     ))
 
-story('Marketplace/UnlockWalletDialog')
-    .add('default', () => (
-        <MpUnlockWalletDialog
-            onClose={action('close')}
-            message={text('Dialog text', 'Dialog text')}
-        />
-    ))
-
 story('Marketplace/ErrorDialog')
     .add('default', () => (
         <ErrorDialog
@@ -588,39 +719,12 @@ story('Streams/ConfirmCsvImportDialog')
         />
     ))
 
-const snippets = {
-    [ProgrammingLanguages.JAVASCRIPT]: `const StreamrClient = require('streamr-client')
-
-const streamr = new StreamrClient({
-    auth: {
-        apiKey: 'YOUR-API-KEY',
-    },
-})
-
-// Subscribe to a stream
-streamr.subscribe({
-    stream: 'streamId'
-},
-(message, metadata) => {
-    // Do something with the message here!
-    console.log(message)
-}`,
-    [ProgrammingLanguages.JAVA]: `StreamrClient client = new StreamrClient();
-Stream stream = client.getStream("streamId");
-
-Subscription sub = client.subscribe(stream, new MessageHandler() {
-    @Override
-    void onMessage(Subscription s, StreamMessage message) {
-        // Here you can react to the latest message
-        System.out.println(message.getPayload().toString());
-    }
-});`,
-}
-
 story('Streams/SnippetDialog')
     .add('default', () => (
         <SnippetDialog
-            snippets={snippets}
+            snippets={subscribeSnippets({
+                id: 'stream-id',
+            })}
             onClose={action('onClose')}
         />
     ))
@@ -672,13 +776,58 @@ story('Shared/ConfirmDialog')
 
 story('Shared/UnlockWalletDialog')
     .add('default', () => (
-        <SharedUnlockWalletDialog
+        <UnlockWalletDialog
             title={text('Dialog title', 'Dialog title')}
             onClose={action('onClose')}
         />
     ))
+    .add('with text', () => (
+        <UnlockWalletDialog
+            title={text('Dialog title', 'Dialog title')}
+            onClose={action('onClose')}
+        >
+            {text('Dialog text', 'Please unlock your wallet')}
+        </UnlockWalletDialog>
+    ))
+    .add('with address', () => (
+        <UnlockWalletDialog
+            title={text('Dialog title', 'Dialog title')}
+            onClose={action('onClose')}
+            requiredAddress="0x4178baBE9E5148c6D5fd431cD72884B07Ad855a0"
+        >
+            <Translate
+                value="unlockWalletDialog.message"
+                tag="p"
+            />
+        </UnlockWalletDialog>
+    ))
+    .add('with address (iPhone)', () => (
+        <UnlockWalletDialog
+            title={text('Dialog title', 'Dialog title')}
+            onClose={action('onClose')}
+            requiredAddress="0x4178baBE9E5148c6D5fd431cD72884B07Ad855a0"
+        >
+            <Translate
+                value="unlockWalletDialog.message"
+                tag="p"
+            />
+        </UnlockWalletDialog>
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
+    .add('with different icon', () => (
+        <UnlockWalletDialog
+            title={text('Dialog title', 'Dialog title')}
+            onClose={action('onClose')}
+            icon={select('Icon', PngIcon.names, 'walletError')}
+        >
+            {text('Dialog text', 'Please unlock your wallet')}
+        </UnlockWalletDialog>
+    ))
     .add('waiting', () => (
-        <SharedUnlockWalletDialog
+        <UnlockWalletDialog
             waiting
             title={text('Dialog title', 'Dialog title')}
             onClose={action('onClose')}
@@ -691,79 +840,120 @@ story('Shared/Web3NotDetectedDialog')
             onClose={action('onClose')}
         />
     ))
+    .add('install Metamask (iPhone)', () => (
+        <InstallMetaMaskDialog
+            onClose={action('onClose')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
     .add('install mobile app', () => (
         <InstallMobileApplicationDialog
             onClose={action('onClose')}
         />
     ))
+    .add('install mobile app (iPhone)', () => (
+        <InstallMobileApplicationDialog
+            onClose={action('onClose')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
     .add('install supported browser', () => (
         <InstallSupportedBrowserDialog
             onClose={action('onClose')}
         />
     ))
+    .add('install supported browser (iPhone)', () => (
+        <InstallSupportedBrowserDialog
+            onClose={action('onClose')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'iPhone',
+        },
+    })
 
 story('Profile/AvatarUploadDialog')
     .add('default', () => (
         <AvatarUploadDialog
             originalImage=""
             onClose={action('onClose')}
-            onSave={action('onSave')}
+            onUpload={action('onUpload')}
         />
     ))
     .add('with original image', () => (
         <AvatarUploadDialog
             originalImage="https://miro.medium.com/fit/c/256/256/1*NfJkA-ChiQtYLRBOLryZxQ.jpeg"
             onClose={action('onClose')}
-            onSave={action('onSave')}
+            onUpload={action('onUpload')}
         />
     ))
 
 story('Profile/CropAvatarDialog')
-    .add('default', () => {
-        const cropAndSave = action('cropAndSave')
-        const saveAction = (...args) => new Promise((resolve) => {
-            cropAndSave(...args)
-            resolve()
-        })
-
-        return (
-            <CropAvatarDialog
-                originalImage={croppedImage}
-                onClose={action('onClose')}
-                cropAndSave={saveAction}
-            />
-        )
-    })
+    .add('default', () => (
+        <CropAvatarDialog
+            originalImage={croppedImage}
+            onClose={action('onClose')}
+            onSave={action('onSave')}
+        />
+    ))
+    .add('waiting', () => (
+        <CropAvatarDialog
+            originalImage={croppedImage}
+            onClose={action('onClose')}
+            onSave={action('onSave')}
+            waiting
+        />
+    ))
 
 story('Profile/ChangePasswordDialog')
-    .add('default', () => {
-        const updatePassword = action('updatePassword')
-        const updateAction = (...args) => new Promise((resolve) => {
-            updatePassword(...args)
-            resolve()
-        })
-        return (
-            <ChangePasswordDialog
-                isOpen
-                updatePassword={updateAction}
-                onToggle={action('onToggle')}
-            />
-        )
+    .add('default', () => (
+        <ChangePasswordDialogComponent
+            onSave={action('onSave')}
+            onClose={action('onClose')}
+        />
+    ))
+    .add('waiting', () => (
+        <ChangePasswordDialogComponent
+            onSave={action('onSave')}
+            onClose={action('onClose')}
+            waiting
+        />
+    ))
+    .add('mobile', () => (
+        <ChangePasswordDialogComponent
+            onSave={action('onSave')}
+            onClose={action('onClose')}
+        />
+    ), {
+        viewport: {
+            defaultViewport: 'sm',
+        },
     })
+
+story('Profile/DeleteAccountDialog')
+    .add('default', () => (
+        <DeleteAccountDialogComponent
+            onClose={action('onClose')}
+            onSave={action('onSave')}
+        />
+    ))
+    .add('waiting', () => (
+        <DeleteAccountDialogComponent
+            onClose={action('onClose')}
+            onSave={action('onSave')}
+            waiting
+        />
+    ))
 
 story('EthereumIdentity/IdentityChallengeDialog')
     .add('signature request', () => (
         <SignatureRequestDialog
-            onClose={action('onClose')}
-        />
-    ))
-    .add('signature success', () => (
-        <SignatureRequestSuccessDialog
-            onClose={action('onClose')}
-        />
-    ))
-    .add('signature error', () => (
-        <SignatureRequestErrorDialog
             onClose={action('onClose')}
         />
     ))
@@ -779,6 +969,41 @@ story('EthereumIdentity/IdentityNameDialog')
     .add('default', () => (
         <IdentityNameDialog
             onClose={action('onClose')}
+            onCancel={action('onCancel')}
             onSave={action('onSave')}
+        />
+    ))
+    .add('initial value', () => (
+        <IdentityNameDialog
+            onClose={action('onClose')}
+            onCancel={action('onCancel')}
+            onSave={action('onSave')}
+            initialValue="My Eth address"
+        />
+    ))
+    .add('waiting', () => (
+        <IdentityNameDialog
+            onClose={action('onClose')}
+            onCancel={action('onCancel')}
+            onSave={action('onSave')}
+            waiting
+        />
+    ))
+
+story('EthereumIdentity/EthereumAccountCreatedDialog')
+    .add('default', () => (
+        <EthereumAccountCreatedDialog
+            onBack={action('onBack')}
+            onSave={action('onSave')}
+            name={text('Name', 'Main Eth account')}
+            address={text('Address', '0x538a2Fa87E03B280e10C83AA8dD7E5B15B868BD9')}
+        />
+    ))
+
+story('EthereumIdentity/CopyPrivateKeyDialog')
+    .add('default', () => (
+        <CopyPrivateKeyDialog
+            onClose={action('onClose')}
+            privateKey={text('Private Key', '1234567890abcdefg')}
         />
     ))

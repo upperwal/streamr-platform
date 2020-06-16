@@ -3,8 +3,7 @@
 import styled, { css } from 'styled-components'
 
 export const SpaciousTheme = {
-    height: 'auto',
-    lineHeight: '4rem',
+    height: '64px',
 }
 
 export default styled.input`
@@ -17,7 +16,7 @@ export default styled.input`
     display: block;
     font-size: 1rem;
     height: 40px;
-    line-height: 1.5rem;
+    line-height: 1;
     outline: none;
     padding: 0 1rem;
     width: 100%;
@@ -30,7 +29,21 @@ export default styled.input`
         line-height: ${theme.lineHeight};
     `}
 
-    :focus {
+    /* Avoids weird browser bug where translucent elements with
+     * same background colour and same opacity render with
+     * different colours
+     */
+    backface-visibility: hidden;
+
+    :disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #EFEFEF;
+        border-color: #EFEFEF;
+        color: #32323280;
+    }
+
+    :not(:disabled):focus {
         border: 1px solid #0324FF;
         box-shadow: none;
         outline: none;
@@ -44,7 +57,7 @@ export default styled.input`
         appearance: textfield; /* Hide spin buttons for Mozilla based browsers */
         display: inline-block;
         margin: 0;
-        width: calc(100% - 24px);
+        width: 100%;
     }
 
     /* Hide spin buttons for Webkit based browsers */
@@ -55,6 +68,8 @@ export default styled.input`
     }
 
     ${({ invalid }) => !!invalid && css`
-        border-color: #FF5C00;
+        :not(:disabled), :not(:disabled):focus {
+            border-color: #FF5C00;
+        }
     `}
 `

@@ -216,11 +216,17 @@ class Subscription extends Component<Props> {
             subscription.off('resent', this.onResent)
             subscription.off('no_resend', this.onNoResend)
             subscription.off('error', this.onError)
-            subscription.off('unsubscribed', this.onUnsubscribed)
-            client.unsubscribe(subscription)
         }
         this.subscription = undefined
         this.isSubscribed = false
+
+        if (subscription) {
+            subscription.once('unsubscribed', () => {
+                subscription.off('unsubscribed', this.onSubscribed)
+            })
+
+            client.unsubscribe(subscription)
+        }
     }
 
     handleKnownMessageTypes = (message, ...args) => {

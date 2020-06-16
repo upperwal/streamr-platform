@@ -9,9 +9,7 @@ import ProductContainer from '$shared/components/Container/Product'
 import routes from '$routes'
 import type { Stream, StreamList, StreamId } from '$shared/flowtype/stream-types'
 import { Row, CollapseRow, HeaderRow } from '../../Table'
-import { formatExternalUrl } from '$shared/utils/url'
 import type { Product, ProductId } from '../../../flowtype/product-types'
-import links from '../../../../links'
 import Link from '$shared/components/Link'
 import Button from '$shared/components/Button'
 
@@ -66,7 +64,8 @@ const HoverComponent = ({
                 outline
                 tag={Link}
                 className={styles.button}
-                href={formatExternalUrl(links.editor.canvasEditor, {
+                href={routes.canvases.edit({
+                    id: null,
                     addStream: streamId,
                 })}
             >
@@ -80,7 +79,7 @@ const HoverComponent = ({
                 size="mini"
                 outline
                 tag={Link}
-                to={routes.streamPreview({
+                to={routes.marketplace.streamPreview({
                     id: productId,
                     streamId,
                 })}
@@ -127,17 +126,15 @@ const StreamListing = ({
 }: Props) => (
     <ProductContainer id={styles.details} className={classNames(styles.details, className)}>
         <div className={classNames(styles.streams)}>
-            <HeaderRow title={<TitleStreamCount count={streams.length || 0} />} className={styles.headerRow}>
+            <HeaderRow
+                title={<TitleStreamCount count={streams.length || 0} />}
+                className={styles.headerRow}
+            >
                 <MediaQuery minWidth={767}>
                     <Translate value="productPage.streamListing.description" />
                 </MediaQuery>
             </HeaderRow>
-            {fetchingStreams && (
-                <Row>
-                    <Translate value="productPage.streamListing.loading" />
-                </Row>
-            )}
-            {!fetchingStreams && streams.length > 0 && (
+            {streams.length > 0 && (
                 <div className={styles.tableBody}>
                     {streams.map(({ id: streamId, name, description }: Stream) => (
                         <MediaQuery key={streamId} maxWidth={768}>
@@ -177,6 +174,11 @@ const StreamListing = ({
                         </MediaQuery>
                     ))}
                 </div>
+            )}
+            {fetchingStreams && (
+                <Row className={styles.streamListingRow}>
+                    <Translate value="productPage.streamListing.loading" />
+                </Row>
             )}
             {!fetchingStreams && streams.length === 0 && (
                 <Row className={styles.streamListingRow}>

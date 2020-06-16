@@ -26,6 +26,9 @@ msgstr "Blog"
 msgid "general##browse"
 msgstr "Browse"
 
+msgid "general##canvas"
+msgstr "Canvas"
+
 msgid "general##canvases"
 msgstr "Canvases"
 
@@ -49,6 +52,12 @@ msgstr "Editor"
 
 msgid "general##faq"
 msgstr "FAQ"
+
+msgid "general##dataProduct"
+msgstr "Data Product"
+
+msgid "general##dataUnion"
+msgstr "Data Union"
 
 msgid "general##designAssets"
 msgstr "Design Assets"
@@ -101,6 +110,9 @@ msgstr "Product"
 msgid "general##products"
 msgstr "Products"
 
+msgid "general##dataUnions"
+msgstr "Data Unions"
+
 msgid "general##profile"
 msgstr "Profile"
 
@@ -121,6 +133,9 @@ msgstr "Apps"
 
 msgid "general##streamrSystem"
 msgstr "Streamr System"
+
+msgid "general##stream"
+msgstr "Stream"
 
 msgid "general##streams"
 msgstr "Streams"
@@ -152,6 +167,27 @@ msgstr "YouTube"
 msgid "general##logout"
 msgstr "Logout"
 
+msgid "general##signout"
+msgstr "Sign out"
+
+msgid "general##nav##marketplace"
+msgstr "Marketplace"
+
+msgid "general##nav##core"
+msgstr "Core"
+
+msgid "general##nav##editor"
+msgstr "Editor"
+
+msgid "general##nav##docs"
+msgstr "Docs"
+
+msgid "general##copy"
+msgstr "Copy"
+
+msgid "general##copied"
+msgstr "Copied"
+
 msgid "language##id"
 msgstr "en"
 
@@ -182,11 +218,17 @@ msgstr "OK"
 msgid "modal##common##waiting"
 msgstr "Waiting"
 
+msgid "modal##common##working"
+msgstr "Working"
+
 msgid "modal##common##close"
 msgstr "Close"
 
 msgid "modal##common##confirm"
 msgstr "Confirm"
+
+msgid "modal##common##back"
+msgstr "Back"
 
 msgid "modal##unlockWallet##title"
 msgstr "Access your wallet"
@@ -256,8 +298,32 @@ msgstr "Year"
 msgid "shared##date##year_plural"
 msgstr "Years"
 
+msgid "shared##action##add"
+msgstr "was added"
+
+msgid "shared##action##create"
+msgstr "was created"
+
+msgid "shared##action##update"
+msgstr "was updated"
+
+msgid "shared##action##purchase"
+msgstr "was purchased"
+
+msgid "shared##action##publish"
+msgstr "was published"
+
+msgid "shared##action##unpublish"
+msgstr "was unpublished"
+
+msgid "shared##action##deploy"
+msgstr "was deployed"
+
 msgid "general##docs"
 msgstr "Docs"
+
+msgid "general##settings"
+msgstr "Settings"
 
 msgid "general##learn"
 msgstr "Learn"
@@ -280,11 +346,59 @@ msgstr "Telegram Group"
 msgid "general##giveFeedback"
 msgstr "Give feedback"
 
-msgid "general##labels##community"
-msgstr "Community Product"
+msgid "general##labels##dataUnion"
+msgstr "Data Union"
 
 msgid "general##top"
 msgstr "Top"
 
 msgid "general##network"
 msgstr "Network"
+
+msgid "notFoundPage##message"
+msgstr ""
+"Whoops! We don’t seem to be able to find your data.</br>"
+"<small>Something might have been moved around or changed.<small>"
+
+msgid "notFoundPage##top"
+msgstr "Go to marketplace"
+
+msgid "notFoundPage##coreApp"
+msgstr "Go to core app"
+
+msgid "notFoundPage##publicSite"
+msgstr "Go to public site"
+
+msgid "genericErrorPage##imageCaption"
+msgstr "App crashed"
+
+msgid "genericErrorPage##message"
+msgstr ""
+"Oops. Something has broken down here. <br /> Please try one of the links "
+"below <br /> to get things back on track."
+
+msgid "genericErrorPage##top"
+msgstr "Marketplace top"
+
+msgid "activityQueue##tab##activity"
+msgstr "Activity"
+
+msgid "activityQueue##tab##notifications"
+msgstr "Notifications"
+
+msgid "activityQueue##activities##empty##title"
+msgstr "No activity yet."
+
+msgid "activityQueue##activities##empty##message"
+msgstr "Create, deploy, publish or update something!"
+
+msgid "activityQueue##notifications##empty##title"
+msgstr "No notifications yet."
+
+msgid "activityQueue##notifications##empty##message"
+msgstr ""
+"You'll be notified about payments, <br />"
+"sharing and permissions."
+
+msgid "general##codeSnippets"
+msgstr "Code Snippets"

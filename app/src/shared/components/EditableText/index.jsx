@@ -24,6 +24,8 @@ type Props = {
     placeholder?: ?string,
     probe?: Node,
     setEditing: (boolean) => void,
+    hidePlaceholderOnFocus?: boolean,
+    immediateCommit?: boolean,
 }
 
 function isBlank(str) {
@@ -46,6 +48,8 @@ const EditableText = ({
     probe,
     setEditing,
     title,
+    hidePlaceholderOnFocus,
+    immediateCommit,
     ...props
 }: Props) => {
     const children = (childrenProp == null) ? EditableText.defaultProps.children : childrenProp
@@ -101,6 +105,7 @@ const EditableText = ({
                 [styles.disabled]: disabled,
                 [styles.blank]: valueIsBlank,
                 [ModuleStyles.dragCancel]: !!editing,
+                [styles.hidePlaceholderOnFocus]: hidePlaceholderOnFocus,
             }, valueIsBlank ? blankClassName : undefined)}
             onDoubleClick={startEditing}
             {...((editOnFocus && !disabled) ? {
@@ -117,7 +122,7 @@ const EditableText = ({
                     <Fragment>
                         <TextControl
                             {...props}
-                            immediateCommit={false}
+                            immediateCommit={immediateCommit}
                             autoComplete="off"
                             autoFocus
                             flushHistoryOnBlur
@@ -143,6 +148,7 @@ const EditableText = ({
                             className={styles.hiddenInput}
                             id={props.id}
                             onFocus={onFocus}
+                            placeholder={placeholder}
                             disabled={disabled}
                             tabIndex="-1"
                         />
